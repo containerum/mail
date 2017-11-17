@@ -40,23 +40,23 @@ type templatesDeleteResponse struct {
 func SetupTemplatesHandlers(router *vestigo.Router, tracer *opentracing.Tracer, storage *storages.TemplateStorage) {
 	router.Post("/templates", templateCreateHandler,
 		newOpenTracingMiddleware(tracer, "create template"),
-		newStorageInjectionMiddleware(storage),
+		newTemplateStorageInjectionMiddleware(storage),
 		newBodyUnmarshalMiddleware(templateCreateRequest{}))
 	router.Get("/templates", templateGetHandler,
 		newOpenTracingMiddleware(tracer, "retrieve template"),
-		newStorageInjectionMiddleware(storage))
+		newTemplateStorageInjectionMiddleware(storage))
 	router.Put("/templates/:template_name", templateUpdateHandler,
 		newOpenTracingMiddleware(tracer, "update template"),
-		newStorageInjectionMiddleware(storage),
+		newTemplateStorageInjectionMiddleware(storage),
 		newBodyUnmarshalMiddleware(templateUpdateRequest{}))
 	router.Delete("/templates/:template_name", templateDeleteHandler,
 		newOpenTracingMiddleware(tracer, "delete template"),
-		newStorageInjectionMiddleware(storage))
+		newTemplateStorageInjectionMiddleware(storage))
 	// this is CRUD!!!
 }
 
 func templateCreateHandler(w http.ResponseWriter, r *http.Request) {
-	storage := storageFromContext(r.Context())
+	storage := templateStorageFromContext(r.Context())
 	request := bodyFromContext(r.Context()).(*templateCreateRequest)
 	err := storage.PutTemplate(request.Name, request.Version, request.Data)
 	if err != nil {
@@ -71,7 +71,7 @@ func templateCreateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func templateUpdateHandler(w http.ResponseWriter, r *http.Request) {
-	storage := storageFromContext(r.Context())
+	storage := templateStorageFromContext(r.Context())
 	data := bodyFromContext(r.Context()).(*templateUpdateRequest).Data
 	name := vestigo.Param(r, "template_name")
 	version := r.URL.Query().Get("version")
@@ -88,7 +88,7 @@ func templateUpdateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func templateGetHandler(w http.ResponseWriter, r *http.Request) {
-	storage := storageFromContext(r.Context())
+	storage := templateStorageFromContext(r.Context())
 	name := vestigo.Param(r, "name")
 	version := r.URL.Query().Get("version")
 	var err error
@@ -107,7 +107,7 @@ func templateGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func templateDeleteHandler(w http.ResponseWriter, r *http.Request) {
-	storage := storageFromContext(r.Context())
+	storage := templateStorageFromContext(r.Context())
 	name := vestigo.Param(r, "name")
 	version := r.URL.Query().Get("version")
 	var err error

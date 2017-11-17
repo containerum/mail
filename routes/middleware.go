@@ -16,9 +16,10 @@ import (
 )
 
 const (
-	storageContextKey    = "storage"
-	upstreamContextKey   = "upstream"
-	bodyObjectContextKey = "body"
+	templateStorageContextKey = "tmplstorage"
+	messagesStorageContextKey = "msgstorage"
+	upstreamContextKey        = "upstream"
+	bodyObjectContextKey      = "body"
 )
 
 var log = logrus.WithField("component", "http_router")
@@ -45,12 +46,22 @@ func newOpenTracingMiddleware(tracer opentracing.Tracer, operationName string) v
 	}
 }
 
-// Middleware injecting storage interface to context. MUST BE INCLUDED if storage used in handler
-func newStorageInjectionMiddleware(storage *storages.TemplateStorage) vestigo.Middleware {
+// Middleware injecting template storage to context. MUST BE INCLUDED if storage used in handler
+func newTemplateStorageInjectionMiddleware(storage *storages.TemplateStorage) vestigo.Middleware {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
-			log.WithField("request", r).Debug("StorageInjection middleware")
-			ctx := context.WithValue(r.Context(), storageContextKey, storage)
+			log.WithField("request", r).Debug("TemplateStorageInjection middleware")
+			ctx := context.WithValue(r.Context(), templateStorageContextKey, storage)
+			next(w, r.WithContext(ctx))
+		}
+	}
+}
+
+func newMessagesStorageInjectionMiddleware(storage *storages.MessagesStorage) vestigo.Middleware {
+	return func(next http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			log.WithField("request", r).Debug("MessagesStorageInjection middleware")
+			ctx := context.WithValue(r.Context(), messagesStorageContextKey, storage)
 			next(w, r.WithContext(ctx))
 		}
 	}
@@ -58,6 +69,7 @@ func newStorageInjectionMiddleware(storage *storages.TemplateStorage) vestigo.Mi
 
 // func newUpstreamInjectionMiddleware()
 
+// Middleware injecting json-unmarshalled body to context.
 func newBodyUnmarshalMiddleware(obj interface{}) vestigo.Middleware {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
