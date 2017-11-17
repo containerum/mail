@@ -13,13 +13,13 @@ import (
 
 // TemplateStorage is a storage of email templates based on boltDB. It has versioning support.
 type TemplateStorage struct {
-	db *bolt.DB
+	db  *bolt.DB
 	log *logrus.Logger
 }
 
 type TemplateStorageValue struct {
 	Data      string    `json:"data"`
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt time.Time `json:"created_at"` // UTC
 }
 
 var (
@@ -36,7 +36,7 @@ func NewTemplateStorage(file string, options *bolt.Options) (*TemplateStorage, e
 		return nil, err
 	}
 	return &TemplateStorage{
-		db: db,
+		db:  db,
 		log: log,
 	}, err
 }
