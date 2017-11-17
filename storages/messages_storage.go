@@ -100,3 +100,7 @@ func (s *MessagesStorage) GetValue(id string) (*MessagesStorageValue, error) {
 	})
 	return &value, err
 }
+
+func (s *MessagesStorage) Close() error {
+	return s.db.Close()
+}
