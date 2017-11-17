@@ -83,14 +83,14 @@ func (s *TemplateStorage) GetTemplate(templateName, templateVersion string) (*Te
 		loge.Debug("Getting bucket")
 		b := tx.Bucket([]byte(templateName))
 		if b == nil {
-			loge.Error("Cannot find bucket")
+			loge.Info("Cannot find bucket")
 			return ErrTemplateNotExists
 		}
 
 		loge.Debug("Getting value")
 		templateB := b.Get([]byte(templateVersion))
 		if templateB == nil {
-			loge.Error("Cannot find version")
+			loge.Info("Cannot find version")
 			return ErrVersionNotExists
 		}
 		json.Unmarshal(templateB, &templateValue)
@@ -111,7 +111,7 @@ func (s *TemplateStorage) GetTemplates(templateName string) (map[string]*Templat
 		loge.Debug("Getting bucket")
 		b := tx.Bucket([]byte(templateName))
 		if b == nil {
-			loge.Error("Cannot find bucket")
+			loge.Info("Cannot find bucket")
 			return ErrTemplateNotExists
 		}
 
@@ -145,14 +145,14 @@ func (s *TemplateStorage) DeleteTemplate(templateName, templateVersion string) e
 		loge.Debug("Getting bucket")
 		b := tx.Bucket([]byte(templateName))
 		if b == nil {
-			loge.Error("Cannot find bucket")
+			loge.Info("Cannot find bucket")
 			return ErrTemplateNotExists
 		}
 
 		loge.Debug("Deleting entry")
 		// check if entry exists
 		if v := b.Get([]byte(templateVersion)); v == nil {
-			loge.Error("Cannot find version")
+			loge.Info("Cannot find version")
 			return ErrVersionNotExists
 		}
 		if err := b.Delete([]byte(templateVersion)); err != nil {
