@@ -29,7 +29,7 @@ type MessagesStorageValue struct {
 
 var ErrMessageNotFound = errors.New("message not found")
 
-func NewMessageStorage(file string, options *bolt.Options) (*MessagesStorage, error) {
+func NewMessagesStorage(file string, options *bolt.Options) (*MessagesStorage, error) {
 	log := logrus.WithField("component", "messages_storage").Logger
 	log.Infof("Opening storage at %s with options %#v", file, options)
 	db, err := bolt.Open(file, os.ModePerm, options)
