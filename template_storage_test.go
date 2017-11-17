@@ -21,7 +21,7 @@ func TestTemplateStorage(t *testing.T) {
 			So(storage.PutTemplate("tmpl1", "1", "a"), ShouldBeNil)
 			v, err := storage.GetTemplate("tmpl1", "1")
 			So(err, ShouldBeNil)
-			So(v, ShouldEqual, "a")
+			So(v.Data, ShouldResemble, "a")
 
 			_, err = storage.GetTemplate("unknown", "1")
 			So(err, ShouldEqual, ErrTemplateNotExists)
@@ -37,15 +37,16 @@ func TestTemplateStorage(t *testing.T) {
 
 			v, err := storage.GetTemplate("tmpl3", "1")
 			So(err, ShouldBeNil)
-			So(v, ShouldEqual, "a")
+			So(v.Data, ShouldEqual, "a")
 
 			v, err = storage.GetTemplate("tmpl3", "2")
 			So(err, ShouldBeNil)
-			So(v, ShouldEqual, "b")
+			So(v.Data, ShouldEqual, "b")
 
 			mp, err := storage.GetTemplates("tmpl3")
 			So(err, ShouldBeNil)
-			So(mp, ShouldResemble, map[string]string{"1": "a", "2": "b"})
+			So(mp["1"].Data, ShouldEqual, "a")
+			So(mp["2"].Data, ShouldEqual, "b")
 
 			_, err = storage.GetTemplates("unknown")
 			So(err, ShouldEqual, ErrTemplateNotExists)

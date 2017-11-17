@@ -4,6 +4,9 @@ import (
 	"errors"
 	"os"
 
+	"encoding/json"
+	"time"
+
 	"github.com/boltdb/bolt"
 	"github.com/sirupsen/logrus"
 )
@@ -11,6 +14,11 @@ import (
 // TemplateStorage is a storage of email templates based on boltDB. It has versioning support.
 type TemplateStorage struct {
 	db *bolt.DB
+}
+
+type TemplateStorageValue struct {
+	Data      string    `json:"data"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 var log = logrus.WithField("component", "template_storage").Logger
@@ -48,7 +56,11 @@ func (s *TemplateStorage) PutTemplate(templateName, templateVersion, templateDat
 		}
 
 		loge.Debug("Putting kv data")
-		if err := b.Put([]byte(templateVersion), []byte(templateData)); err != nil {
+		value, _ := json.Marshal(&TemplateStorageValue{
+			Data:      templateData,
+			CreatedAt: time.Now().UTC(),
+		})
+		if err := b.Put([]byte(templateVersion), value); err != nil {
 			loge.WithError(err).Error("Put kv data failed")
 			return err
 		}
@@ -58,14 +70,14 @@ func (s *TemplateStorage) PutTemplate(templateName, templateVersion, templateDat
 }
 
 // GetTemplate returns specified version of template.
-func (s *TemplateStorage) GetTemplate(templateName, templateVersion string) (string, error) {
+func (s *TemplateStorage) GetTemplate(templateName, templateVersion string) (*TemplateStorageValue, error) {
 	loge := log.WithFields(logrus.Fields{
 		"name":    templateName,
 		"version": templateVersion,
 	})
 	loge.Info("Trying to get template")
 
-	var template string
+	var templateValue TemplateStorageValue
 	err := s.db.View(func(tx *bolt.Tx) error {
 		loge.Debug("Getting bucket")
 		b := tx.Bucket([]byte(templateName))
@@ -80,20 +92,20 @@ func (s *TemplateStorage) GetTemplate(templateName, templateVersion string) (str
 			loge.Error("Cannot find version")
 			return ErrVersionNotExists
 		}
-		template = string(templateB)
+		json.Unmarshal(templateB, &templateValue)
 
 		return nil
 	})
 
-	return template, err
+	return &templateValue, err
 }
 
 // GetTemplates returns all versions of templates in map (key is version, value is template).
-func (s *TemplateStorage) GetTemplates(templateName string) (map[string]string, error) {
+func (s *TemplateStorage) GetTemplates(templateName string) (map[string]*TemplateStorageValue, error) {
 	loge := log.WithField("name", templateName)
 	loge.Info("Trying to get all versions of template")
 
-	templates := make(map[string]string)
+	templates := make(map[string]*TemplateStorageValue)
 	err := s.db.View(func(tx *bolt.Tx) error {
 		loge.Debug("Getting bucket")
 		b := tx.Bucket([]byte(templateName))
@@ -105,7 +117,9 @@ func (s *TemplateStorage) GetTemplates(templateName string) (map[string]string, 
 		loge.Debugf("Iterating over bucket")
 		err := b.ForEach(func(k, v []byte) error {
 			loge.Debugf("Handling version %s", k)
-			templates[string(k)] = string(v)
+			var value TemplateStorageValue
+			json.Unmarshal(v, &value)
+			templates[string(k)] = &value
 			return nil
 		})
 		if err != nil {
