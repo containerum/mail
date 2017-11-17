@@ -1,4 +1,4 @@
-package ch_mail_templater
+package storages
 
 import (
 	"errors"
@@ -14,6 +14,7 @@ import (
 // TemplateStorage is a storage of email templates based on boltDB. It has versioning support.
 type TemplateStorage struct {
 	db *bolt.DB
+	log *logrus.Logger
 }
 
 type TemplateStorageValue struct {
@@ -21,14 +22,13 @@ type TemplateStorageValue struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-var log = logrus.WithField("component", "template_storage").Logger
-
 var (
 	ErrTemplateNotExists = errors.New("specified template not exists in storage")
 	ErrVersionNotExists  = errors.New("specified version not exists in storage")
 )
 
 func NewTemplateStorage(file string, options *bolt.Options) (*TemplateStorage, error) {
+	log := logrus.WithField("component", "template_storage").Logger
 	log.Infof("Opening storage at %s with options %#v", file, options)
 	db, err := bolt.Open(file, os.ModePerm, options)
 	if err != nil {
@@ -37,12 +37,13 @@ func NewTemplateStorage(file string, options *bolt.Options) (*TemplateStorage, e
 	}
 	return &TemplateStorage{
 		db: db,
+		log: log,
 	}, err
 }
 
 // PutTemplate puts template to storage. If template with specified name and version exists it will be overwritten.
 func (s *TemplateStorage) PutTemplate(templateName, templateVersion, templateData string) error {
-	loge := log.WithFields(logrus.Fields{
+	loge := s.log.WithFields(logrus.Fields{
 		"name":    templateName,
 		"version": templateVersion,
 	})
@@ -71,7 +72,7 @@ func (s *TemplateStorage) PutTemplate(templateName, templateVersion, templateDat
 
 // GetTemplate returns specified version of template.
 func (s *TemplateStorage) GetTemplate(templateName, templateVersion string) (*TemplateStorageValue, error) {
-	loge := log.WithFields(logrus.Fields{
+	loge := s.log.WithFields(logrus.Fields{
 		"name":    templateName,
 		"version": templateVersion,
 	})
@@ -102,7 +103,7 @@ func (s *TemplateStorage) GetTemplate(templateName, templateVersion string) (*Te
 
 // GetTemplates returns all versions of templates in map (key is version, value is template).
 func (s *TemplateStorage) GetTemplates(templateName string) (map[string]*TemplateStorageValue, error) {
-	loge := log.WithField("name", templateName)
+	loge := s.log.WithField("name", templateName)
 	loge.Info("Trying to get all versions of template")
 
 	templates := make(map[string]*TemplateStorageValue)
@@ -134,7 +135,7 @@ func (s *TemplateStorage) GetTemplates(templateName string) (map[string]*Templat
 
 // DeleteTemplate deletes specified version of template. Returns nil on successful delete.
 func (s *TemplateStorage) DeleteTemplate(templateName, templateVersion string) error {
-	loge := log.WithFields(logrus.Fields{
+	loge := s.log.WithFields(logrus.Fields{
 		"name":    templateName,
 		"version": templateVersion,
 	})
@@ -165,7 +166,7 @@ func (s *TemplateStorage) DeleteTemplate(templateName, templateVersion string) e
 
 // DeleteTemplates deletes all versions of template. Returns nil on successful delete.
 func (s *TemplateStorage) DeleteTemplates(templateName string) error {
-	loge := log.WithField("name", templateName)
+	loge := s.log.WithField("name", templateName)
 	loge.Info("Trying to delete all versions of template")
 
 	return s.db.Update(func(tx *bolt.Tx) error {

@@ -7,7 +7,7 @@ import (
 
 	"encoding/json"
 
-	templater "bitbucket.org/exonch/ch-mail-templater"
+	"bitbucket.org/exonch/ch-mail-templater/storages"
 	"github.com/husobee/vestigo"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
@@ -46,7 +46,7 @@ func newOpenTracingMiddleware(tracer opentracing.Tracer, operationName string) v
 }
 
 // Middleware injecting storage interface to context. MUST BE INCLUDED if storage used in handler
-func newStorageInjectionMiddleware(storage *templater.TemplateStorage) vestigo.Middleware {
+func newStorageInjectionMiddleware(storage *storages.TemplateStorage) vestigo.Middleware {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			log.WithField("request", r).Debug("StorageInjection middleware")

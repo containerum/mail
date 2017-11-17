@@ -3,7 +3,7 @@ package routes
 import (
 	"net/http"
 
-	templater "bitbucket.org/exonch/ch-mail-templater"
+	"bitbucket.org/exonch/ch-mail-templater/storages"
 	"github.com/husobee/vestigo"
 	"github.com/opentracing/opentracing-go"
 )
@@ -37,7 +37,7 @@ type templatesDeleteResponse struct {
 	Name string `json:"template_name"`
 }
 
-func SetupTemplatesHandlers(router *vestigo.Router, tracer *opentracing.Tracer, storage *templater.TemplateStorage) {
+func SetupTemplatesHandlers(router *vestigo.Router, tracer *opentracing.Tracer, storage *storages.TemplateStorage) {
 	router.Post("/templates", templateCreateHandler,
 		newOpenTracingMiddleware(tracer, "create template"),
 		newStorageInjectionMiddleware(storage),

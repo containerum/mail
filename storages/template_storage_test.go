@@ -1,4 +1,4 @@
-package ch_mail_templater
+package storages
 
 import (
 	"io/ioutil"
