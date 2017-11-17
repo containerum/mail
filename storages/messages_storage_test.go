@@ -32,7 +32,7 @@ func TestMessagesStorage(t *testing.T) {
 		So(v, ShouldResemble, testValue)
 
 		_, err = storage.GetValue("blah")
-		So(err, ShouldEqual, ErrMessageNotFound)
+		So(err, ShouldEqual, ErrMessageNotExists)
 
 		// cleanup
 		So(storage.Close(), ShouldBeNil)

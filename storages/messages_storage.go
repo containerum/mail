@@ -27,7 +27,7 @@ type MessagesStorageValue struct {
 	Message      string            `json:"message"`    // base64
 }
 
-var ErrMessageNotFound = errors.New("message not found")
+var ErrMessageNotExists = errors.New("message not exists")
 
 func NewMessagesStorage(file string, options *bolt.Options) (*MessagesStorage, error) {
 	log := logrus.WithField("component", "messages_storage").Logger
@@ -88,7 +88,7 @@ func (s *MessagesStorage) GetValue(id string) (*MessagesStorageValue, error) {
 		valueB := b.Get([]byte(id))
 		if valueB == nil {
 			loge.Info("Cannot find value")
-			return ErrMessageNotFound
+			return ErrMessageNotExists
 		}
 
 		if err := json.Unmarshal(valueB, &value); err != nil {
