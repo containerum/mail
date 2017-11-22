@@ -124,7 +124,7 @@ func templateSendHandler(ctx *gin.Context) {
 		sendStorageError(ctx, err)
 		return
 	}
-	status, err := svc.Upstream.Send(tv.Data, &request)
+	status, err := svc.Upstream.Send(name, tv.Data, &request)
 	if err != nil {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
