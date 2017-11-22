@@ -81,7 +81,7 @@ func (mg *Mailgun) statusCollector(ch chan SendStatus, statuses *[]SendStatus) {
 
 func (mg *Mailgun) Send(templateName, templateText string, request *SendRequest) (resp *SendResponse, err error) {
 	mg.log.Debug("Parsing template")
-	tmpl, err := template.New("email").Parse(templateText)
+	tmpl, err := template.New(templateName).Parse(templateText)
 	if err != nil {
 		mg.log.WithError(err).Debug("Template parsing failed")
 		return nil, err
