@@ -19,14 +19,14 @@ func TestMessagesStorage(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		testValue := &MessagesStorageValue{
-			UserId: "user",
+			UserId:       "user",
 			TemplateName: "template",
-			Variables: map[string]string{"a":"1", "b":"2"},
-			CreatedAt: time.Now().UTC(),
-			Message: "message",
+			Variables:    map[string]string{"a": "1", "b": "2"},
+			CreatedAt:    time.Now().UTC(),
+			Message:      "message",
 		}
 
-		So(storage.PutValue("id",testValue), ShouldBeNil)
+		So(storage.PutValue("id", testValue), ShouldBeNil)
 		v, err := storage.GetValue("id")
 		So(err, ShouldBeNil)
 		So(v, ShouldResemble, testValue)
