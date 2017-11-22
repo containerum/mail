@@ -1,46 +1,22 @@
 package routes
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"bitbucket.org/exonch/ch-mail-templater/storages"
-	"golang.org/x/net/context"
+	"github.com/gin-gonic/gin"
 )
 
-func bodyFromContext(ctx context.Context) interface{} {
-	return ctx.Value(bodyObjectContextKey)
+type errorToClient struct {
+	Error string `json:"error"`
 }
 
-func templateStorageFromContext(ctx context.Context) *storages.TemplateStorage {
-	return ctx.Value(templateStorageContextKey).(*storages.TemplateStorage)
-}
-
-func messagesStorageFromContext(ctx context.Context) *storages.MessagesStorage {
-	return ctx.Value(messagesStorageContextKey).(*storages.MessagesStorage)
-}
-
-func sendJsonWithCode(w http.ResponseWriter, code int, resp interface{}) {
-	w.WriteHeader(code)
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		log.WithError(err).Error("Response write failed")
-	}
-}
-
-func sendJson(w http.ResponseWriter, resp interface{}) {
-	sendJsonWithCode(w, http.StatusOK, resp)
-}
-
-func sendStorageError(w http.ResponseWriter, err error) {
-	log.WithError(err).Debugf("Sending storage error")
+func sendStorageError(ctx *gin.Context, err error) {
 	switch err {
 	case nil:
 	case storages.ErrTemplateNotExists, storages.ErrVersionNotExists, storages.ErrMessageNotExists:
-		w.WriteHeader(http.StatusNotFound)
-		if _, writeErr := w.Write([]byte(err.Error())); writeErr != nil {
-			log.WithError(writeErr).Error("HTTP Response write error")
-		}
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errorToClient{Error: err.Error()})
 	default:
-		w.WriteHeader(http.StatusInternalServerError)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
 	}
 }

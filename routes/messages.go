@@ -4,8 +4,7 @@ import (
 	"net/http"
 
 	"bitbucket.org/exonch/ch-mail-templater/storages"
-	"github.com/husobee/vestigo"
-	"github.com/opentracing/opentracing-go"
+	"github.com/gin-gonic/gin"
 )
 
 type messageGetResponse struct {
@@ -13,23 +12,14 @@ type messageGetResponse struct {
 	*storages.MessagesStorageValue
 }
 
-func SetupMessagesHandlers(router *vestigo.Router, tracer *opentracing.Tracer,
-	storage *storages.MessagesStorage /*TODO: Upstream*/) {
-	router.Get("/messages/:message_id", messageGetHandler,
-		newOpenTracingMiddleware(tracer, "get message copy"),
-		newMessagesStorageInjectionMiddleware(storage))
-}
-
-func messageGetHandler(w http.ResponseWriter, r *http.Request) {
-	storage := messagesStorageFromContext(r.Context())
-	id := vestigo.Param(r, "message_id")
-	v, err := storage.GetValue(id)
+func messageGetHandler(ctx *gin.Context) {
+	id := ctx.Param("message_id")
+	v, err := svc.MessagesStorage.GetValue(id)
 	if err != nil {
-		log.WithError(err).Error("Get message failed")
-		sendStorageError(w, err)
+		sendStorageError(ctx, err)
 		return
 	}
-	sendJson(w, &messageGetResponse{
+	ctx.JSON(http.StatusOK, messageGetResponse{
 		Id:                   id,
 		MessagesStorageValue: v,
 	})

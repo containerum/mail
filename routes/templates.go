@@ -3,15 +3,14 @@ package routes
 import (
 	"net/http"
 
-	"bitbucket.org/exonch/ch-mail-templater/storages"
-	"github.com/husobee/vestigo"
-	"github.com/opentracing/opentracing-go"
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 type templateCreateRequest struct {
-	Name    string `json:"template_name"`
-	Version string `json:"template_version"`
-	Data    string `json:"template_data"`
+	Name    string `json:"template_name" binding:"required"`
+	Version string `json:"template_version" binding:"required"`
+	Data    string `json:"template_data" binding:"required"`
 }
 
 type templateCreateResponse struct {
@@ -20,7 +19,7 @@ type templateCreateResponse struct {
 }
 
 type templateUpdateRequest struct {
-	Data string `json:"template_data"`
+	Data string `json:"template_data" binding:"required"`
 }
 
 type templateUpdateResponse struct {
@@ -37,97 +36,77 @@ type templatesDeleteResponse struct {
 	Name string `json:"template_name"`
 }
 
-func SetupTemplatesHandlers(router *vestigo.Router, tracer *opentracing.Tracer, storage *storages.TemplateStorage) {
-	router.Post("/templates", templateCreateHandler,
-		newOpenTracingMiddleware(tracer, "create template"),
-		newTemplateStorageInjectionMiddleware(storage),
-		newBodyUnmarshalMiddleware(templateCreateRequest{}))
-	router.Get("/templates", templateGetHandler,
-		newOpenTracingMiddleware(tracer, "retrieve template"),
-		newTemplateStorageInjectionMiddleware(storage))
-	router.Put("/templates/:template_name", templateUpdateHandler,
-		newOpenTracingMiddleware(tracer, "update template"),
-		newTemplateStorageInjectionMiddleware(storage),
-		newBodyUnmarshalMiddleware(templateUpdateRequest{}))
-	router.Delete("/templates/:template_name", templateDeleteHandler,
-		newOpenTracingMiddleware(tracer, "delete template"),
-		newTemplateStorageInjectionMiddleware(storage))
-	// this is CRUD!!!
-}
-
-func templateCreateHandler(w http.ResponseWriter, r *http.Request) {
-	storage := templateStorageFromContext(r.Context())
-	request := bodyFromContext(r.Context()).(*templateCreateRequest)
-	err := storage.PutTemplate(request.Name, request.Version, request.Data)
-	if err != nil {
-		log.WithError(err).Error("Create template failed")
-		sendStorageError(w, err)
+func templateCreateHandler(ctx *gin.Context) {
+	var request templateCreateRequest
+	if err := ctx.MustBindWith(&request, binding.JSON); err != nil {
 		return
 	}
-	sendJsonWithCode(w, http.StatusCreated, &templateCreateResponse{
+	err := svc.TemplateStorage.PutTemplate(request.Name, request.Version, request.Data)
+	if err != nil {
+		sendStorageError(ctx, err)
+		return
+	}
+	ctx.JSON(http.StatusCreated, &templateCreateResponse{
 		Name:    request.Name,
 		Version: request.Version,
 	})
 }
 
-func templateUpdateHandler(w http.ResponseWriter, r *http.Request) {
-	storage := templateStorageFromContext(r.Context())
-	data := bodyFromContext(r.Context()).(*templateUpdateRequest).Data
-	name := vestigo.Param(r, "template_name")
-	version := r.URL.Query().Get("version")
-	err := storage.PutTemplate(name, version, data)
-	if err != nil {
-		log.WithError(err).Error("Update template failed")
-		sendStorageError(w, err)
+func templateUpdateHandler(ctx *gin.Context) {
+	var request templateUpdateRequest
+	if err := ctx.MustBindWith(&request, binding.JSON); err != nil {
 		return
 	}
-	sendJsonWithCode(w, http.StatusAccepted, &templateUpdateResponse{
+	name := ctx.Param("template_name")
+	version := ctx.Query("version")
+	err := svc.TemplateStorage.PutTemplate(name, version, request.Data)
+	if err != nil {
+		sendStorageError(ctx, err)
+		return
+	}
+	ctx.JSON(http.StatusAccepted, &templateUpdateResponse{
 		Name:    name,
 		Version: version,
 	})
 }
 
-func templateGetHandler(w http.ResponseWriter, r *http.Request) {
-	storage := templateStorageFromContext(r.Context())
-	name := vestigo.Param(r, "name")
-	version := r.URL.Query().Get("version")
+func templateGetHandler(ctx *gin.Context) {
+	name := ctx.Param("name")
+	version, hasVersion := ctx.GetQuery("version")
 	var err error
 	var respObj interface{}
-	if version == "" { // if no "version" parameter specified, send all versions
-		respObj, err = storage.GetTemplates(name)
+	if !hasVersion { // if no "version" parameter specified, send all versions
+		respObj, err = svc.TemplateStorage.GetTemplates(name)
 	} else {
-		respObj, err = storage.GetTemplate(name, version)
+		respObj, err = svc.TemplateStorage.GetTemplate(name, version)
 	}
 	if err != nil {
-		log.WithError(err).Error("Get template failed")
-		sendStorageError(w, err)
+		sendStorageError(ctx, err)
 		return
 	}
-	sendJson(w, respObj)
+	ctx.JSON(http.StatusOK, respObj)
 }
 
-func templateDeleteHandler(w http.ResponseWriter, r *http.Request) {
-	storage := templateStorageFromContext(r.Context())
-	name := vestigo.Param(r, "name")
-	version := r.URL.Query().Get("version")
+func templateDeleteHandler(ctx *gin.Context) {
+	name := ctx.Param("name")
+	version, hasVersion := ctx.GetQuery("version")
 	var err error
 	var respObj interface{}
-	if version == "" { // if no "version" parameter specified, delete all versions
-		err = storage.DeleteTemplates(name)
+	if !hasVersion { // if no "version" parameter specified, delete all versions
+		err = svc.TemplateStorage.DeleteTemplates(name)
 		respObj = &templatesDeleteResponse{
 			Name: name,
 		}
 	} else {
-		err = storage.DeleteTemplate(name, version)
+		err = svc.TemplateStorage.DeleteTemplate(name, version)
 		respObj = &templateDeleteResponse{
 			Name:    name,
 			Version: version,
 		}
 	}
 	if err != nil {
-		log.WithError(err).Error("Delete template failed")
-		sendStorageError(w, err)
+		sendStorageError(ctx, err)
 		return
 	}
-	sendJson(w, respObj)
+	ctx.JSON(http.StatusOK, respObj)
 }
