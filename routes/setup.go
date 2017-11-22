@@ -2,12 +2,14 @@ package routes
 
 import (
 	"bitbucket.org/exonch/ch-mail-templater/storages"
+	"bitbucket.org/exonch/ch-mail-templater/upstreams"
 	"github.com/gin-gonic/gin"
 )
 
 type Services struct {
 	MessagesStorage *storages.MessagesStorage
 	TemplateStorage *storages.TemplateStorage
+	Upstream        *upstreams.Upstream
 }
 
 var svc *Services
