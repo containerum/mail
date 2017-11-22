@@ -29,5 +29,5 @@ type SendResponse struct {
 }
 
 type Upstream interface {
-	Send(*SendRequest) (SendResponse, error)
+	Send(template string, request *SendRequest) (resp SendResponse, err error)
 }

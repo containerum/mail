@@ -9,7 +9,7 @@ import (
 type Services struct {
 	MessagesStorage *storages.MessagesStorage
 	TemplateStorage *storages.TemplateStorage
-	Upstream        *upstreams.Upstream
+	Upstream        upstreams.Upstream
 }
 
 var svc *Services
@@ -28,5 +28,6 @@ func Setup(app *gin.Engine, services *Services) {
 		templates.GET("/:template_name", templateGetHandler)
 		templates.PUT("/:template_name", templateUpdateHandler)
 		templates.DELETE("/:template_name", templateDeleteHandler)
+		templates.POST("/:template_name/send", templateSendHandler)
 	}
 }

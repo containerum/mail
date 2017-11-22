@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 
+	"bitbucket.org/exonch/ch-mail-templater/upstreams"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
@@ -109,4 +110,24 @@ func templateDeleteHandler(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, respObj)
+}
+
+func templateSendHandler(ctx *gin.Context) {
+	name := ctx.Param("name")
+	version := ctx.Query("version")
+	var request upstreams.SendRequest
+	if err := ctx.MustBindWith(&request, binding.JSON); err != nil {
+		return
+	}
+	tv, err := svc.TemplateStorage.GetTemplate(name, version)
+	if err != nil {
+		sendStorageError(ctx, err)
+		return
+	}
+	status, err := svc.Upstream.Send(tv.Data, &request)
+	if err != nil {
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	ctx.JSON(http.StatusOK, status)
 }
