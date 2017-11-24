@@ -4,7 +4,6 @@ import (
 	"errors"
 	"os"
 
-	"encoding/json"
 	"time"
 
 	"github.com/boltdb/bolt"

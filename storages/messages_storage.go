@@ -5,10 +5,10 @@ import (
 
 	"time"
 
-	"encoding/json"
 	"errors"
 
 	"github.com/boltdb/bolt"
+	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,6 +16,8 @@ type MessagesStorage struct {
 	db  *bolt.DB
 	log *logrus.Logger
 }
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 const messagesStorageBucket = "messages"
 
