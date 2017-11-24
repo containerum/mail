@@ -11,7 +11,6 @@ import (
 	"encoding/base64"
 
 	"bitbucket.org/exonch/ch-mail-templater/storages"
-	"bitbucket.org/exonch/ch-mail-templater/utils"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/mailgun/mailgun-go.v1"
 )
