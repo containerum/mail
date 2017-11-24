@@ -1,5 +1,5 @@
 FROM golang:1.9-alpine as builder
-WORKDIR src/bitbucket.org/exonch/ch-auth
+WORKDIR src/bitbucket.org/exonch/ch-mail-templater
 COPY . .
 RUN CGO_ENABLED=0 go build -v -tags "jsoniter" -ldflags="-w -s -extldflags '-static'" -o /bin/ch-mail-templater
 
