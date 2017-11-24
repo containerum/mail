@@ -8,19 +8,25 @@ import (
 	"sync"
 	"time"
 
+	"encoding/base64"
+
+	"bitbucket.org/exonch/ch-mail-templater/storages"
+	"bitbucket.org/exonch/ch-mail-templater/utils"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/mailgun/mailgun-go.v1"
 )
 
 type Mailgun struct {
-	api mailgun.Mailgun
-	log *logrus.Logger
+	api        mailgun.Mailgun
+	log        *logrus.Logger
+	msgStorage *storages.MessagesStorage
 }
 
-func NewMailgun(conn mailgun.Mailgun) *Mailgun {
+func NewMailgun(conn mailgun.Mailgun, msgStorage *storages.MessagesStorage) *Mailgun {
 	return &Mailgun{
-		api: conn,
-		log: logrus.WithField("component", "mailgun").Logger,
+		api:        conn,
+		log:        logrus.WithField("component", "mailgun").Logger,
+		msgStorage: msgStorage,
 	}
 }
 
@@ -106,7 +112,7 @@ func (mg *Mailgun) Send(templateName, templateText string, request *SendRequest)
 
 		msg := mg.constructMessage(text, request.Message.SenderEmail, request.Message.Subject, recipient.Email, request.Delay)
 
-		go func(msg *mailgun.Message, recipient Recipient) {
+		go func(msg *mailgun.Message, recipient Recipient, text string) {
 			status, id, err := mg.api.Send(msg)
 			if err != nil {
 				logrus.WithError(err).Error("Message send failed")
@@ -119,8 +125,15 @@ func (mg *Mailgun) Send(templateName, templateText string, request *SendRequest)
 				TemplateName: templateName,
 				Status:       status,
 			}
+			mg.msgStorage.PutValue(utils.NewUUID(), &storages.MessagesStorageValue{
+				UserId:       recipient.ID,
+				TemplateName: templateName,
+				Variables:    recipient.Variables,
+				CreatedAt:    time.Now().UTC(),
+				Message:      base64.StdEncoding.EncodeToString([]byte(text)),
+			})
 			wg.Done()
-		}(msg, recipient)
+		}(msg, recipient, text)
 	}
 
 	wg.Wait()
