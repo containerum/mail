@@ -20,3 +20,7 @@ func sendStorageError(ctx *gin.Context, err error) {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 	}
 }
+
+func sendValidationError(ctx *gin.Context, err error) {
+	ctx.AbortWithStatusJSON(http.StatusBadRequest, errorToClient{Error: err.Error()})
+}
