@@ -37,7 +37,7 @@ func getMessagesStorage() (*storages.MessagesStorage, error) {
 	return storages.NewMessagesStorage(file, nil)
 }
 
-func getUpstream() (upstreams.Upstream, error) {
+func getUpstream(msgStorage *storages.MessagesStorage) (upstreams.Upstream, error) {
 	viper.SetDefault("upstream", "mailgun")
 	switch viper.GetString("upstream") {
 	case "mailgun":
@@ -45,7 +45,7 @@ func getUpstream() (upstreams.Upstream, error) {
 		if err != nil {
 			return nil, err
 		}
-		return upstreams.NewMailgun(mg), nil
+		return upstreams.NewMailgun(mg, msgStorage), nil
 	default:
 		return nil, errors.New("invalid upstream")
 	}

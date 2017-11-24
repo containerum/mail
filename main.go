@@ -32,7 +32,7 @@ func main() {
 	exitOnErr(err)
 	ms, err := getMessagesStorage()
 	exitOnErr(err)
-	us, err := getUpstream()
+	us, err := getUpstream(ms)
 	exitOnErr(err)
 
 	routes.Setup(app, &routes.Services{
