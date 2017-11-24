@@ -3,6 +3,13 @@ WORKDIR src/bitbucket.org/exonch/ch-mail-templater
 COPY . .
 RUN CGO_ENABLED=0 go build -v -tags "jsoniter" -ldflags="-w -s -extldflags '-static'" -o /bin/ch-mail-templater
 
+FROM alpine:latest as alpine
+RUN apk --no-cache add tzdata zip ca-certificates
+WORKDIR /usr/share/zoneinfo
+# -0 means no compression.  Needed because go's
+# tz loader doesn't handle compressed data.
+RUN zip -r -0 /zoneinfo.zip .
+
 FROM scratch
 # app
 COPY --from=builder /bin/ch-mail-templater /
