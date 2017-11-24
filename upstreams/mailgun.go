@@ -125,7 +125,7 @@ func (mg *Mailgun) Send(templateName, templateText string, request *SendRequest)
 				TemplateName: templateName,
 				Status:       status,
 			}
-			mg.msgStorage.PutValue(utils.NewUUID(), &storages.MessagesStorageValue{
+			mg.msgStorage.PutValue(id, &storages.MessagesStorageValue{
 				UserId:       recipient.ID,
 				TemplateName: templateName,
 				Variables:    recipient.Variables,
