@@ -73,3 +73,6 @@
 [submodule "vendor/gopkg.in/yaml.v2"]
 	path = vendor/gopkg.in/yaml.v2
 	url = https://gopkg.in/yaml.v2
+[submodule "vendor/github.com/json-iterator/go"]
+	path = vendor/github.com/json-iterator/go
+	url = https://github.com/json-iterator/go
