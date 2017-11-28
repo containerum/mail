@@ -17,6 +17,8 @@ var svc *Services
 func Setup(app *gin.Engine, services *Services) {
 	svc = services
 
+	app.POST("/send", simpleSendHandler)
+
 	messages := app.Group("/messages")
 	{
 		messages.GET("/:message_id", messageGetHandler)
