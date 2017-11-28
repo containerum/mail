@@ -29,4 +29,5 @@ type SendResponse struct {
 
 type Upstream interface {
 	Send(templateName string, tsv *storages.TemplateStorageValue, request *SendRequest) (resp *SendResponse, err error)
+	SimpleSend(templateName string, tsv *storages.TemplateStorageValue, recipient *Recipient) (status *SendStatus, err error)
 }
