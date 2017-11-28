@@ -27,6 +27,8 @@ ENV GIN_MODE=release \
     MG_DOMAIN=domain \
     MG_PUBLIC_API_KEY=pubkey \
     MG_URL=url \
+    CH_MAIL_SENDER_NAME=containerum \
+    CH_MAIL_SENDER_MAIL=support@containerum.com \
     CH_MAIL_LISTEN_ADDR=:7070
 VOLUME ["/storage"]
 ENTRYPOINT ["/ch-mail-templater"]

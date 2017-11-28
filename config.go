@@ -45,7 +45,7 @@ func getUpstream(msgStorage *storages.MessagesStorage) (upstreams.Upstream, erro
 		if err != nil {
 			return nil, err
 		}
-		return upstreams.NewMailgun(mg, msgStorage), nil
+		return upstreams.NewMailgun(mg, msgStorage, viper.GetString("sender_name"), viper.GetString("sender_mail")), nil
 	default:
 		return nil, errors.New("invalid upstream")
 	}

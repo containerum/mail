@@ -3,8 +3,6 @@ package routes
 import (
 	"net/http"
 
-	"encoding/base64"
-
 	"bitbucket.org/exonch/ch-mail-templater/upstreams"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -139,13 +137,7 @@ func templateSendHandler(ctx *gin.Context) {
 		sendStorageError(ctx, err)
 		return
 	}
-	templateText, err := base64.StdEncoding.DecodeString(tv.Data)
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	status, err := svc.Upstream.Send(name, string(templateText), &request)
+	status, err := svc.Upstream.Send(name, tv, &request)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)

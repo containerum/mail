@@ -19,13 +19,17 @@ type Mailgun struct {
 	api        mailgun.Mailgun
 	log        *logrus.Logger
 	msgStorage *storages.MessagesStorage
+	senderName string
+	senderMail string
 }
 
-func NewMailgun(conn mailgun.Mailgun, msgStorage *storages.MessagesStorage) *Mailgun {
+func NewMailgun(conn mailgun.Mailgun, msgStorage *storages.MessagesStorage, senderName, senderMail string) *Mailgun {
 	return &Mailgun{
 		api:        conn,
 		log:        logrus.WithField("component", "mailgun").Logger,
 		msgStorage: msgStorage,
+		senderName: senderName,
+		senderMail: senderMail,
 	}
 }
 
@@ -47,8 +51,8 @@ func (mg *Mailgun) executeTemplate(tmpl *template.Template, recipient Recipient,
 	return buf.String(), nil
 }
 
-func (mg *Mailgun) constructMessage(text, from, subj, to string, delayMinutes int) *mailgun.Message {
-	msg := mg.api.NewMessage(from, subj, "", to)
+func (mg *Mailgun) constructMessage(text, subj, to string, delayMinutes int) *mailgun.Message {
+	msg := mg.api.NewMessage(mg.senderMail, subj, "", to)
 	msg.SetHtml(text)
 	if delayMinutes > 0 {
 		msg.SetDeliveryTime(time.Now().Add(time.Minute * time.Duration(delayMinutes)))
@@ -84,9 +88,14 @@ func (mg *Mailgun) statusCollector(ch chan SendStatus, statuses *[]SendStatus) {
 	}()
 }
 
-func (mg *Mailgun) Send(templateName, templateText string, request *SendRequest) (resp *SendResponse, err error) {
+func (mg *Mailgun) Send(templateName string, tsv *storages.TemplateStorageValue, request *SendRequest) (resp *SendResponse, err error) {
 	mg.log.Debug("Parsing template")
-	tmpl, err := template.New(templateName).Parse(templateText)
+	templateText, err := base64.StdEncoding.DecodeString(tsv.Data)
+	if err != nil {
+		mg.log.WithError(err).Error("Template data decode failed")
+		return nil, err
+	}
+	tmpl, err := template.New(templateName).Parse(string(templateText))
 	if err != nil {
 		mg.log.WithError(err).Debug("Template parsing failed")
 		return nil, err
@@ -109,7 +118,7 @@ func (mg *Mailgun) Send(templateName, templateText string, request *SendRequest)
 			errChan <- err
 		}
 
-		msg := mg.constructMessage(text, request.Message.SenderEmail, request.Message.Subject, recipient.Email, request.Delay)
+		msg := mg.constructMessage(text, tsv.Subject, recipient.Email, request.Delay)
 
 		go func(msg *mailgun.Message, recipient Recipient, text string) {
 			status, id, err := mg.api.Send(msg)
