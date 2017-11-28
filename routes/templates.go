@@ -14,6 +14,7 @@ type templateCreateRequest struct {
 	Name    string `json:"template_name" binding:"required"`
 	Version string `json:"template_version" binding:"required"`
 	Data    string `json:"template_data" binding:"required,base64"`
+	Subject string `json:"template_subject" binding:"required"`
 }
 
 type templateCreateResponse struct {
@@ -22,7 +23,8 @@ type templateCreateResponse struct {
 }
 
 type templateUpdateRequest struct {
-	Data string `json:"template_data" binding:"required,base64"`
+	Data    string `json:"template_data" binding:"required,base64"`
+	Subject string `json:"template_subject" binding:"required"`
 }
 
 type templateUpdateResponse struct {
@@ -46,7 +48,7 @@ func templateCreateHandler(ctx *gin.Context) {
 		sendValidationError(ctx, err)
 		return
 	}
-	err := svc.TemplateStorage.PutTemplate(request.Name, request.Version, request.Data)
+	err := svc.TemplateStorage.PutTemplate(request.Name, request.Version, request.Data, request.Subject)
 	if err != nil {
 		ctx.Error(err)
 		sendStorageError(ctx, err)
@@ -67,7 +69,7 @@ func templateUpdateHandler(ctx *gin.Context) {
 	}
 	name := ctx.Param("template_name")
 	version := ctx.Query("version")
-	err := svc.TemplateStorage.PutTemplate(name, version, request.Data)
+	err := svc.TemplateStorage.PutTemplate(name, version, request.Data, request.Subject)
 	if err != nil {
 		ctx.Error(err)
 		sendStorageError(ctx, err)

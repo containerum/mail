@@ -18,6 +18,7 @@ type TemplateStorage struct {
 
 type TemplateStorageValue struct {
 	Data      string    `json:"data"`
+	Subject   string    `json:"template_subject"`
 	CreatedAt time.Time `json:"created_at"` // UTC
 }
 
@@ -41,7 +42,7 @@ func NewTemplateStorage(file string, options *bolt.Options) (*TemplateStorage, e
 }
 
 // PutTemplate puts template to storage. If template with specified name and version exists it will be overwritten.
-func (s *TemplateStorage) PutTemplate(templateName, templateVersion, templateData string) error {
+func (s *TemplateStorage) PutTemplate(templateName, templateVersion, templateData, templateSubject string) error {
 	loge := s.log.WithFields(logrus.Fields{
 		"name":    templateName,
 		"version": templateVersion,
@@ -59,6 +60,7 @@ func (s *TemplateStorage) PutTemplate(templateName, templateVersion, templateDat
 		value, _ := json.Marshal(&TemplateStorageValue{
 			Data:      templateData,
 			CreatedAt: time.Now().UTC(),
+			Subject:   templateSubject,
 		})
 		if err := b.Put([]byte(templateVersion), value); err != nil {
 			loge.WithError(err).Error("Put kv data failed")
