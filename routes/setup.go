@@ -28,6 +28,6 @@ func Setup(app *gin.Engine, services *Services) {
 		templates.GET("/:template_name", templateGetHandler)
 		templates.PUT("/:template_name", templateUpdateHandler)
 		templates.DELETE("/:template_name", templateDeleteHandler)
-		templates.POST("/:template_name/send", templateSendHandler)
+		templates.POST("/:template_name", templateSendHandler)
 	}
 }
