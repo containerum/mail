@@ -10,7 +10,7 @@ import (
 
 type simpleSendRequest struct {
 	Template  string            `json:"template" binding:"required"`
-	UserID    string            `json:"user_id" binding:"required"`
+	UserID    string            `json:"user_id" binding:"required,uuid4"`
 	Variables map[string]string `json:"variables" binding:"required"`
 }
 

@@ -3,18 +3,18 @@ package upstreams
 import "bitbucket.org/exonch/ch-mail-templater/storages"
 
 type Recipient struct {
-	ID        string            `json:"id"`
-	Name      string            `json:"name"`
-	Email     string            `json:"email"`
-	Variables map[string]string `json:"variables"`
+	ID        string            `json:"id" binding:"required,uuid4"`
+	Name      string            `json:"name" binding:"required"`
+	Email     string            `json:"email" binding:"required,email"`
+	Variables map[string]string `json:"variables" binding:"required"`
 }
 
 type SendRequest struct {
-	Delay   int `json:"delay"` // in minutes
+	Delay   int `json:"delay" binding:"required,min=0"` // in minutes
 	Message struct {
-		CommonVariables map[string]string `json:"common_variables"`
-		Recipients      []Recipient       `json:"recipient_data"`
-	} `json:"message"`
+		CommonVariables map[string]string `json:"common_variables" binding:"required"`
+		Recipients      []Recipient       `json:"recipient_data" binding:"required"`
+	} `json:"message" binding:"required"`
 }
 
 type SendStatus struct {
