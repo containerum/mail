@@ -6,6 +6,7 @@ import (
 
 	"time"
 
+	"github.com/blang/semver"
 	"github.com/boltdb/bolt"
 	"github.com/sirupsen/logrus"
 )
@@ -94,12 +95,56 @@ func (s *TemplateStorage) GetTemplate(templateName, templateVersion string) (*Te
 			loge.Info("Cannot find version")
 			return ErrVersionNotExists
 		}
-		json.Unmarshal(templateB, &templateValue)
-
-		return nil
+		return json.Unmarshal(templateB, &templateValue)
 	})
 
 	return &templateValue, err
+}
+
+// GetLatestVersionTemplate returns latest version of template and it`s value using semver to compare versions.
+func (s *TemplateStorage) GetLatestVersionTemplate(templateName string) (string, *TemplateStorageValue, error) {
+	loge := s.log.WithField("name", templateName)
+	loge.Info("Trying to get latest version of template")
+
+	var templateValue TemplateStorageValue
+	var templateVersion string
+
+	err := s.db.View(func(tx *bolt.Tx) error {
+		loge.Debug("Getting bucket")
+		b := tx.Bucket([]byte(templateName))
+		if b == nil {
+			loge.Info("Cannot find bucket")
+			return ErrTemplateNotExists
+		}
+
+		loge.Debugf("Iterating over bucket")
+		var latestVer semver.Version
+		err := b.ForEach(func(k, v []byte) error {
+			loge.Debugf("Handling version %s", k)
+			ver, err := semver.Parse(string(k))
+			if err != nil {
+				return nil // skip non-semver keys
+			}
+			if ver.GT(latestVer) {
+				latestVer = ver
+			}
+			return nil
+		})
+		if err != nil {
+			loge.WithError(err).Error("Iterating error")
+		}
+
+		templateVersion = latestVer.String()
+		loge.Debugf("Extracting latest version")
+		templateB := b.Get([]byte(templateVersion))
+		if templateB == nil {
+			loge.Info("Cannot find version")
+			return ErrVersionNotExists
+		}
+		return json.Unmarshal(templateB, &templateValue)
+	})
+
+	return templateVersion, &templateValue, err
 }
 
 // GetTemplates returns all versions of templates in map (key is version, value is template).
@@ -120,9 +165,9 @@ func (s *TemplateStorage) GetTemplates(templateName string) (map[string]*Templat
 		err := b.ForEach(func(k, v []byte) error {
 			loge.Debugf("Handling version %s", k)
 			var value TemplateStorageValue
-			json.Unmarshal(v, &value)
+			err := json.Unmarshal(v, &value)
 			templates[string(k)] = &value
-			return nil
+			return err
 		})
 		if err != nil {
 			loge.WithError(err).Error("Iterating error")

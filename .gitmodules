@@ -76,3 +76,6 @@
 [submodule "vendor/github.com/json-iterator/go"]
 	path = vendor/github.com/json-iterator/go
 	url = https://github.com/json-iterator/go
+[submodule "vendor/github.com/blang/semver"]
+	path = vendor/github.com/blang/semver
+	url = https://github.com/blang/semver
