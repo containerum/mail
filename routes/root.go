@@ -3,7 +3,6 @@ package routes
 import (
 	"net/http"
 
-	"bitbucket.org/exonch/ch-mail-templater/upstreams"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
@@ -25,7 +24,7 @@ func simpleSendHandler(ctx *gin.Context) {
 		sendValidationError(ctx, err)
 		return
 	}
-	_, tv, err := svc.TemplateStorage.GetLatestVersionTemplate(request.Template)
+	/*_, tv, err := svc.TemplateStorage.GetLatestVersionTemplate(request.Template)
 	if err != nil {
 		ctx.Error(err)
 		sendStorageError(ctx, err)
@@ -41,5 +40,8 @@ func simpleSendHandler(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, &simpleSendResponse{
 		UserID: status.RecipientID,
+	})*/
+	ctx.JSON(http.StatusOK, &simpleSendResponse{
+		UserID: request.UserID,
 	})
 }
