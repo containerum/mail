@@ -1,7 +1,7 @@
 FROM golang:1.9-alpine as builder
-WORKDIR src/bitbucket.org/exonch/ch-mail-templater
+WORKDIR src/git.containerum.net/ch/mail-templater
 COPY . .
-RUN CGO_ENABLED=0 go build -v -tags "jsoniter" -ldflags="-w -s -extldflags '-static'" -o /bin/ch-mail-templater
+RUN CGO_ENABLED=0 go build -v -tags "jsoniter" -ldflags="-w -s -extldflags '-static'" -o /bin/mail-templater
 
 FROM alpine:latest as alpine
 RUN apk --no-cache add tzdata zip ca-certificates
@@ -12,7 +12,7 @@ RUN zip -r -0 /zoneinfo.zip .
 
 FROM scratch
 # app
-COPY --from=builder /bin/ch-mail-templater /
+COPY --from=builder /bin/mail-templater /
 # timezone data
 ENV ZONEINFO /zoneinfo.zip
 COPY --from=alpine /zoneinfo.zip /
@@ -31,4 +31,4 @@ ENV GIN_MODE=release \
     CH_MAIL_SENDER_MAIL=support@containerum.com \
     CH_MAIL_LISTEN_ADDR=:7070
 VOLUME ["/storage"]
-ENTRYPOINT ["/ch-mail-templater"]
+ENTRYPOINT ["/mail-templater"]
