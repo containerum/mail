@@ -25,7 +25,7 @@ func simpleSendHandler(ctx *gin.Context) {
 		sendValidationError(ctx, err)
 		return
 	}
-	tv, err := svc.TemplateStorage.GetTemplate(request.Template, "latest") // TODO: properly handle
+	_, tv, err := svc.TemplateStorage.GetLatestVersionTemplate(request.Template)
 	if err != nil {
 		ctx.Error(err)
 		sendStorageError(ctx, err)
