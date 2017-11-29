@@ -3,7 +3,7 @@ package routes
 import (
 	"net/http"
 
-	"bitbucket.org/exonch/ch-mail-templater/upstreams"
+	"git.containerum.net/ch/mail-templater/upstreams"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )

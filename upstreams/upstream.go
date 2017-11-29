@@ -1,6 +1,6 @@
 package upstreams
 
-import "bitbucket.org/exonch/ch-mail-templater/storages"
+import "git.containerum.net/ch/mail-templater/storages"
 
 type Recipient struct {
 	ID        string            `json:"id" binding:"required,uuid4"`

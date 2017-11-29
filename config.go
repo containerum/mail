@@ -3,8 +3,8 @@ package main
 import (
 	"errors"
 
-	"bitbucket.org/exonch/ch-mail-templater/storages"
-	"bitbucket.org/exonch/ch-mail-templater/upstreams"
+	"git.containerum.net/ch/mail-templater/storages"
+	"git.containerum.net/ch/mail-templater/upstreams"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"

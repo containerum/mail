@@ -5,9 +5,10 @@ import (
 	"os"
 	"testing"
 
+	"time"
+
 	"github.com/sirupsen/logrus"
 	. "github.com/smartystreets/goconvey/convey"
-	"time"
 )
 
 const testMessagesDB = "test_messages.db"
