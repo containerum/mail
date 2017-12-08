@@ -79,3 +79,6 @@
 [submodule "vendor/github.com/blang/semver"]
 	path = vendor/github.com/blang/semver
 	url = https://github.com/blang/semver
+[submodule "vendor/git.containerum.net/ch/utils"]
+	path = vendor/git.containerum.net/ch/utils
+	url = https://git.containerum.net/ch/utils.git
