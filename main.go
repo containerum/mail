@@ -25,7 +25,7 @@ func main() {
 	exitOnErr(setupLogger())
 
 	app := gin.New()
-	app.Use(gin.Recovery())
+	app.Use(gin.RecoveryWithWriter(logrus.StandardLogger().WithField("component", "gin_recovery").Writer()))
 	app.Use(ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true))
 
 	ts, err := getTemplatesStorage()
