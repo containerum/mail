@@ -16,9 +16,9 @@ build-master:
   tags:
     - m1s
   script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
-    - docker build --pull -t ${CI_REGISTRY_IMAGE}:${TAG} .
-    - docker push "${CI_REGISTRY_IMAGE}:${TAG}"
+    - docker login ${DOCKER_REGISTRY} -u "$DOCKER_REGISTRY_USER" -p "$DOCKER_REGISTRY_PASSWORD"
+    - docker build --pull -t ${DOCKER_REGISTRY_IMAGE}:${TAG} .
+    - docker push "${DOCKER_REGISTRY_IMAGE}:${TAG}"
   only:
     - develop
 test:
