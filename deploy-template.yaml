@@ -1,0 +1,56 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: "mail-templater"
+    access: "true"
+    group: local
+  name: mail-templater
+  namespace: hosting
+spec:
+  strategy:
+    type: RollingUpdate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "mail-templater"
+      access: "true"
+      group: local
+  template:
+    metadata:
+      labels:
+        app: "mail-templater"
+        access: "true"
+        group: local
+    spec:
+      containers:
+      - image: ${DOCKER_REGISTRY_IMAGE}
+        name: mail-templater
+        volumeMounts:
+        - mountPath: '/storage'
+          name: mail-templater-volume
+        env:
+        - name: GIN_MODE
+          value: '${GIN_MODE}'
+        - name: CH_MAIL_LOG_LEVEL
+          value: '${CH_MAIL_LOG_LEVEL}'
+        - name: MG_API_KEY
+          value: '${MG_API_KEY}'
+        - name: MG_DOMAIN
+          value: '${MG_DOMAIN}'
+        - name: MG_PUBLIC_API_KEY
+          value: '${MG_PUBLIC_API_KEY}'
+        - name: MG_URL
+          value: '${MG_URL}'
+        - name: CH_MAIL_LISTEN_ADDR
+          value: '${CH_MAIL_LISTEN_ADDR}'
+      nodeSelector:
+        role: master
+      imagePullSecrets:
+      - name: gitlab-registry
+      volumes:
+      - name: mail-templater-volume
+        glusterfs:
+          endpoints: glusterfs
+          path: sys_gv_hosting_mail_templater_data
