@@ -1,0 +1,40 @@
+
+[[constraint]]
+  branch = "master"
+  name = "git.containerum.net/ch/utils"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/blang/semver"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/boltdb/bolt"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/gin-gonic/contrib"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/gin-gonic/gin"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/json-iterator/go"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/sirupsen/logrus"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/smartystreets/goconvey"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/spf13/viper"
+
+[[constraint]]
+  branch = "master"
+  name = "gopkg.in/mailgun/mailgun-go.v1"
