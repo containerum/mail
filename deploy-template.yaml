@@ -25,7 +25,7 @@ spec:
         group: local
     spec:
       containers:
-      - image: ${DOCKER_REGISTRY_IMAGE}
+      - image: ${IMAGE}
         name: mail-templater
         volumeMounts:
         - mountPath: '/storage'

@@ -28,7 +28,7 @@ test:
   tags:
     - m1s
   script:
-    - export IMAGE="$CI_REGISTRY_IMAGE:${TAG}"
+    - export IMAGE="$DOCKER_REGISTRY_IMAGE:${TAG}"
     - echo $SANDBOX_KUBE_CONFIG | base64 -d > admin.conf
     - cat deploy-template.yaml | envsubst > deploy.yaml
     - kubectl --kubeconfig=admin.conf replace -f deploy.yaml
