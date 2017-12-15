@@ -16,9 +16,9 @@ build-master:
   tags:
     - m1s
   script:
-    - docker login -u "$DOCKER_REGISTRY_USER" -p "$DOCKER_REGISTRY_PASSWORD"
-    - docker build --pull -t ${DOCKER_REGISTRY_IMAGE}:${TAG} .
-    - docker push "${DOCKER_REGISTRY_IMAGE}:${TAG}"
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
+    - docker build --pull -t ${CI_REGISTRY_IMAGE}:${TAG} .
+    - docker push "${CI_REGISTRY_IMAGE}:${TAG}"
   only:
     - develop
 test:
@@ -28,7 +28,7 @@ test:
   tags:
     - m1s
   script:
-    - export IMAGE="$DOCKER_REGISTRY_IMAGE:${TAG}"
+    - export IMAGE="$CI_REGISTRY_IMAGE:${TAG}"
     - echo $SANDBOX_KUBE_CONFIG | base64 -d > admin.conf
     - cat deploy-template.yaml | envsubst > deploy.yaml
     - kubectl --kubeconfig=admin.conf replace -f deploy.yaml
