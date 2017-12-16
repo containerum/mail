@@ -14,7 +14,7 @@ import (
 
 type MessagesStorage struct {
 	db  *bolt.DB
-	log *logrus.Logger
+	log *logrus.Entry
 }
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -32,7 +32,7 @@ type MessagesStorageValue struct {
 var ErrMessageNotExists = errors.New("message not exists")
 
 func NewMessagesStorage(file string, options *bolt.Options) (*MessagesStorage, error) {
-	log := logrus.WithField("component", "messages_storage").Logger
+	log := logrus.WithField("component", "messages_storage")
 	log.Infof("Opening storage at %s with options %#v", file, options)
 	db, err := bolt.Open(file, os.ModePerm, options)
 	if err != nil {

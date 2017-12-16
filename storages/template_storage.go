@@ -14,7 +14,7 @@ import (
 // TemplateStorage is a storage of email templates based on boltDB. It has versioning support.
 type TemplateStorage struct {
 	db  *bolt.DB
-	log *logrus.Logger
+	log *logrus.Entry
 }
 
 type TemplateStorageValue struct {
@@ -29,7 +29,7 @@ var (
 )
 
 func NewTemplateStorage(file string, options *bolt.Options) (*TemplateStorage, error) {
-	log := logrus.WithField("component", "template_storage").Logger
+	log := logrus.WithField("component", "template_storage")
 	log.Infof("Opening storage at %s with options %#v", file, options)
 	db, err := bolt.Open(file, os.ModePerm, options)
 	if err != nil {
