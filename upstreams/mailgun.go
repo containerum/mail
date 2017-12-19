@@ -17,7 +17,7 @@ import (
 
 type Mailgun struct {
 	api        mailgun.Mailgun
-	log        *logrus.Logger
+	log        *logrus.Entry
 	msgStorage *storages.MessagesStorage
 	senderName string
 	senderMail string
@@ -26,7 +26,7 @@ type Mailgun struct {
 func NewMailgun(conn mailgun.Mailgun, msgStorage *storages.MessagesStorage, senderName, senderMail string) *Mailgun {
 	return &Mailgun{
 		api:        conn,
-		log:        logrus.WithField("component", "mailgun").Logger,
+		log:        logrus.WithField("component", "mailgun"),
 		msgStorage: msgStorage,
 		senderName: senderName,
 		senderMail: senderMail,
