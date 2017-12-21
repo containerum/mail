@@ -1,0 +1,88 @@
+apiVersion: v1
+data:
+  jwt.key: |
+    ${JWT_KEY}
+kind: ConfigMap
+metadata:
+  name: ch-auth-key
+  namespace: hosting
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: "ch-auth"
+    access: "true"
+    group: local
+  name: ch-auth
+  namespace: hosting
+spec:
+  strategy:
+    type: RollingUpdate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "ch-auth"
+      access: "true"
+      group: local
+  template:
+    metadata:
+      labels:
+        app: ch-auth
+        access: "true"
+        group: local
+    spec:
+      containers:
+      - image: exon/ch-auth:v0.9
+        name: ch-auth
+        volumeMounts:
+        - mountPath: '/keys'
+          name: ch-auth-key
+        - mountPath: '/storage'
+          name: ch-auth-data
+        env:
+        - name: CH_AUTH_HTTP_LISTENADDR
+          value: '${CH_AUTH_HTTP_LISTENADDR}'
+        - name: CH_AUTH_GRPC_LISTENADDR
+          value: '${CH_AUTH_GRPC_LISTENADDR}'
+        - name: CH_AUTH_LOGGER_LOG_MODE
+          value: '${CH_AUTH_LOGGER_LOG_MODE}'
+        - name: CH_AUTH_LOGGER_LOG_LEVEL
+          value: '${CH_AUTH_LOGGER_LOG_LEVEL}'
+        - name: CH_AUTH_TOKENS
+          value: '${CH_AUTH_TOKENS}'
+        - name: CH_AUTH_JWT_SIGNING_METHOD
+          value: '${CH_AUTH_JWT_SIGNING_METHOD}'
+        - name: CH_AUTH_ISSUER
+          value: '${CH_AUTH_ISSUER}'
+        - name: CH_AUTH_ACCESS_TOKEN_LIFETIME
+          value: '${CH_AUTH_ACCESS_TOKEN_LIFETIME}'
+        - name: CH_AUTH_REFRESH_TOKEN_LIFETIME
+          value: '${CH_AUTH_REFRESH_TOKEN_LIFETIME}'
+        - name: CH_AUTH_JWT_SIGNING_KEY_FILE
+          value: '${CH_AUTH_JWT_SIGNING_KEY_FILE}'
+        - name: CH_AUTH_JWT_VALIDATION_KEY_FILE
+          value: '${CH_AUTH_JWT_VALIDATION_KEY_FILE}'
+        - name: CH_AUTH_STORAGE
+          value: '${CH_AUTH_STORAGE}'
+        - name: CH_AUTH_BUNT_STORAGE_FILE
+          value: '${CH_AUTH_BUNT_STORAGE_FILE}'
+        - name: CH_AUTH_TRACER
+          value: '${CH_AUTH_TRACER}'
+        - name: CH_AUTH_ZIPKIN_COLLECTOR
+          value: '${CH_AUTH_ZIPKIN_COLLECTOR}'
+        - name: CH_AUTH_LOG_LEVEL
+          value: '${CH_AUTH_LOG_LEVEL}'
+      nodeSelector:
+        role: master
+      imagePullSecrets:
+      - name: regsecret
+      volumes:
+      - name: ch-auth-key
+        configMap:
+          name: ch-auth-key
+      - name: ch-auth-data
+        glusterfs:
+          endpoints: glusterfs
+          path: sys_gv_hosting_ch-auth
+          readOnly: false

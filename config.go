@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 
+	"git.containerum.net/ch/mail-templater/clients"
 	"git.containerum.net/ch/mail-templater/storages"
 	"git.containerum.net/ch/mail-templater/upstreams"
 	"github.com/gin-gonic/gin"
@@ -54,4 +55,9 @@ func getUpstream(msgStorage *storages.MessagesStorage) (upstreams.Upstream, erro
 func getListenAddr() string {
 	viper.SetDefault("listen_addr", ":7070")
 	return viper.GetString("listen_addr")
+}
+
+func getUserManagerClient() *clients.UserManagerClient {
+	viper.SetDefault("user_manager_url", "http://user-manager:8111")
+	return clients.NewUserManagerClient(viper.GetString("user_manager_url"))
 }

@@ -1,0 +1,20 @@
+FROM debian:sid-slim
+
+RUN apt-get update && apt-get install -y wget protobuf-compiler unzip
+RUN wget https://github.com/google/protobuf/releases/download/v3.4.0/protoc-3.4.0-linux-x86_64.zip -O/tmp/protoc.zip && \
+    unzip -o /tmp/protoc.zip -x readme.txt -d /usr && rm /tmp/protoc.zip
+
+RUN apt-get install -y python3-pip
+RUN python3 -m pip install --upgrade pip && \
+	python3 -m pip install grpcio grpcio-tools
+
+RUN apt-get install -y golang-1.9 git
+ENV GOPATH=/src/go \
+	GOROOT=/usr/lib/go-1.9 \
+	PATH=/src/go/bin:/usr/lib/go-1.9/bin:${PATH}
+RUN go get -v -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway \
+	github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger \
+	github.com/golang/protobuf/protoc-gen-go \
+	github.com/favadi/protoc-go-inject-tag \
+	github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
+

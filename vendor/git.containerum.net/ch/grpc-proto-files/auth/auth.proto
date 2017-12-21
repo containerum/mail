@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+import "common/uuid.proto";
+import "auth/auth_types.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "git.containerum.net/ch/grpc-proto-files/auth";
+
+// The Auth API project is an OAuth authentication server that is used to authenticate users.
+service Auth {
+    rpc CreateToken (CreateTokenRequest) returns (CreateTokenResponse) {} // Makes access and refresh token for user, and save it In-Memory DB.
+    rpc CheckToken (CheckTokenRequest) returns (CheckTokenResponse) {} // Checks JWT token, user ip and return user access data.
+    rpc ExtendToken (ExtendTokenRequest) returns (ExtendTokenResponse) {} // Check refresh_token, user agent and fingerprint. If it's correct returns new extended access and refresh token. Old access and refresh token become inactive.
+    rpc UpdateAccess (UpdateAccessRequest) returns (google.protobuf.Empty) {} // Rewrite all access in token for user, if token has rw-access true.
+    rpc GetUserTokens (GetUserTokensRequest) returns (GetUserTokensResponse) {} // Returns all active User-Agent's, IP's and times. Filtered by user active refresh token.
+    rpc DeleteToken (DeleteTokenRequest) returns (google.protobuf.Empty) {} // Delete user access and refresh token by token id.
+    rpc DeleteUserTokens (DeleteUserTokensRequest) returns (google.protobuf.Empty) {} // Delete all user access and refresh tokens by user id.
+}
+
+message CreateTokenRequest {
+    string user_agent = 1;
+    string fingerprint = 2;
+    UUID user_id = 3;
+    string user_ip = 4;
+    Role user_role = 5;
+    bool rw_access = 6;
+    ResourcesAccess access = 7;
+    UUID part_token_id = 8;
+}
+
+message CreateTokenResponse {
+    string access_token = 1;
+    string refresh_token = 2;
+}
+
+message CheckTokenRequest {
+    string access_token = 1;
+    string user_agent = 2;
+    string finger_print = 3;
+    string user_ip = 4;
+}
+
+message CheckTokenResponse {
+    ResourcesAccess access = 1;
+    UUID user_id = 2;
+    Role user_role = 3;
+    UUID token_id = 4;
+    UUID part_token_id = 5;
+}
+
+message ExtendTokenRequest {
+    string refresh_token = 1;
+    string fingerprint = 2;
+}
+
+message ExtendTokenResponse {
+    string access_token = 1;
+    string refresh_token = 2;
+}
+
+message UpdateAccessRequest {
+    UUID user_id = 1;
+}
+
+message GetUserTokensRequest {
+    UUID user_id = 1;
+}
+
+message GetUserTokensResponse {
+    repeated StoredTokenForUser tokens = 1;
+}
+
+message DeleteTokenRequest {
+    UUID token_id = 1;
+    UUID user_id = 2;
+}
+
+message DeleteUserTokensRequest {
+    UUID user_id = 1;
+}
