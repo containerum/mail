@@ -6,13 +6,13 @@ type Recipient struct {
 	ID        string            `json:"id" binding:"required,uuid4"`
 	Name      string            `json:"name" binding:"required"`
 	Email     string            `json:"email" binding:"required,email"`
-	Variables map[string]string `json:"variables" binding:"required"`
+	Variables map[string]string `json:"variables"`
 }
 
 type SendRequest struct {
-	Delay   int `json:"delay" binding:"required,min=0"` // in minutes
+	Delay   int `json:"delay" binding:"min=0"` // in minutes
 	Message struct {
-		CommonVariables map[string]string `json:"common_variables" binding:"required"`
+		CommonVariables map[string]string `json:"common_variables"`
 		Recipients      []Recipient       `json:"recipient_data" binding:"required"`
 	} `json:"message" binding:"required"`
 }
