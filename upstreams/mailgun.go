@@ -43,9 +43,9 @@ func (mg *Mailgun) executeTemplate(tmpl *template.Template, recipient *Recipient
 		tmplData[k] = v
 	}
 	e := mg.log.WithField("recipient", recipient.Email).WithFields(tmplData)
-	e.Debug("Executing template")
+	e.Debugln("Executing template")
 	if err := tmpl.Execute(&buf, tmplData); err != nil {
-		e.WithError(err).Error("Execute template failed")
+		e.WithError(err).Errorln("Execute template failed")
 		return "", err
 	}
 	return buf.String(), nil
@@ -89,15 +89,15 @@ func (mg *Mailgun) statusCollector(ch chan SendStatus, statuses *[]SendStatus) {
 }
 
 func (mg *Mailgun) parseTemplate(templateName string, tsv *storages.TemplateStorageValue) (tmpl *template.Template, err error) {
-	mg.log.Debug("Parsing template ", templateName)
+	mg.log.Debugln("Parsing template ", templateName)
 	templateText, err := base64.StdEncoding.DecodeString(tsv.Data)
 	if err != nil {
-		mg.log.WithError(err).Error("Template data decode failed")
+		mg.log.WithError(err).Errorln("Template data decode failed")
 		return nil, err
 	}
 	tmpl, err = template.New(templateName).Parse(string(templateText))
 	if err != nil {
-		mg.log.WithError(err).Error("Template parse failed")
+		mg.log.WithError(err).Errorln("Template parse failed")
 	}
 	return tmpl, err
 }
@@ -132,11 +132,11 @@ func (mg *Mailgun) Send(templateName string, tsv *storages.TemplateStorageValue,
 		go func(msg *mailgun.Message, recipient Recipient, text string) {
 			status, id, err := mg.api.Send(msg)
 			if err != nil {
-				mg.log.WithError(err).Error("Message send failed")
+				mg.log.WithError(err).Errorln("Message send failed")
 				errChan <- err
 				return
 			}
-			mg.log.WithField("status", status).WithField("id", id).Info("Message sent")
+			mg.log.WithField("status", status).WithField("id", id).Infoln("Message sent")
 			statusChan <- SendStatus{
 				RecipientID:  recipient.ID,
 				TemplateName: templateName,
@@ -177,10 +177,10 @@ func (mg *Mailgun) SimpleSend(templateName string, tsv *storages.TemplateStorage
 	msg := mg.constructMessage(text, tsv.Subject, recipient.Email, 0)
 	s, id, err := mg.api.Send(msg)
 	if err != nil {
-		mg.log.WithError(err).Error("Message send failed")
+		mg.log.WithError(err).Errorln("Message send failed")
 		return nil, err
 	}
-	mg.log.WithField("status", s).WithField("id", id).Info("Message sent")
+	mg.log.WithField("status", s).WithField("id", id).Infoln("Message sent")
 
 	status = &SendStatus{
 		RecipientID:  recipient.ID,

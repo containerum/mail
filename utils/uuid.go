@@ -11,7 +11,7 @@ func NewUUID() string {
 	b := make([]byte, 16)
 	_, err := rand.Read(b)
 	if err != nil {
-		logrus.WithField("component", "uuid").WithError(err).Error("Generate uuid failed")
+		logrus.WithField("component", "uuid").WithError(err).Errorln("Generate uuid failed")
 		return ""
 	}
 
