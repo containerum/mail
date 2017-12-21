@@ -5,7 +5,6 @@ import (
 
 	"git.containerum.net/ch/mail-templater/upstreams"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
 )
 
 type simpleSendRequest struct {
@@ -20,7 +19,7 @@ type simpleSendResponse struct {
 
 func simpleSendHandler(ctx *gin.Context) {
 	var request simpleSendRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		sendValidationError(ctx, err)
 		return

@@ -5,7 +5,6 @@ import (
 
 	"git.containerum.net/ch/mail-templater/upstreams"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
 )
 
 type TemplateCreateRequest struct {
@@ -41,7 +40,7 @@ type TemplatesDeleteResponse struct {
 
 func templateCreateHandler(ctx *gin.Context) {
 	var request TemplateCreateRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		sendValidationError(ctx, err)
 		return
@@ -60,7 +59,7 @@ func templateCreateHandler(ctx *gin.Context) {
 
 func templateUpdateHandler(ctx *gin.Context) {
 	var request TemplateUpdateRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		sendValidationError(ctx, err)
 		return
@@ -126,7 +125,7 @@ func templateSendHandler(ctx *gin.Context) {
 	name := ctx.Param("name")
 	version := ctx.Query("version")
 	var request upstreams.SendRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		sendValidationError(ctx, err)
 		return

@@ -70,8 +70,8 @@
 [[projects]]
   branch = "master"
   name = "github.com/gin-gonic/gin"
-  packages = [".","binding","render"]
-  revision = "7180f2ba62d6aa9c81fafbac409a07ebeaa26fff"
+  packages = [".","binding","json","render"]
+  revision = "a816f9e9dbf820d7d01e8d363539da976fb8aa40"
 
 [[projects]]
   branch = "master"
