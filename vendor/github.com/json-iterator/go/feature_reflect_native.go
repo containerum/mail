@@ -32,7 +32,9 @@ type intCodec struct {
 }
 
 func (codec *intCodec) Decode(ptr unsafe.Pointer, iter *Iterator) {
-	*((*int)(ptr)) = iter.ReadInt()
+	if !iter.ReadNil() {
+		*((*int)(ptr)) = iter.ReadInt()
+	}
 }
 
 func (codec *intCodec) Encode(ptr unsafe.Pointer, stream *Stream) {
@@ -51,7 +53,9 @@ type uintptrCodec struct {
 }
 
 func (codec *uintptrCodec) Decode(ptr unsafe.Pointer, iter *Iterator) {
-	*((*uintptr)(ptr)) = uintptr(iter.ReadUint64())
+	if !iter.ReadNil() {
+		*((*uintptr)(ptr)) = uintptr(iter.ReadUint64())
+	}
 }
 
 func (codec *uintptrCodec) Encode(ptr unsafe.Pointer, stream *Stream) {
@@ -70,7 +74,9 @@ type int8Codec struct {
 }
 
 func (codec *int8Codec) Decode(ptr unsafe.Pointer, iter *Iterator) {
-	*((*int8)(ptr)) = iter.ReadInt8()
+	if !iter.ReadNil() {
+		*((*int8)(ptr)) = iter.ReadInt8()
+	}
 }
 
 func (codec *int8Codec) Encode(ptr unsafe.Pointer, stream *Stream) {
@@ -89,7 +95,9 @@ type int16Codec struct {
 }
 
 func (codec *int16Codec) Decode(ptr unsafe.Pointer, iter *Iterator) {
-	*((*int16)(ptr)) = iter.ReadInt16()
+	if !iter.ReadNil() {
+		*((*int16)(ptr)) = iter.ReadInt16()
+	}
 }
 
 func (codec *int16Codec) Encode(ptr unsafe.Pointer, stream *Stream) {
@@ -108,7 +116,9 @@ type int32Codec struct {
 }
 
 func (codec *int32Codec) Decode(ptr unsafe.Pointer, iter *Iterator) {
-	*((*int32)(ptr)) = iter.ReadInt32()
+	if !iter.ReadNil() {
+		*((*int32)(ptr)) = iter.ReadInt32()
+	}
 }
 
 func (codec *int32Codec) Encode(ptr unsafe.Pointer, stream *Stream) {
@@ -127,7 +137,9 @@ type int64Codec struct {
 }
 
 func (codec *int64Codec) Decode(ptr unsafe.Pointer, iter *Iterator) {
-	*((*int64)(ptr)) = iter.ReadInt64()
+	if !iter.ReadNil() {
+		*((*int64)(ptr)) = iter.ReadInt64()
+	}
 }
 
 func (codec *int64Codec) Encode(ptr unsafe.Pointer, stream *Stream) {
@@ -146,7 +158,10 @@ type uintCodec struct {
 }
 
 func (codec *uintCodec) Decode(ptr unsafe.Pointer, iter *Iterator) {
-	*((*uint)(ptr)) = iter.ReadUint()
+	if !iter.ReadNil() {
+		*((*uint)(ptr)) = iter.ReadUint()
+		return
+	}
 }
 
 func (codec *uintCodec) Encode(ptr unsafe.Pointer, stream *Stream) {
@@ -165,7 +180,9 @@ type uint8Codec struct {
 }
 
 func (codec *uint8Codec) Decode(ptr unsafe.Pointer, iter *Iterator) {
-	*((*uint8)(ptr)) = iter.ReadUint8()
+	if !iter.ReadNil() {
+		*((*uint8)(ptr)) = iter.ReadUint8()
+	}
 }
 
 func (codec *uint8Codec) Encode(ptr unsafe.Pointer, stream *Stream) {
@@ -184,7 +201,9 @@ type uint16Codec struct {
 }
 
 func (codec *uint16Codec) Decode(ptr unsafe.Pointer, iter *Iterator) {
-	*((*uint16)(ptr)) = iter.ReadUint16()
+	if !iter.ReadNil() {
+		*((*uint16)(ptr)) = iter.ReadUint16()
+	}
 }
 
 func (codec *uint16Codec) Encode(ptr unsafe.Pointer, stream *Stream) {
@@ -203,7 +222,9 @@ type uint32Codec struct {
 }
 
 func (codec *uint32Codec) Decode(ptr unsafe.Pointer, iter *Iterator) {
-	*((*uint32)(ptr)) = iter.ReadUint32()
+	if !iter.ReadNil() {
+		*((*uint32)(ptr)) = iter.ReadUint32()
+	}
 }
 
 func (codec *uint32Codec) Encode(ptr unsafe.Pointer, stream *Stream) {
@@ -222,7 +243,9 @@ type uint64Codec struct {
 }
 
 func (codec *uint64Codec) Decode(ptr unsafe.Pointer, iter *Iterator) {
-	*((*uint64)(ptr)) = iter.ReadUint64()
+	if !iter.ReadNil() {
+		*((*uint64)(ptr)) = iter.ReadUint64()
+	}
 }
 
 func (codec *uint64Codec) Encode(ptr unsafe.Pointer, stream *Stream) {
@@ -241,7 +264,9 @@ type float32Codec struct {
 }
 
 func (codec *float32Codec) Decode(ptr unsafe.Pointer, iter *Iterator) {
-	*((*float32)(ptr)) = iter.ReadFloat32()
+	if !iter.ReadNil() {
+		*((*float32)(ptr)) = iter.ReadFloat32()
+	}
 }
 
 func (codec *float32Codec) Encode(ptr unsafe.Pointer, stream *Stream) {
@@ -260,7 +285,9 @@ type float64Codec struct {
 }
 
 func (codec *float64Codec) Decode(ptr unsafe.Pointer, iter *Iterator) {
-	*((*float64)(ptr)) = iter.ReadFloat64()
+	if !iter.ReadNil() {
+		*((*float64)(ptr)) = iter.ReadFloat64()
+	}
 }
 
 func (codec *float64Codec) Encode(ptr unsafe.Pointer, stream *Stream) {
@@ -279,7 +306,9 @@ type boolCodec struct {
 }
 
 func (codec *boolCodec) Decode(ptr unsafe.Pointer, iter *Iterator) {
-	*((*bool)(ptr)) = iter.ReadBool()
+	if !iter.ReadNil() {
+		*((*bool)(ptr)) = iter.ReadBool()
+	}
 }
 
 func (codec *boolCodec) Encode(ptr unsafe.Pointer, stream *Stream) {
@@ -298,7 +327,42 @@ type emptyInterfaceCodec struct {
 }
 
 func (codec *emptyInterfaceCodec) Decode(ptr unsafe.Pointer, iter *Iterator) {
-	*((*interface{})(ptr)) = iter.Read()
+	existing := *((*interface{})(ptr))
+
+	// Checking for both typed and untyped nil pointers.
+	if existing != nil &&
+		reflect.TypeOf(existing).Kind() == reflect.Ptr &&
+		!reflect.ValueOf(existing).IsNil() {
+
+		var ptrToExisting interface{}
+		for {
+			elem := reflect.ValueOf(existing).Elem()
+			if elem.Kind() != reflect.Ptr || elem.IsNil() {
+				break
+			}
+			ptrToExisting = existing
+			existing = elem.Interface()
+		}
+
+		if iter.ReadNil() {
+			if ptrToExisting != nil {
+				nilPtr := reflect.Zero(reflect.TypeOf(ptrToExisting).Elem())
+				reflect.ValueOf(ptrToExisting).Elem().Set(nilPtr)
+			} else {
+				*((*interface{})(ptr)) = nil
+			}
+		} else {
+			iter.ReadVal(existing)
+		}
+
+		return
+	}
+
+	if iter.ReadNil() {
+		*((*interface{})(ptr)) = nil
+	} else {
+		*((*interface{})(ptr)) = iter.Read()
+	}
 }
 
 func (codec *emptyInterfaceCodec) Encode(ptr unsafe.Pointer, stream *Stream) {
@@ -310,7 +374,8 @@ func (codec *emptyInterfaceCodec) EncodeInterface(val interface{}, stream *Strea
 }
 
 func (codec *emptyInterfaceCodec) IsEmpty(ptr unsafe.Pointer) bool {
-	return ptr == nil
+	emptyInterface := (*emptyInterface)(ptr)
+	return emptyInterface.typ == nil
 }
 
 type nonEmptyInterfaceCodec struct {
@@ -327,15 +392,20 @@ func (codec *nonEmptyInterfaceCodec) Decode(ptr unsafe.Pointer, iter *Iterator) 
 	e.typ = nonEmptyInterface.itab.typ
 	e.word = nonEmptyInterface.word
 	iter.ReadVal(&i)
+	if e.word == nil {
+		nonEmptyInterface.itab = nil
+	}
 	nonEmptyInterface.word = e.word
 }
 
 func (codec *nonEmptyInterfaceCodec) Encode(ptr unsafe.Pointer, stream *Stream) {
 	nonEmptyInterface := (*nonEmptyInterface)(ptr)
 	var i interface{}
-	e := (*emptyInterface)(unsafe.Pointer(&i))
-	e.typ = nonEmptyInterface.itab.typ
-	e.word = nonEmptyInterface.word
+	if nonEmptyInterface.itab != nil {
+		e := (*emptyInterface)(unsafe.Pointer(&i))
+		e.typ = nonEmptyInterface.itab.typ
+		e.word = nonEmptyInterface.word
+	}
 	stream.WriteVal(i)
 }
 
@@ -371,7 +441,15 @@ type jsonNumberCodec struct {
 }
 
 func (codec *jsonNumberCodec) Decode(ptr unsafe.Pointer, iter *Iterator) {
-	*((*json.Number)(ptr)) = json.Number([]byte(iter.readNumberAsString()))
+	switch iter.WhatIsNext() {
+	case StringValue:
+		*((*json.Number)(ptr)) = json.Number(iter.ReadString())
+	case NilValue:
+		iter.skipFourBytes('n', 'u', 'l', 'l')
+		*((*json.Number)(ptr)) = ""
+	default:
+		*((*json.Number)(ptr)) = json.Number([]byte(iter.readNumberAsString()))
+	}
 }
 
 func (codec *jsonNumberCodec) Encode(ptr unsafe.Pointer, stream *Stream) {
@@ -384,6 +462,33 @@ func (codec *jsonNumberCodec) EncodeInterface(val interface{}, stream *Stream) {
 
 func (codec *jsonNumberCodec) IsEmpty(ptr unsafe.Pointer) bool {
 	return len(*((*json.Number)(ptr))) == 0
+}
+
+type jsoniterNumberCodec struct {
+}
+
+func (codec *jsoniterNumberCodec) Decode(ptr unsafe.Pointer, iter *Iterator) {
+	switch iter.WhatIsNext() {
+	case StringValue:
+		*((*Number)(ptr)) = Number(iter.ReadString())
+	case NilValue:
+		iter.skipFourBytes('n', 'u', 'l', 'l')
+		*((*Number)(ptr)) = ""
+	default:
+		*((*Number)(ptr)) = Number([]byte(iter.readNumberAsString()))
+	}
+}
+
+func (codec *jsoniterNumberCodec) Encode(ptr unsafe.Pointer, stream *Stream) {
+	stream.WriteRaw(string(*((*Number)(ptr))))
+}
+
+func (codec *jsoniterNumberCodec) EncodeInterface(val interface{}, stream *Stream) {
+	stream.WriteRaw(string(val.(Number)))
+}
+
+func (codec *jsoniterNumberCodec) IsEmpty(ptr unsafe.Pointer) bool {
+	return len(*((*Number)(ptr))) == 0
 }
 
 type jsonRawMessageCodec struct {
@@ -425,7 +530,7 @@ func (codec *jsoniterRawMessageCodec) IsEmpty(ptr unsafe.Pointer) bool {
 }
 
 type base64Codec struct {
-	actualType reflect.Type
+	sliceDecoder ValDecoder
 }
 
 func (codec *base64Codec) Decode(ptr unsafe.Pointer, iter *Iterator) {
@@ -436,21 +541,28 @@ func (codec *base64Codec) Decode(ptr unsafe.Pointer, iter *Iterator) {
 		ptrSlice.Data = nil
 		return
 	}
-	encoding := base64.StdEncoding
-	src := iter.SkipAndReturnBytes()
-	src = src[1 : len(src)-1]
-	decodedLen := encoding.DecodedLen(len(src))
-	dst := make([]byte, decodedLen)
-	len, err := encoding.Decode(dst, src)
-	if err != nil {
-		iter.ReportError("decode base64", err.Error())
-	} else {
-		dst = dst[:len]
-		dstSlice := (*sliceHeader)(unsafe.Pointer(&dst))
-		ptrSlice := (*sliceHeader)(ptr)
-		ptrSlice.Data = dstSlice.Data
-		ptrSlice.Cap = dstSlice.Cap
-		ptrSlice.Len = dstSlice.Len
+	switch iter.WhatIsNext() {
+	case StringValue:
+		encoding := base64.StdEncoding
+		src := iter.SkipAndReturnBytes()
+		src = src[1 : len(src)-1]
+		decodedLen := encoding.DecodedLen(len(src))
+		dst := make([]byte, decodedLen)
+		len, err := encoding.Decode(dst, src)
+		if err != nil {
+			iter.ReportError("decode base64", err.Error())
+		} else {
+			dst = dst[:len]
+			dstSlice := (*sliceHeader)(unsafe.Pointer(&dst))
+			ptrSlice := (*sliceHeader)(ptr)
+			ptrSlice.Data = dstSlice.Data
+			ptrSlice.Cap = dstSlice.Cap
+			ptrSlice.Len = dstSlice.Len
+		}
+	case ArrayValue:
+		codec.sliceDecoder.Decode(ptr, iter)
+	default:
+		iter.ReportError("base64Codec", "invalid input")
 	}
 }
 
@@ -496,7 +608,7 @@ type stringModeNumberDecoder struct {
 func (decoder *stringModeNumberDecoder) Decode(ptr unsafe.Pointer, iter *Iterator) {
 	c := iter.nextToken()
 	if c != '"' {
-		iter.ReportError("stringModeNumberDecoder", `expect "`)
+		iter.ReportError("stringModeNumberDecoder", `expect ", but found `+string([]byte{c}))
 		return
 	}
 	decoder.elemDecoder.Decode(ptr, iter)
@@ -505,7 +617,7 @@ func (decoder *stringModeNumberDecoder) Decode(ptr unsafe.Pointer, iter *Iterato
 	}
 	c = iter.readByte()
 	if c != '"' {
-		iter.ReportError("stringModeNumberDecoder", `expect "`)
+		iter.ReportError("stringModeNumberDecoder", `expect ", but found `+string([]byte{c}))
 		return
 	}
 }
@@ -570,7 +682,12 @@ func (encoder *marshalerEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
 	templateInterface := encoder.templateInterface
 	templateInterface.word = ptr
 	realInterface := (*interface{})(unsafe.Pointer(&templateInterface))
-	marshaler := (*realInterface).(json.Marshaler)
+	marshaler, ok := (*realInterface).(json.Marshaler)
+	if !ok {
+		stream.WriteVal(nil)
+		return
+	}
+
 	bytes, err := marshaler.MarshalJSON()
 	if err != nil {
 		stream.Error = err

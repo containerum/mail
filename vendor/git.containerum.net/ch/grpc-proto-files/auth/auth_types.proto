@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+import "common/uuid.proto";
+
+option go_package = "git.containerum.net/ch/grpc-proto-files/auth";
+
+enum Role {
+    USER = 0;
+}
+
+message StoredToken {
+    UUID token_id = 1;
+    string user_agent = 2;
+    string platform = 3;
+    string fingerprint = 4;
+    UUID user_id = 5;
+    Role user_role = 6;
+    string user_namespace = 7;
+    string user_volume = 8;
+    bool rw_access = 9;
+    string user_ip = 10;
+    UUID part_token_id = 11;
+}
+
+enum AccessLevel {
+    OWNER = 0;
+}
+
+message AccessObject {
+    string label = 1;
+    string id = 2;
+    AccessLevel access = 3;
+}
+
+message ResourcesAccess {
+    repeated AccessObject namespace = 1;
+    repeated AccessObject volume = 2;
+}
+
+message StoredTokenForUser {
+    UUID token_id = 1;
+    string user_agent = 2;
+    string ip = 3;
+    string created_at = 4;
+}

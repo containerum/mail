@@ -1,6 +1,7 @@
 package jsoniter
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/stretchr/testify/require"
 	"io"
@@ -25,7 +26,7 @@ func Test_missing_array_end(t *testing.T) {
 func Test_invalid_any(t *testing.T) {
 	should := require.New(t)
 	any := Get([]byte("[]"))
-	should.Equal(Invalid, any.Get(0.3).ValueType())
+	should.Equal(InvalidValue, any.Get(0.3).ValueType())
 	// is nil correct ?
 	should.Equal(nil, any.Get(0.3).GetInterface())
 
@@ -41,7 +42,7 @@ func Test_invalid_any(t *testing.T) {
 	should.Equal(float64(0), any.ToFloat64())
 	should.Equal("", any.ToString())
 
-	should.Equal(Invalid, any.Get(0.1).Get(1).ValueType())
+	should.Equal(InvalidValue, any.Get(0.1).Get(1).ValueType())
 }
 
 func Test_invalid_struct_input(t *testing.T) {
@@ -68,46 +69,70 @@ func Test_invalid_array_input(t *testing.T) {
 	should.NotNil(Unmarshal(input, &obj))
 }
 
-func Test_double_negative(t *testing.T) {
-	should := require.New(t)
-	var v interface{}
-	should.NotNil(json.Unmarshal([]byte(`--2`), &v))
-	var vFloat64 float64
-	should.NotNil(UnmarshalFromString(`--2`, &vFloat64))
-	var vFloat32 float32
-	should.NotNil(UnmarshalFromString(`--2`, &vFloat32))
-	var vInt int
-	should.NotNil(UnmarshalFromString(`--2`, &vInt))
-	iter := ParseString(ConfigDefault, `--2`)
-	iter.Skip()
-	should.NotEqual(io.EOF, iter.Error)
-	should.NotNil(iter.Error)
+func Test_invalid_float(t *testing.T) {
+	inputs := []string{
+		`1.e1`, // dot without following digit
+		`1.`,   // dot can not be the last char
+		``,     // empty number
+		`01`,   // extra leading zero
+		`-`,    // negative without digit
+		`--`,   // double negative
+		`--2`,  // double negative
+	}
+	for _, input := range inputs {
+		t.Run(input, func(t *testing.T) {
+			should := require.New(t)
+			iter := ParseString(ConfigDefault, input+",")
+			iter.Skip()
+			should.NotEqual(io.EOF, iter.Error)
+			should.NotNil(iter.Error)
+			v := float64(0)
+			should.NotNil(json.Unmarshal([]byte(input), &v))
+			iter = ParseString(ConfigDefault, input+",")
+			iter.ReadFloat64()
+			should.NotEqual(io.EOF, iter.Error)
+			should.NotNil(iter.Error)
+			iter = ParseString(ConfigDefault, input+",")
+			iter.ReadFloat32()
+			should.NotEqual(io.EOF, iter.Error)
+			should.NotNil(iter.Error)
+		})
+	}
 }
 
-func Test_leading_zero(t *testing.T) {
+func Test_chan(t *testing.T) {
+	t.Skip("do not support chan")
+
+	type TestObject struct {
+		MyChan  chan bool
+		MyField int
+	}
+
 	should := require.New(t)
-	var v interface{}
-	should.NotNil(json.Unmarshal([]byte(`01`), &v))
-	var vFloat64 float64
-	should.NotNil(UnmarshalFromString(`01`, &vFloat64))
-	var vFloat32 float32
-	should.NotNil(UnmarshalFromString(`01`, &vFloat32))
-	var vInt int
-	should.NotNil(UnmarshalFromString(`01`, &vInt))
-	iter := ParseString(ConfigDefault, `01,`)
-	iter.Skip()
-	should.NotEqual(io.EOF, iter.Error)
-	should.NotNil(iter.Error)
+	obj := TestObject{}
+	str, err := json.Marshal(obj)
+	should.Nil(err)
+	should.Equal(``, str)
 }
 
-func Test_empty_as_number(t *testing.T) {
+func Test_invalid_number(t *testing.T) {
+	type Message struct {
+		Number int `json:"number"`
+	}
+	obj := Message{}
+	decoder := ConfigCompatibleWithStandardLibrary.NewDecoder(bytes.NewBufferString(`{"number":"5"}`))
+	err := decoder.Decode(&obj)
+	invalidStr := err.Error()
+	result, err := ConfigCompatibleWithStandardLibrary.Marshal(invalidStr)
 	should := require.New(t)
-	iter := ParseString(ConfigDefault, `,`)
-	iter.ReadFloat64()
-	should.NotEqual(io.EOF, iter.Error)
-	should.NotNil(iter.Error)
-	iter = ParseString(ConfigDefault, `,`)
-	iter.ReadFloat32()
-	should.NotEqual(io.EOF, iter.Error)
-	should.NotNil(iter.Error)
+	should.Nil(err)
+	result2, err := json.Marshal(invalidStr)
+	should.Nil(err)
+	should.Equal(string(result2), string(result))
+}
+
+func Test_valid(t *testing.T) {
+	should := require.New(t)
+	should.True(Valid([]byte(`{}`)))
+	should.False(Valid([]byte(`{`)))
 }

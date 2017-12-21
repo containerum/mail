@@ -36,7 +36,7 @@ func NewMessagesStorage(file string, options *bolt.Options) (*MessagesStorage, e
 	log.Infof("Opening storage at %s with options %#v", file, options)
 	db, err := bolt.Open(file, os.ModePerm, options)
 	if err != nil {
-		log.WithError(err).Error("Failed to open storage")
+		log.WithError(err).Errorln("Failed to open storage")
 		return nil, err
 	}
 
@@ -46,7 +46,7 @@ func NewMessagesStorage(file string, options *bolt.Options) (*MessagesStorage, e
 		return err
 	})
 	if err != nil {
-		log.WithError(err).Error("Create bucket failed")
+		log.WithError(err).Errorln("Create bucket failed")
 		return nil, err
 	}
 
@@ -65,13 +65,13 @@ func (s *MessagesStorage) PutValue(id string, value *MessagesStorageValue) error
 	})
 	loge.Infof("Putting value")
 	return s.db.Update(func(tx *bolt.Tx) error {
-		loge.Debug("Get bucket")
+		loge.Debugln("Get bucket")
 		b := tx.Bucket([]byte(messagesStorageBucket))
 
-		loge.Debug("Marshal json")
+		loge.Debugln("Marshal json")
 		valueB, err := json.Marshal(value)
 		if err != nil {
-			loge.WithError(err).Error("Error marshalling value")
+			loge.WithError(err).Errorln("Error marshalling value")
 		}
 		return b.Put([]byte(id), valueB)
 	})
@@ -83,18 +83,18 @@ func (s *MessagesStorage) GetValue(id string) (*MessagesStorageValue, error) {
 	loge.Infof("Getting value")
 	var value MessagesStorageValue
 	err := s.db.View(func(tx *bolt.Tx) error {
-		loge.Debug("Get bucket")
+		loge.Debugln("Get bucket")
 		b := tx.Bucket([]byte(messagesStorageBucket))
 
-		loge.Debug("Extract value from storage")
+		loge.Debugln("Extract value from storage")
 		valueB := b.Get([]byte(id))
 		if valueB == nil {
-			loge.Info("Cannot find value")
+			loge.Infoln("Cannot find value")
 			return ErrMessageNotExists
 		}
 
 		if err := json.Unmarshal(valueB, &value); err != nil {
-			loge.WithError(err).Error("Value unmarshal failed")
+			loge.WithError(err).Errorln("Value unmarshal failed")
 			return err
 		}
 

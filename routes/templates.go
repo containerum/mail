@@ -5,43 +5,42 @@ import (
 
 	"git.containerum.net/ch/mail-templater/upstreams"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
 )
 
-type templateCreateRequest struct {
+type TemplateCreateRequest struct {
 	Name    string `json:"template_name" binding:"required"`
 	Version string `json:"template_version" binding:"required"`
 	Data    string `json:"template_data" binding:"required,base64"`
 	Subject string `json:"template_subject" binding:"required"`
 }
 
-type templateCreateResponse struct {
+type TemplateCreateResponse struct {
 	Name    string `json:"template_name"`
 	Version string `json:"template_version"`
 }
 
-type templateUpdateRequest struct {
+type TemplateUpdateRequest struct {
 	Data    string `json:"template_data" binding:"required,base64"`
 	Subject string `json:"template_subject" binding:"required"`
 }
 
-type templateUpdateResponse struct {
+type TemplateUpdateResponse struct {
 	Name    string `json:"template_name"`
 	Version string `json:"template_version"`
 }
 
-type templateDeleteResponse struct {
+type TemplateDeleteResponse struct {
 	Name    string `json:"template_name"`
 	Version string `json:"template_version"`
 }
 
-type templatesDeleteResponse struct {
+type TemplatesDeleteResponse struct {
 	Name string `json:"template_name"`
 }
 
 func templateCreateHandler(ctx *gin.Context) {
-	var request templateCreateRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	var request TemplateCreateRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		sendValidationError(ctx, err)
 		return
@@ -52,15 +51,15 @@ func templateCreateHandler(ctx *gin.Context) {
 		sendStorageError(ctx, err)
 		return
 	}
-	ctx.JSON(http.StatusCreated, &templateCreateResponse{
+	ctx.JSON(http.StatusCreated, &TemplateCreateResponse{
 		Name:    request.Name,
 		Version: request.Version,
 	})
 }
 
 func templateUpdateHandler(ctx *gin.Context) {
-	var request templateUpdateRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	var request TemplateUpdateRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		sendValidationError(ctx, err)
 		return
@@ -73,7 +72,7 @@ func templateUpdateHandler(ctx *gin.Context) {
 		sendStorageError(ctx, err)
 		return
 	}
-	ctx.JSON(http.StatusAccepted, &templateUpdateResponse{
+	ctx.JSON(http.StatusAccepted, &TemplateUpdateResponse{
 		Name:    name,
 		Version: version,
 	})
@@ -104,12 +103,12 @@ func templateDeleteHandler(ctx *gin.Context) {
 	var respObj interface{}
 	if !hasVersion { // if no "version" parameter specified, delete all versions
 		err = svc.TemplateStorage.DeleteTemplates(name)
-		respObj = &templatesDeleteResponse{
+		respObj = &TemplatesDeleteResponse{
 			Name: name,
 		}
 	} else {
 		err = svc.TemplateStorage.DeleteTemplate(name, version)
-		respObj = &templateDeleteResponse{
+		respObj = &TemplateDeleteResponse{
 			Name:    name,
 			Version: version,
 		}
@@ -126,7 +125,7 @@ func templateSendHandler(ctx *gin.Context) {
 	name := ctx.Param("name")
 	version := ctx.Query("version")
 	var request upstreams.SendRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		sendValidationError(ctx, err)
 		return

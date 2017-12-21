@@ -1,0 +1,149 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "auth/auth.proto",
+    "version": "version not set"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {},
+  "definitions": {
+    "AccessLevel": {
+      "type": "string",
+      "enum": [
+        "OWNER"
+      ],
+      "default": "OWNER"
+    },
+    "AccessObject": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "access": {
+          "$ref": "#/definitions/AccessLevel"
+        }
+      }
+    },
+    "CheckTokenResponse": {
+      "type": "object",
+      "properties": {
+        "access": {
+          "$ref": "#/definitions/ResourcesAccess"
+        },
+        "user_id": {
+          "$ref": "#/definitions/UUID"
+        },
+        "user_role": {
+          "$ref": "#/definitions/Role"
+        },
+        "token_id": {
+          "$ref": "#/definitions/UUID"
+        },
+        "part_token_id": {
+          "$ref": "#/definitions/UUID"
+        }
+      }
+    },
+    "CreateTokenResponse": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string"
+        },
+        "refresh_token": {
+          "type": "string"
+        }
+      }
+    },
+    "ExtendTokenResponse": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string"
+        },
+        "refresh_token": {
+          "type": "string"
+        }
+      }
+    },
+    "GetUserTokensResponse": {
+      "type": "object",
+      "properties": {
+        "tokens": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StoredTokenForUser"
+          }
+        }
+      }
+    },
+    "ResourcesAccess": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AccessObject"
+          }
+        },
+        "volume": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AccessObject"
+          }
+        }
+      }
+    },
+    "Role": {
+      "type": "string",
+      "enum": [
+        "USER"
+      ],
+      "default": "USER"
+    },
+    "StoredTokenForUser": {
+      "type": "object",
+      "properties": {
+        "token_id": {
+          "$ref": "#/definitions/UUID"
+        },
+        "user_agent": {
+          "type": "string"
+        },
+        "ip": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        }
+      }
+    },
+    "UUID": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string"
+        }
+      },
+      "title": "Represents UUID in standart format"
+    },
+    "protobufEmpty": {
+      "type": "object",
+      "description": "service Foo {\n      rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);\n    }\n\nThe JSON representation for `Empty` is empty JSON object `{}`.",
+      "title": "A generic empty message that you can re-use to avoid defining duplicated\nempty messages in your APIs. A typical example is to use it as the request\nor the response type of an API method. For instance:"
+    }
+  }
+}

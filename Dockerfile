@@ -29,6 +29,7 @@ ENV GIN_MODE=release \
     MG_URL=url \
     CH_MAIL_SENDER_NAME=containerum \
     CH_MAIL_SENDER_MAIL=support@containerum.com \
+    CH_MAIL_USER_MANAGER_URL=http://user-manager:8111 \
     CH_MAIL_LISTEN_ADDR=:7070
 VOLUME ["/storage"]
 ENTRYPOINT ["/mail-templater"]

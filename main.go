@@ -25,7 +25,7 @@ func main() {
 	exitOnErr(setupLogger())
 
 	app := gin.New()
-	app.Use(gin.RecoveryWithWriter(logrus.StandardLogger().WithField("component", "gin_recovery").WriterLevel(logrus.PanicLevel)))
+	app.Use(gin.RecoveryWithWriter(logrus.StandardLogger().WithField("component", "gin_recovery").WriterLevel(logrus.ErrorLevel)))
 	app.Use(ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true))
 
 	ts, err := getTemplatesStorage()
@@ -34,11 +34,13 @@ func main() {
 	exitOnErr(err)
 	us, err := getUpstream(ms)
 	exitOnErr(err)
+	um := getUserManagerClient()
 
 	routes.Setup(app, &routes.Services{
-		TemplateStorage: ts,
-		MessagesStorage: ms,
-		Upstream:        us,
+		TemplateStorage:   ts,
+		MessagesStorage:   ms,
+		Upstream:          us,
+		UserManagerClient: um,
 	})
 	exitOnErr(app.Run(getListenAddr()))
 }

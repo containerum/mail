@@ -1,4 +1,4 @@
-//+build !jsoniter-sloppy
+//+build !jsoniter_sloppy
 
 package jsoniter
 
@@ -21,12 +21,24 @@ func (iter *Iterator) trySkipNumber() bool {
 			if dotFound {
 				iter.ReportError("validateNumber", `more than one dot found in number`)
 				return true // already failed
-			} else {
-				dotFound = true
 			}
+			if i+1 == iter.tail {
+				return false
+			}
+			c = iter.buf[i+1]
+			switch c {
+			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+			default:
+				iter.ReportError("validateNumber", `missing digit after dot`)
+				return true // already failed
+			}
+			dotFound = true
 		default:
 			switch c {
 			case ',', ']', '}', ' ', '\t', '\n', '\r':
+				if iter.head == i {
+					return false // if - without following digits
+				}
 				iter.head = i
 				return true // must be valid
 			}
@@ -52,7 +64,7 @@ func (iter *Iterator) trySkipString() bool {
 		} else if c == '\\' {
 			return false
 		} else if c < ' ' {
-			iter.ReportError("ReadString",
+			iter.ReportError("trySkipString",
 				fmt.Sprintf(`invalid control character found: %d`, c))
 			return true // already failed
 		}
