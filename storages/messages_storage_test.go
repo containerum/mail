@@ -7,6 +7,7 @@ import (
 
 	"time"
 
+	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"github.com/sirupsen/logrus"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -19,7 +20,7 @@ func TestMessagesStorage(t *testing.T) {
 		storage, err := NewMessagesStorage(testMessagesDB, nil)
 		So(err, ShouldBeNil)
 
-		testValue := &MessagesStorageValue{
+		testValue := &mttypes.MessagesStorageValue{
 			UserId:       "user",
 			TemplateName: "template",
 			Variables:    map[string]string{"a": "1", "b": "2"},
@@ -33,7 +34,7 @@ func TestMessagesStorage(t *testing.T) {
 		So(v, ShouldResemble, testValue)
 
 		_, err = storage.GetValue("blah")
-		So(err, ShouldEqual, ErrMessageNotExists)
+		So(err, ShouldEqual, mttypes.ErrMessageNotExists)
 
 		// cleanup
 		So(storage.Close(), ShouldBeNil)

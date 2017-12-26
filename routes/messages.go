@@ -3,13 +3,13 @@ package routes
 import (
 	"net/http"
 
-	"git.containerum.net/ch/mail-templater/storages"
+	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"github.com/gin-gonic/gin"
 )
 
-type messageGetResponse struct {
+type MessageGetResponse struct {
 	Id string `json:"id"`
-	*storages.MessagesStorageValue
+	*mttypes.MessagesStorageValue
 }
 
 func messageGetHandler(ctx *gin.Context) {
@@ -20,7 +20,7 @@ func messageGetHandler(ctx *gin.Context) {
 		sendStorageError(ctx, err)
 		return
 	}
-	ctx.JSON(http.StatusOK, messageGetResponse{
+	ctx.JSON(http.StatusOK, MessageGetResponse{
 		Id:                   id,
 		MessagesStorageValue: v,
 	})

@@ -45,4 +45,4 @@
 
 [[constraint]]
   branch = "master"
-  name = "git.containerum.net/ch/user-manager"
+  name = "git.containerum.net/ch/json-types"

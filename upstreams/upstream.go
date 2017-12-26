@@ -1,33 +1,10 @@
 package upstreams
 
-import "git.containerum.net/ch/mail-templater/storages"
-
-type Recipient struct {
-	ID        string            `json:"id" binding:"required,uuid4"`
-	Name      string            `json:"name" binding:"required"`
-	Email     string            `json:"email" binding:"required,email"`
-	Variables map[string]string `json:"variables"`
-}
-
-type SendRequest struct {
-	Delay   int `json:"delay" binding:"min=0"` // in minutes
-	Message struct {
-		CommonVariables map[string]string `json:"common_variables"`
-		Recipients      []Recipient       `json:"recipient_data" binding:"required"`
-	} `json:"message" binding:"required"`
-}
-
-type SendStatus struct {
-	RecipientID  string `json:"recipient_id"`
-	TemplateName string `json:"template_name"`
-	Status       string `json:"status"`
-}
-
-type SendResponse struct {
-	Statuses []SendStatus `json:"email_list"`
-}
+import (
+	mttypes "git.containerum.net/ch/json-types/mail-templater"
+)
 
 type Upstream interface {
-	Send(templateName string, tsv *storages.TemplateStorageValue, request *SendRequest) (resp *SendResponse, err error)
-	SimpleSend(templateName string, tsv *storages.TemplateStorageValue, recipient *Recipient) (status *SendStatus, err error)
+	Send(templateName string, tsv *mttypes.TemplateStorageValue, request *mttypes.SendRequest) (resp *mttypes.SendResponse, err error)
+	SimpleSend(templateName string, tsv *mttypes.TemplateStorageValue, recipient *mttypes.Recipient) (status *mttypes.SendStatus, err error)
 }
