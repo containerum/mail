@@ -10,6 +10,7 @@ import (
 
 	"encoding/base64"
 
+	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"git.containerum.net/ch/mail-templater/storages"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/mailgun/mailgun-go.v1"
@@ -33,7 +34,7 @@ func NewMailgun(conn mailgun.Mailgun, msgStorage *storages.MessagesStorage, send
 	}
 }
 
-func (mg *Mailgun) executeTemplate(tmpl *template.Template, recipient *Recipient, commonVars map[string]string) (string, error) {
+func (mg *Mailgun) executeTemplate(tmpl *template.Template, recipient *mttypes.Recipient, commonVars map[string]string) (string, error) {
 	var buf bytes.Buffer
 	tmplData := make(map[string]interface{})
 	for k, v := range commonVars {
@@ -77,7 +78,7 @@ func (mg *Mailgun) errCollector(ch chan error, errs *[]string) {
 	}()
 }
 
-func (mg *Mailgun) statusCollector(ch chan SendStatus, statuses *[]SendStatus) {
+func (mg *Mailgun) statusCollector(ch chan mttypes.SendStatus, statuses *[]mttypes.SendStatus) {
 	go func() {
 		mu := &sync.Mutex{}
 		for s := range ch {
@@ -88,7 +89,7 @@ func (mg *Mailgun) statusCollector(ch chan SendStatus, statuses *[]SendStatus) {
 	}()
 }
 
-func (mg *Mailgun) parseTemplate(templateName string, tsv *storages.TemplateStorageValue) (tmpl *template.Template, err error) {
+func (mg *Mailgun) parseTemplate(templateName string, tsv *mttypes.TemplateStorageValue) (tmpl *template.Template, err error) {
 	mg.log.Debugln("Parsing template ", templateName)
 	templateText, err := base64.StdEncoding.DecodeString(tsv.Data)
 	if err != nil {
@@ -102,20 +103,20 @@ func (mg *Mailgun) parseTemplate(templateName string, tsv *storages.TemplateStor
 	return tmpl, err
 }
 
-func (mg *Mailgun) Send(templateName string, tsv *storages.TemplateStorageValue, request *SendRequest) (resp *SendResponse, err error) {
+func (mg *Mailgun) Send(templateName string, tsv *mttypes.TemplateStorageValue, request *mttypes.SendRequest) (resp *mttypes.SendResponse, err error) {
 
 	tmpl, err := mg.parseTemplate(templateName, tsv)
 	if err != nil {
 		return nil, err
 	}
 
-	resp = &SendResponse{}
+	resp = &mttypes.SendResponse{}
 
 	var errs []string
 	errChan := make(chan error)
 	mg.errCollector(errChan, &errs)
 
-	statusChan := make(chan SendStatus)
+	statusChan := make(chan mttypes.SendStatus)
 	mg.statusCollector(statusChan, &resp.Statuses)
 
 	wg := &sync.WaitGroup{}
@@ -129,7 +130,7 @@ func (mg *Mailgun) Send(templateName string, tsv *storages.TemplateStorageValue,
 
 		msg := mg.constructMessage(text, tsv.Subject, recipient.Email, request.Delay)
 
-		go func(msg *mailgun.Message, recipient Recipient, text string) {
+		go func(msg *mailgun.Message, recipient mttypes.Recipient, text string) {
 			status, id, err := mg.api.Send(msg)
 			if err != nil {
 				mg.log.WithError(err).Errorln("Message send failed")
@@ -137,12 +138,12 @@ func (mg *Mailgun) Send(templateName string, tsv *storages.TemplateStorageValue,
 				return
 			}
 			mg.log.WithField("status", status).WithField("id", id).Infoln("Message sent")
-			statusChan <- SendStatus{
+			statusChan <- mttypes.SendStatus{
 				RecipientID:  recipient.ID,
 				TemplateName: templateName,
 				Status:       status,
 			}
-			errChan <- mg.msgStorage.PutValue(id, &storages.MessagesStorageValue{
+			errChan <- mg.msgStorage.PutValue(id, &mttypes.MessagesStorageValue{
 				UserId:       recipient.ID,
 				TemplateName: templateName,
 				Variables:    recipient.Variables,
@@ -163,7 +164,7 @@ func (mg *Mailgun) Send(templateName string, tsv *storages.TemplateStorageValue,
 	return resp, err
 }
 
-func (mg *Mailgun) SimpleSend(templateName string, tsv *storages.TemplateStorageValue, recipient *Recipient) (status *SendStatus, err error) {
+func (mg *Mailgun) SimpleSend(templateName string, tsv *mttypes.TemplateStorageValue, recipient *mttypes.Recipient) (status *mttypes.SendStatus, err error) {
 	tmpl, err := mg.parseTemplate(templateName, tsv)
 	if err != nil {
 		return nil, err
@@ -182,13 +183,13 @@ func (mg *Mailgun) SimpleSend(templateName string, tsv *storages.TemplateStorage
 	}
 	mg.log.WithField("status", s).WithField("id", id).Infoln("Message sent")
 
-	status = &SendStatus{
+	status = &mttypes.SendStatus{
 		RecipientID:  recipient.ID,
 		TemplateName: templateName,
 		Status:       s,
 	}
 
-	err = mg.msgStorage.PutValue(id, &storages.MessagesStorageValue{
+	err = mg.msgStorage.PutValue(id, &mttypes.MessagesStorageValue{
 		UserId:       recipient.ID,
 		TemplateName: templateName,
 		Variables:    recipient.Variables,

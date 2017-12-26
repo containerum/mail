@@ -3,43 +3,12 @@ package routes
 import (
 	"net/http"
 
-	"git.containerum.net/ch/mail-templater/upstreams"
+	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"github.com/gin-gonic/gin"
 )
 
-type TemplateCreateRequest struct {
-	Name    string `json:"template_name" binding:"required"`
-	Version string `json:"template_version" binding:"required"`
-	Data    string `json:"template_data" binding:"required,base64"`
-	Subject string `json:"template_subject" binding:"required"`
-}
-
-type TemplateCreateResponse struct {
-	Name    string `json:"template_name"`
-	Version string `json:"template_version"`
-}
-
-type TemplateUpdateRequest struct {
-	Data    string `json:"template_data" binding:"required,base64"`
-	Subject string `json:"template_subject" binding:"required"`
-}
-
-type TemplateUpdateResponse struct {
-	Name    string `json:"template_name"`
-	Version string `json:"template_version"`
-}
-
-type TemplateDeleteResponse struct {
-	Name    string `json:"template_name"`
-	Version string `json:"template_version"`
-}
-
-type TemplatesDeleteResponse struct {
-	Name string `json:"template_name"`
-}
-
 func templateCreateHandler(ctx *gin.Context) {
-	var request TemplateCreateRequest
+	var request mttypes.TemplateCreateRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		sendValidationError(ctx, err)
@@ -51,14 +20,14 @@ func templateCreateHandler(ctx *gin.Context) {
 		sendStorageError(ctx, err)
 		return
 	}
-	ctx.JSON(http.StatusCreated, &TemplateCreateResponse{
+	ctx.JSON(http.StatusCreated, &mttypes.TemplateCreateResponse{
 		Name:    request.Name,
 		Version: request.Version,
 	})
 }
 
 func templateUpdateHandler(ctx *gin.Context) {
-	var request TemplateUpdateRequest
+	var request mttypes.TemplateUpdateRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		sendValidationError(ctx, err)
@@ -72,7 +41,7 @@ func templateUpdateHandler(ctx *gin.Context) {
 		sendStorageError(ctx, err)
 		return
 	}
-	ctx.JSON(http.StatusAccepted, &TemplateUpdateResponse{
+	ctx.JSON(http.StatusAccepted, &mttypes.TemplateUpdateResponse{
 		Name:    name,
 		Version: version,
 	})
@@ -103,12 +72,12 @@ func templateDeleteHandler(ctx *gin.Context) {
 	var respObj interface{}
 	if !hasVersion { // if no "version" parameter specified, delete all versions
 		err = svc.TemplateStorage.DeleteTemplates(name)
-		respObj = &TemplatesDeleteResponse{
+		respObj = &mttypes.TemplatesDeleteResponse{
 			Name: name,
 		}
 	} else {
 		err = svc.TemplateStorage.DeleteTemplate(name, version)
-		respObj = &TemplateDeleteResponse{
+		respObj = &mttypes.TemplateDeleteResponse{
 			Name:    name,
 			Version: version,
 		}
@@ -124,7 +93,7 @@ func templateDeleteHandler(ctx *gin.Context) {
 func templateSendHandler(ctx *gin.Context) {
 	name := ctx.Param("name")
 	version := ctx.Query("version")
-	var request upstreams.SendRequest
+	var request mttypes.SendRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		sendValidationError(ctx, err)

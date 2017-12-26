@@ -3,22 +3,22 @@ package routes
 import (
 	"net/http"
 
-	"git.containerum.net/ch/mail-templater/upstreams"
+	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"github.com/gin-gonic/gin"
 )
 
-type simpleSendRequest struct {
+type SimpleSendRequest struct {
 	Template  string            `json:"template" binding:"required"`
 	UserID    string            `json:"user_id" binding:"required,uuid4"`
 	Variables map[string]string `json:"variables"`
 }
 
-type simpleSendResponse struct {
+type SimpleSendResponse struct {
 	UserID string `json:"user_id"`
 }
 
 func simpleSendHandler(ctx *gin.Context) {
-	var request simpleSendRequest
+	var request SimpleSendRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		sendValidationError(ctx, err)
@@ -37,7 +37,7 @@ func simpleSendHandler(ctx *gin.Context) {
 		return
 	}
 
-	recipient := &upstreams.Recipient{
+	recipient := &mttypes.Recipient{
 		ID:    request.UserID,
 		Name:  info.Login,
 		Email: info.Login,
@@ -48,10 +48,10 @@ func simpleSendHandler(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	ctx.JSON(http.StatusOK, &simpleSendResponse{
+	ctx.JSON(http.StatusOK, &SimpleSendResponse{
 		UserID: status.RecipientID,
 	})
-	ctx.JSON(http.StatusOK, &simpleSendResponse{
+	ctx.JSON(http.StatusOK, &SimpleSendResponse{
 		UserID: request.UserID,
 	})
 }

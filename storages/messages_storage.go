@@ -3,10 +3,7 @@ package storages
 import (
 	"os"
 
-	"time"
-
-	"errors"
-
+	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"github.com/boltdb/bolt"
 	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
@@ -20,16 +17,6 @@ type MessagesStorage struct {
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 const messagesStorageBucket = "messages"
-
-type MessagesStorageValue struct {
-	UserId       string            `json:"user_id"`
-	TemplateName string            `json:"template_name"`
-	Variables    map[string]string `json:"variables,omitempty"`
-	CreatedAt    time.Time         `json:"created_at"` // UTC
-	Message      string            `json:"message"`    // base64
-}
-
-var ErrMessageNotExists = errors.New("message not exists")
 
 func NewMessagesStorage(file string, options *bolt.Options) (*MessagesStorage, error) {
 	log := logrus.WithField("component", "messages_storage")
@@ -58,7 +45,7 @@ func NewMessagesStorage(file string, options *bolt.Options) (*MessagesStorage, e
 
 // PutValue puts MessageStorageValue to storage.
 // If message with specified id already exists in storage it will be overwritten.
-func (s *MessagesStorage) PutValue(id string, value *MessagesStorageValue) error {
+func (s *MessagesStorage) PutValue(id string, value *mttypes.MessagesStorageValue) error {
 	loge := s.log.WithFields(logrus.Fields{
 		"id":    id,
 		"value": value,
@@ -78,10 +65,10 @@ func (s *MessagesStorage) PutValue(id string, value *MessagesStorageValue) error
 }
 
 // GetValue returns value by specified ID.
-func (s *MessagesStorage) GetValue(id string) (*MessagesStorageValue, error) {
+func (s *MessagesStorage) GetValue(id string) (*mttypes.MessagesStorageValue, error) {
 	loge := s.log.WithField("id", id)
 	loge.Infof("Getting value")
-	var value MessagesStorageValue
+	var value mttypes.MessagesStorageValue
 	err := s.db.View(func(tx *bolt.Tx) error {
 		loge.Debugln("Get bucket")
 		b := tx.Bucket([]byte(messagesStorageBucket))
@@ -90,7 +77,7 @@ func (s *MessagesStorage) GetValue(id string) (*MessagesStorageValue, error) {
 		valueB := b.Get([]byte(id))
 		if valueB == nil {
 			loge.Infoln("Cannot find value")
-			return ErrMessageNotExists
+			return mttypes.ErrMessageNotExists
 		}
 
 		if err := json.Unmarshal(valueB, &value); err != nil {

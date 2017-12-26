@@ -1,11 +1,11 @@
 package storages
 
 import (
-	"errors"
 	"os"
 
 	"time"
 
+	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"github.com/blang/semver"
 	"github.com/boltdb/bolt"
 	"github.com/sirupsen/logrus"
@@ -16,17 +16,6 @@ type TemplateStorage struct {
 	db  *bolt.DB
 	log *logrus.Entry
 }
-
-type TemplateStorageValue struct {
-	Data      string    `json:"data"`
-	Subject   string    `json:"template_subject"`
-	CreatedAt time.Time `json:"created_at"` // UTC
-}
-
-var (
-	ErrTemplateNotExists = errors.New("specified template not exists in storage")
-	ErrVersionNotExists  = errors.New("specified version not exists in storage")
-)
 
 func NewTemplateStorage(file string, options *bolt.Options) (*TemplateStorage, error) {
 	log := logrus.WithField("component", "template_storage")
@@ -58,7 +47,7 @@ func (s *TemplateStorage) PutTemplate(templateName, templateVersion, templateDat
 		}
 
 		loge.Debugln("Putting kv data")
-		value, _ := json.Marshal(&TemplateStorageValue{
+		value, _ := json.Marshal(&mttypes.TemplateStorageValue{
 			Data:      templateData,
 			CreatedAt: time.Now().UTC(),
 			Subject:   templateSubject,
@@ -73,27 +62,27 @@ func (s *TemplateStorage) PutTemplate(templateName, templateVersion, templateDat
 }
 
 // GetTemplate returns specified version of template.
-func (s *TemplateStorage) GetTemplate(templateName, templateVersion string) (*TemplateStorageValue, error) {
+func (s *TemplateStorage) GetTemplate(templateName, templateVersion string) (*mttypes.TemplateStorageValue, error) {
 	loge := s.log.WithFields(logrus.Fields{
 		"name":    templateName,
 		"version": templateVersion,
 	})
 	loge.Infoln("Trying to get template")
 
-	var templateValue TemplateStorageValue
+	var templateValue mttypes.TemplateStorageValue
 	err := s.db.View(func(tx *bolt.Tx) error {
 		loge.Debugln("Getting bucket")
 		b := tx.Bucket([]byte(templateName))
 		if b == nil {
 			loge.Infoln("Cannot find bucket")
-			return ErrTemplateNotExists
+			return mttypes.ErrTemplateNotExists
 		}
 
 		loge.Debugln("Getting value")
 		templateB := b.Get([]byte(templateVersion))
 		if templateB == nil {
 			loge.Infoln("Cannot find version")
-			return ErrVersionNotExists
+			return mttypes.ErrVersionNotExists
 		}
 		return json.Unmarshal(templateB, &templateValue)
 	})
@@ -102,11 +91,11 @@ func (s *TemplateStorage) GetTemplate(templateName, templateVersion string) (*Te
 }
 
 // GetLatestVersionTemplate returns latest version of template and it`s value using semver to compare versions.
-func (s *TemplateStorage) GetLatestVersionTemplate(templateName string) (string, *TemplateStorageValue, error) {
+func (s *TemplateStorage) GetLatestVersionTemplate(templateName string) (string, *mttypes.TemplateStorageValue, error) {
 	loge := s.log.WithField("name", templateName)
 	loge.Infoln("Trying to get latest version of template")
 
-	var templateValue TemplateStorageValue
+	var templateValue mttypes.TemplateStorageValue
 	var templateVersion string
 
 	err := s.db.View(func(tx *bolt.Tx) error {
@@ -114,7 +103,7 @@ func (s *TemplateStorage) GetLatestVersionTemplate(templateName string) (string,
 		b := tx.Bucket([]byte(templateName))
 		if b == nil {
 			loge.Infoln("Cannot find bucket")
-			return ErrTemplateNotExists
+			return mttypes.ErrTemplateNotExists
 		}
 
 		loge.Debugf("Iterating over bucket")
@@ -139,7 +128,7 @@ func (s *TemplateStorage) GetLatestVersionTemplate(templateName string) (string,
 		templateB := b.Get([]byte(templateVersion))
 		if templateB == nil {
 			loge.Infoln("Cannot find version")
-			return ErrVersionNotExists
+			return mttypes.ErrVersionNotExists
 		}
 		return json.Unmarshal(templateB, &templateValue)
 	})
@@ -148,23 +137,23 @@ func (s *TemplateStorage) GetLatestVersionTemplate(templateName string) (string,
 }
 
 // GetTemplates returns all versions of templates in map (key is version, value is template).
-func (s *TemplateStorage) GetTemplates(templateName string) (map[string]*TemplateStorageValue, error) {
+func (s *TemplateStorage) GetTemplates(templateName string) (map[string]*mttypes.TemplateStorageValue, error) {
 	loge := s.log.WithField("name", templateName)
 	loge.Infoln("Trying to get all versions of template")
 
-	templates := make(map[string]*TemplateStorageValue)
+	templates := make(map[string]*mttypes.TemplateStorageValue)
 	err := s.db.View(func(tx *bolt.Tx) error {
 		loge.Debugln("Getting bucket")
 		b := tx.Bucket([]byte(templateName))
 		if b == nil {
 			loge.Infoln("Cannot find bucket")
-			return ErrTemplateNotExists
+			return mttypes.ErrTemplateNotExists
 		}
 
 		loge.Debugf("Iterating over bucket")
 		err := b.ForEach(func(k, v []byte) error {
 			loge.Debugf("Handling version %s", k)
-			var value TemplateStorageValue
+			var value mttypes.TemplateStorageValue
 			err := json.Unmarshal(v, &value)
 			templates[string(k)] = &value
 			return err
@@ -192,14 +181,14 @@ func (s *TemplateStorage) DeleteTemplate(templateName, templateVersion string) e
 		b := tx.Bucket([]byte(templateName))
 		if b == nil {
 			loge.Infoln("Cannot find bucket")
-			return ErrTemplateNotExists
+			return mttypes.ErrTemplateNotExists
 		}
 
 		loge.Debugln("Deleting entry")
 		// check if entry exists
 		if v := b.Get([]byte(templateVersion)); v == nil {
 			loge.Infoln("Cannot find version")
-			return ErrVersionNotExists
+			return mttypes.ErrVersionNotExists
 		}
 		if err := b.Delete([]byte(templateVersion)); err != nil {
 			loge.WithError(err).Errorln("Version delete failed")
@@ -219,7 +208,7 @@ func (s *TemplateStorage) DeleteTemplates(templateName string) error {
 		loge.Debugln("Deleting bucket")
 		if err := tx.DeleteBucket([]byte(templateName)); err == bolt.ErrBucketNotFound {
 			loge.WithError(err).Errorf("Bucket not found")
-			return ErrTemplateNotExists
+			return mttypes.ErrTemplateNotExists
 		} else if err != nil {
 			loge.WithError(err).Errorln("Bucket delete failed")
 			return err
