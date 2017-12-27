@@ -29,9 +29,9 @@ func Setup(app *gin.Engine, services *Services) {
 	templates := app.Group("/templates")
 	{
 		templates.POST("/", templateCreateHandler)
-		templates.GET("/:template_name", templateGetHandler)
-		templates.PUT("/:template_name", templateUpdateHandler)
-		templates.DELETE("/:template_name", templateDeleteHandler)
-		templates.POST("/:template_name", templateSendHandler)
+		templates.GET("/:name", templateGetHandler)
+		templates.PUT("/:name", templateUpdateHandler)
+		templates.DELETE("/:name", templateDeleteHandler)
+		templates.POST("/:name", templateSendHandler)
 	}
 }

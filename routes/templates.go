@@ -33,7 +33,7 @@ func templateUpdateHandler(ctx *gin.Context) {
 		sendValidationError(ctx, err)
 		return
 	}
-	name := ctx.Param("template_name")
+	name := ctx.Param("name")
 	version := ctx.Query("version")
 	err := svc.TemplateStorage.PutTemplate(name, version, request.Data, request.Subject)
 	if err != nil {
