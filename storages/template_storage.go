@@ -5,8 +5,6 @@ import (
 
 	"time"
 
-	"strings"
-
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"github.com/blang/semver"
 	"github.com/boltdb/bolt"
@@ -113,7 +111,7 @@ func (s *TemplateStorage) GetLatestVersionTemplate(templateName string) (string,
 		var latestVerStr string
 		err := b.ForEach(func(k, v []byte) error {
 			loge.Debugf("Handling version %s", k)
-			ver, err := semver.Parse(strings.TrimPrefix(string(k), "v")) // make it working if version starts with "v"
+			ver, err := semver.ParseTolerant(string(k))
 			if err != nil {
 				loge.WithError(err).Debugf("skipping %s", k)
 				return nil // skip non-semver keys
