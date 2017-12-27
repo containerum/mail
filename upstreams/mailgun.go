@@ -116,6 +116,8 @@ func (mg *Mailgun) Send(templateName string, tsv *mttypes.TemplateStorageValue, 
 	statusChan := make(chan mttypes.SendStatus)
 	go mg.statusCollector(statusChan, &resp.Statuses, &wg)
 
+	msgWG := sync.WaitGroup{}
+	msgWG.Add(len(request.Message.Recipients))
 	for _, recipient := range request.Message.Recipients {
 		text, err := mg.executeTemplate(tmpl, &recipient, request.Message.CommonVariables)
 		if err != nil {
@@ -126,6 +128,7 @@ func (mg *Mailgun) Send(templateName string, tsv *mttypes.TemplateStorageValue, 
 		msg := mg.constructMessage(text, tsv.Subject, recipient.Email, request.Delay)
 
 		go func(msg *mailgun.Message, recipient mttypes.Recipient, text string) {
+			defer msgWG.Done()
 			status, id, err := mg.api.Send(msg)
 			if err != nil {
 				mg.log.WithError(err).Errorln("Message send failed")
@@ -148,6 +151,7 @@ func (mg *Mailgun) Send(templateName string, tsv *mttypes.TemplateStorageValue, 
 		}(msg, recipient, text)
 	}
 
+	msgWG.Wait()
 	close(errChan)
 	close(statusChan)
 	wg.Wait()
