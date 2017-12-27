@@ -70,6 +70,7 @@ func (mg *Mailgun) errCollector(ch chan error, errs *[]string) {
 		mu := &sync.Mutex{}
 		for err := range ch {
 			if err != nil {
+				mg.log.WithError(err).Debug("caught error")
 				mu.Lock()
 				*errs = append(*errs, err.Error())
 				mu.Unlock()
@@ -82,6 +83,7 @@ func (mg *Mailgun) statusCollector(ch chan mttypes.SendStatus, statuses *[]mttyp
 	go func() {
 		mu := &sync.Mutex{}
 		for s := range ch {
+			mg.log.Debugf("caught status: %#v", s)
 			mu.Lock()
 			*statuses = append(*statuses, s)
 			mu.Unlock()
