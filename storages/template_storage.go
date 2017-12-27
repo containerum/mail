@@ -5,6 +5,8 @@ import (
 
 	"time"
 
+	"strings"
+
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"github.com/blang/semver"
 	"github.com/boltdb/bolt"
@@ -110,8 +112,9 @@ func (s *TemplateStorage) GetLatestVersionTemplate(templateName string) (string,
 		var latestVer semver.Version
 		err := b.ForEach(func(k, v []byte) error {
 			loge.Debugf("Handling version %s", k)
-			ver, err := semver.Parse(string(k))
+			ver, err := semver.Parse(strings.TrimPrefix(string(k), "v")) // make it working if version starts with "v"
 			if err != nil {
+				loge.WithError(err).Debugf("skipping %s", k)
 				return nil // skip non-semver keys
 			}
 			if ver.GT(latestVer) {
@@ -123,11 +126,11 @@ func (s *TemplateStorage) GetLatestVersionTemplate(templateName string) (string,
 			loge.WithError(err).Errorln("Iterating error")
 		}
 
-		templateVersion = latestVer.String()
-		loge.Debugf("Extracting latest version")
+		templateVersion = "v" + latestVer.String()
+		loge.Debugf("Extracting latest version %v", templateVersion)
 		templateB := b.Get([]byte(templateVersion))
 		if templateB == nil {
-			loge.Infoln("Cannot find version")
+			loge.Infof("Cannot find version %v", templateVersion)
 			return mttypes.ErrVersionNotExists
 		}
 		return json.Unmarshal(templateB, &templateValue)
