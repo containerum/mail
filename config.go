@@ -23,6 +23,7 @@ func setupLogger() error {
 	if level > logrus.DebugLevel || level < logrus.PanicLevel {
 		return errors.New("invalid log level")
 	}
+	logrus.SetLevel(level)
 	return nil
 }
 
