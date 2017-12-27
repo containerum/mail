@@ -70,7 +70,7 @@ type Recipient struct {
 }
 
 type SendRequest struct {
-	Delay   int `json:"delay" binding:"min=0"` // in minutes
+	Delay   int `json:"delay" binding:"omitempty,min=0"` // in minutes
 	Message struct {
 		CommonVariables map[string]string `json:"common_variables"`
 		Recipients      []Recipient       `json:"recipient_data" binding:"required"`
