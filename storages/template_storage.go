@@ -110,6 +110,7 @@ func (s *TemplateStorage) GetLatestVersionTemplate(templateName string) (string,
 
 		loge.Debugf("Iterating over bucket")
 		var latestVer semver.Version
+		var latestVerStr string
 		err := b.ForEach(func(k, v []byte) error {
 			loge.Debugf("Handling version %s", k)
 			ver, err := semver.Parse(strings.TrimPrefix(string(k), "v")) // make it working if version starts with "v"
@@ -119,6 +120,7 @@ func (s *TemplateStorage) GetLatestVersionTemplate(templateName string) (string,
 			}
 			if ver.GT(latestVer) {
 				latestVer = ver
+				latestVerStr = string(k)
 			}
 			return nil
 		})
@@ -126,11 +128,10 @@ func (s *TemplateStorage) GetLatestVersionTemplate(templateName string) (string,
 			loge.WithError(err).Errorln("Iterating error")
 		}
 
-		templateVersion = "v" + latestVer.String()
-		loge.Debugf("Extracting latest version %v", templateVersion)
-		templateB := b.Get([]byte(templateVersion))
+		loge.Debugf("Extracting latest version %v", latestVerStr)
+		templateB := b.Get([]byte(latestVerStr))
 		if templateB == nil {
-			loge.Infof("Cannot find version %v", templateVersion)
+			loge.Infof("Cannot find version %v", latestVerStr)
 			return mttypes.ErrVersionNotExists
 		}
 		return json.Unmarshal(templateB, &templateValue)
