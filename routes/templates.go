@@ -92,14 +92,20 @@ func templateDeleteHandler(ctx *gin.Context) {
 
 func templateSendHandler(ctx *gin.Context) {
 	name := ctx.Param("name")
-	version := ctx.Query("version")
+	version, hasVersion := ctx.GetQuery("version")
 	var request mttypes.SendRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		sendValidationError(ctx, err)
 		return
 	}
-	tv, err := svc.TemplateStorage.GetTemplate(name, version)
+	var tv *mttypes.TemplateStorageValue
+	var err error
+	if !hasVersion {
+		_, tv, err = svc.TemplateStorage.GetLatestVersionTemplate(name)
+	} else {
+		tv, err = svc.TemplateStorage.GetTemplate(name, version)
+	}
 	if err != nil {
 		ctx.Error(err)
 		sendStorageError(ctx, err)
