@@ -131,6 +131,7 @@ func (mg *Mailgun) Send(templateName string, tsv *mttypes.TemplateStorageValue, 
 		msg := mg.constructMessage(text, tsv.Subject, recipient.Email, request.Delay)
 
 		go func(msg *mailgun.Message, recipient mttypes.Recipient, text string) {
+			defer wg.Done()
 			status, id, err := mg.api.Send(msg)
 			if err != nil {
 				mg.log.WithError(err).Errorln("Message send failed")
@@ -150,7 +151,6 @@ func (mg *Mailgun) Send(templateName string, tsv *mttypes.TemplateStorageValue, 
 				CreatedAt:    time.Now().UTC(),
 				Message:      base64.StdEncoding.EncodeToString([]byte(text)),
 			})
-			wg.Done()
 		}(msg, recipient, text)
 	}
 
