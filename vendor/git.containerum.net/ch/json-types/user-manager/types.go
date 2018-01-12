@@ -64,6 +64,10 @@ type PasswordRestoreRequest struct {
 	NewPassword string `json:"new_password" binding:"required"`
 }
 
+type PasswordResetRequest struct {
+	Username string `json:"username" binding:"required,email"`
+}
+
 type UserCreateRequest struct {
 	UserName  string `json:"username" binding:"required,email"`
 	Password  string `json:"password" binding:"required"`
@@ -133,4 +137,13 @@ type UserListGetResponse struct {
 type WebAPILoginRequest struct {
 	Username string `json:"username" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
+}
+
+type UserToBlacklistRequest struct {
+	UserID string `json:"user_id" binding:"required,uuid4"`
+}
+
+type UserListQuery struct {
+	Page    int `form:"page" binding:"required,gt=0"`
+	PerPage int `form:"per_page" binding:"required,gt=0"`
 }

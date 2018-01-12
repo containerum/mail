@@ -8,12 +8,12 @@ type ListenerJSON struct {
 	Name      *string `json:"name,omitempty"`
 	// Roles       []Role   `json:"deleted_at,omitempty"`
 	OAuth       *bool      `json:"o_auth,omitempty"`
-	Active      *bool      `json:"activate,omitempty"`
+	Active      *bool      `json:"active,omitempty"`
 	Group       *GroupJSON `json:"group,omitempty"`
 	GroupID     *string    `json:"group_id,omitempty"`
 	StripPath   *bool      `json:"strip_path,omitempty"`
 	ListenPath  *string    `json:"listen_path,omitempty"`
-	UpstreamURL *string    `json:"usptream_url,omitempty"`
+	UpstreamURL *string    `json:"upstream_url,omitempty"`
 	Method      *string    `json:"method,omitempty"`
 	// Plugins     []Plugin  `json:"deleted_at,omitempty"`
 }
