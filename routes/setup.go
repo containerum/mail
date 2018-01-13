@@ -8,8 +8,8 @@ import (
 )
 
 type Services struct {
-	MessagesStorage   *storages.MessagesStorage
-	TemplateStorage   *storages.TemplateStorage
+	MessagesStorage   storages.MessagesStorage
+	TemplateStorage   storages.TemplateStorage
 	Upstream          upstreams.Upstream
 	UserManagerClient clients.UserManagerClient
 }

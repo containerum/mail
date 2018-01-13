@@ -1,4 +1,4 @@
-package storages
+package bolt
 
 import (
 	"io/ioutil"
@@ -17,13 +17,13 @@ const testMessagesDB = "test_messages.db"
 func TestMessagesStorage(t *testing.T) {
 	logrus.SetOutput(ioutil.Discard) // do not write logs during test
 	Convey("Test messages storage", t, func() {
-		storage, err := NewMessagesStorage(testMessagesDB, nil)
+		storage, err := NewBoltMessagesStorage(testMessagesDB, nil)
 		So(err, ShouldBeNil)
 
 		testValue := &mttypes.MessagesStorageValue{
 			UserId:       "user",
 			TemplateName: "template",
-			Variables:    map[string]string{"a": "1", "b": "2"},
+			Variables:    map[string]interface{}{"a": "1", "b": "2"},
 			CreatedAt:    time.Now().UTC(),
 			Message:      "message",
 		}

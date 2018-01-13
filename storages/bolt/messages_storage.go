@@ -1,24 +1,27 @@
-package storages
+package bolt
 
 import (
 	"os"
 
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
+	"git.containerum.net/ch/mail-templater/storages"
 	"github.com/boltdb/bolt"
 	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 )
 
-type MessagesStorage struct {
+type boltMessagesStorage struct {
 	db  *bolt.DB
 	log *logrus.Entry
 }
 
+var _ storages.MessagesStorage = &boltMessagesStorage{}
+
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-const messagesStorageBucket = "messages"
+const boltMessagesStorageBucket = "messages"
 
-func NewMessagesStorage(file string, options *bolt.Options) (*MessagesStorage, error) {
+func NewBoltMessagesStorage(file string, options *bolt.Options) (storages.MessagesStorage, error) {
 	log := logrus.WithField("component", "messages_storage")
 	log.Infof("Opening storage at %s with options %#v", file, options)
 	db, err := bolt.Open(file, os.ModePerm, options)
@@ -27,9 +30,9 @@ func NewMessagesStorage(file string, options *bolt.Options) (*MessagesStorage, e
 		return nil, err
 	}
 
-	log.Infof("Creating bucket %s", messagesStorageBucket)
+	log.Infof("Creating bucket %s", boltMessagesStorageBucket)
 	err = db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte(messagesStorageBucket))
+		_, err := tx.CreateBucketIfNotExists([]byte(boltMessagesStorageBucket))
 		return err
 	})
 	if err != nil {
@@ -37,15 +40,13 @@ func NewMessagesStorage(file string, options *bolt.Options) (*MessagesStorage, e
 		return nil, err
 	}
 
-	return &MessagesStorage{
+	return &boltMessagesStorage{
 		db:  db,
 		log: log,
 	}, nil
 }
 
-// PutValue puts MessageStorageValue to storage.
-// If message with specified id already exists in storage it will be overwritten.
-func (s *MessagesStorage) PutValue(id string, value *mttypes.MessagesStorageValue) error {
+func (s *boltMessagesStorage) PutValue(id string, value *mttypes.MessagesStorageValue) error {
 	loge := s.log.WithFields(logrus.Fields{
 		"id":    id,
 		"value": value,
@@ -53,7 +54,7 @@ func (s *MessagesStorage) PutValue(id string, value *mttypes.MessagesStorageValu
 	loge.Infof("Putting value")
 	return s.db.Update(func(tx *bolt.Tx) error {
 		loge.Debugln("Get bucket")
-		b := tx.Bucket([]byte(messagesStorageBucket))
+		b := tx.Bucket([]byte(boltMessagesStorageBucket))
 
 		loge.Debugln("Marshal json")
 		valueB, err := json.Marshal(value)
@@ -64,14 +65,13 @@ func (s *MessagesStorage) PutValue(id string, value *mttypes.MessagesStorageValu
 	})
 }
 
-// GetValue returns value by specified ID.
-func (s *MessagesStorage) GetValue(id string) (*mttypes.MessagesStorageValue, error) {
+func (s *boltMessagesStorage) GetValue(id string) (*mttypes.MessagesStorageValue, error) {
 	loge := s.log.WithField("id", id)
 	loge.Infof("Getting value")
 	var value mttypes.MessagesStorageValue
 	err := s.db.View(func(tx *bolt.Tx) error {
 		loge.Debugln("Get bucket")
-		b := tx.Bucket([]byte(messagesStorageBucket))
+		b := tx.Bucket([]byte(boltMessagesStorageBucket))
 
 		loge.Debugln("Extract value from storage")
 		valueB := b.Get([]byte(id))
@@ -90,6 +90,6 @@ func (s *MessagesStorage) GetValue(id string) (*mttypes.MessagesStorageValue, er
 	return &value, err
 }
 
-func (s *MessagesStorage) Close() error {
+func (s *boltMessagesStorage) Close() error {
 	return s.db.Close()
 }

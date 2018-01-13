@@ -16,16 +16,16 @@ import (
 	"gopkg.in/mailgun/mailgun-go.v1"
 )
 
-type Mailgun struct {
+type mgUpstream struct {
 	api        mailgun.Mailgun
 	log        *logrus.Entry
-	msgStorage *storages.MessagesStorage
+	msgStorage storages.MessagesStorage
 	senderName string
 	senderMail string
 }
 
-func NewMailgun(conn mailgun.Mailgun, msgStorage *storages.MessagesStorage, senderName, senderMail string) *Mailgun {
-	return &Mailgun{
+func NewMailgun(conn mailgun.Mailgun, msgStorage storages.MessagesStorage, senderName, senderMail string) Upstream {
+	return &mgUpstream{
 		api:        conn,
 		log:        logrus.WithField("component", "mailgun"),
 		msgStorage: msgStorage,
@@ -34,7 +34,7 @@ func NewMailgun(conn mailgun.Mailgun, msgStorage *storages.MessagesStorage, send
 	}
 }
 
-func (mg *Mailgun) executeTemplate(tmpl *template.Template, recipient *mttypes.Recipient, commonVars map[string]string) (string, error) {
+func (mg *mgUpstream) executeTemplate(tmpl *template.Template, recipient *mttypes.Recipient, commonVars map[string]string) (string, error) {
 	var buf bytes.Buffer
 	tmplData := make(map[string]interface{})
 	for k, v := range commonVars {
@@ -52,7 +52,7 @@ func (mg *Mailgun) executeTemplate(tmpl *template.Template, recipient *mttypes.R
 	return buf.String(), nil
 }
 
-func (mg *Mailgun) constructMessage(text, subj, to string, delayMinutes int) *mailgun.Message {
+func (mg *mgUpstream) constructMessage(text, subj, to string, delayMinutes int) *mailgun.Message {
 	msg := mg.api.NewMessage(mg.senderMail, subj, "", to)
 	msg.SetHtml(text)
 	if delayMinutes > 0 {
@@ -65,7 +65,7 @@ func (mg *Mailgun) constructMessage(text, subj, to string, delayMinutes int) *ma
 	return msg
 }
 
-func (mg *Mailgun) errCollector(ch chan error, errs *[]string, wg *sync.WaitGroup) {
+func (mg *mgUpstream) errCollector(ch chan error, errs *[]string, wg *sync.WaitGroup) {
 	for err := range ch {
 		if err != nil {
 			mg.log.WithError(err).Debug("caught error")
@@ -75,7 +75,7 @@ func (mg *Mailgun) errCollector(ch chan error, errs *[]string, wg *sync.WaitGrou
 	wg.Done()
 }
 
-func (mg *Mailgun) statusCollector(ch chan mttypes.SendStatus, statuses *[]mttypes.SendStatus, wg *sync.WaitGroup) {
+func (mg *mgUpstream) statusCollector(ch chan mttypes.SendStatus, statuses *[]mttypes.SendStatus, wg *sync.WaitGroup) {
 	for s := range ch {
 		mg.log.Debugf("caught status: %#v", s)
 		*statuses = append(*statuses, s)
@@ -83,7 +83,7 @@ func (mg *Mailgun) statusCollector(ch chan mttypes.SendStatus, statuses *[]mttyp
 	wg.Done()
 }
 
-func (mg *Mailgun) parseTemplate(templateName string, tsv *mttypes.TemplateStorageValue) (tmpl *template.Template, err error) {
+func (mg *mgUpstream) parseTemplate(templateName string, tsv *mttypes.TemplateStorageValue) (tmpl *template.Template, err error) {
 	mg.log.Debugln("Parsing template ", templateName)
 	templateText, err := base64.StdEncoding.DecodeString(tsv.Data)
 	if err != nil {
@@ -97,7 +97,7 @@ func (mg *Mailgun) parseTemplate(templateName string, tsv *mttypes.TemplateStora
 	return tmpl, err
 }
 
-func (mg *Mailgun) Send(templateName string, tsv *mttypes.TemplateStorageValue, request *mttypes.SendRequest) (resp *mttypes.SendResponse, err error) {
+func (mg *mgUpstream) Send(templateName string, tsv *mttypes.TemplateStorageValue, request *mttypes.SendRequest) (resp *mttypes.SendResponse, err error) {
 
 	tmpl, err := mg.parseTemplate(templateName, tsv)
 	if err != nil {
@@ -161,7 +161,7 @@ func (mg *Mailgun) Send(templateName string, tsv *mttypes.TemplateStorageValue, 
 	return resp, err
 }
 
-func (mg *Mailgun) SimpleSend(templateName string, tsv *mttypes.TemplateStorageValue, recipient *mttypes.Recipient) (status *mttypes.SendStatus, err error) {
+func (mg *mgUpstream) SimpleSend(templateName string, tsv *mttypes.TemplateStorageValue, recipient *mttypes.Recipient) (status *mttypes.SendStatus, err error) {
 	tmpl, err := mg.parseTemplate(templateName, tsv)
 	if err != nil {
 		return nil, err
