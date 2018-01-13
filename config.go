@@ -58,7 +58,13 @@ func getListenAddr() string {
 	return viper.GetString("listen_addr")
 }
 
-func getUserManagerClient() *clients.UserManagerClient {
-	viper.SetDefault("user_manager_url", "http://user-manager:8111")
-	return clients.NewUserManagerClient(viper.GetString("user_manager_url"))
+func getUserManagerClient() (clients.UserManagerClient, error) {
+	viper.SetDefault("user_manager", "http")
+	switch viper.GetString("user_manager") {
+	case "http":
+		viper.SetDefault("user_manager_url", "http://user-manager:8111")
+		return clients.NewHTTPUserManagerClient(viper.GetString("user_manager_url")), nil
+	default:
+		return nil, errors.New("invalid user manager client")
+	}
 }

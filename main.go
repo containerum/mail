@@ -40,7 +40,8 @@ func main() {
 	exitOnErr(err)
 	us, err := getUpstream(ms)
 	exitOnErr(err)
-	um := getUserManagerClient()
+	um, err := getUserManagerClient()
+	exitOnErr(err)
 
 	routes.Setup(app, &routes.Services{
 		TemplateStorage:   ts,
