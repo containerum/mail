@@ -1,6 +1,8 @@
 package clients
 
 import (
+	"context"
+
 	"git.containerum.net/ch/json-types/errors"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"github.com/json-iterator/go"
@@ -9,7 +11,7 @@ import (
 )
 
 type UserManagerClient interface {
-	UserInfoByID(userID string) (*umtypes.UserInfoGetResponse, error)
+	UserInfoByID(ctx context.Context, userID string) (*umtypes.UserInfoGetResponse, error)
 }
 
 type httpUserManagerClient struct {
@@ -32,10 +34,11 @@ func NewHTTPUserManagerClient(serverUrl string) UserManagerClient {
 	}
 }
 
-func (u *httpUserManagerClient) UserInfoByID(userID string) (*umtypes.UserInfoGetResponse, error) {
+func (u *httpUserManagerClient) UserInfoByID(ctx context.Context, userID string) (*umtypes.UserInfoGetResponse, error) {
 	u.log.WithField("id", userID).Info("Get user info from")
 	ret := umtypes.UserInfoGetResponse{}
 	resp, err := u.client.R().
+		SetContext(ctx).
 		SetHeader(umtypes.UserIDHeader, userID).
 		SetResult(&ret).
 		Get("/user/info")

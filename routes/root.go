@@ -30,7 +30,7 @@ func simpleSendHandler(ctx *gin.Context) {
 		sendStorageError(ctx, err)
 		return
 	}
-	info, err := svc.UserManagerClient.UserInfoByID(request.UserID)
+	info, err := svc.UserManagerClient.UserInfoByID(ctx, request.UserID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
@@ -42,7 +42,7 @@ func simpleSendHandler(ctx *gin.Context) {
 		Name:  info.Login,
 		Email: info.Login,
 	}
-	status, err := svc.Upstream.SimpleSend(request.Template, tv, recipient)
+	status, err := svc.Upstream.SimpleSend(ctx, request.Template, tv, recipient)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
