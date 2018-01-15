@@ -5,6 +5,7 @@ import (
 
 	"git.containerum.net/ch/mail-templater/clients"
 	"git.containerum.net/ch/mail-templater/storages"
+	"git.containerum.net/ch/mail-templater/storages/bolt"
 	"git.containerum.net/ch/mail-templater/upstreams"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -27,19 +28,29 @@ func setupLogger() error {
 	return nil
 }
 
-func getTemplatesStorage() (*storages.TemplateStorage, error) {
-	viper.SetDefault("template_db", "templates.db")
-	file := viper.GetString("template_db")
-	return storages.NewTemplateStorage(file, nil)
+func getTemplatesStorage() (storages.TemplateStorage, error) {
+	viper.SetDefault("template_storage", "bolt")
+	switch viper.GetString("template_storage") {
+	case "bolt":
+		viper.SetDefault("template_db", "templates.db")
+		return bolt.NewBoltTemplateStorage(viper.GetString("template_db"), nil)
+	default:
+		return nil, errors.New("invalid template storage")
+	}
 }
 
-func getMessagesStorage() (*storages.MessagesStorage, error) {
-	viper.SetDefault("messages_db", "messages.db")
-	file := viper.GetString("messages_db")
-	return storages.NewMessagesStorage(file, nil)
+func getMessagesStorage() (storages.MessagesStorage, error) {
+	viper.SetDefault("messages_storage", "bolt")
+	switch viper.GetString("messages_storage") {
+	case "bolt":
+		viper.SetDefault("messages_db", "messages.db")
+		return bolt.NewBoltMessagesStorage(viper.GetString("messages_db"), nil)
+	default:
+		return nil, errors.New("invalid messages storage")
+	}
 }
 
-func getUpstream(msgStorage *storages.MessagesStorage) (upstreams.Upstream, error) {
+func getUpstream(msgStorage storages.MessagesStorage) (upstreams.Upstream, error) {
 	viper.SetDefault("upstream", "mailgun")
 	switch viper.GetString("upstream") {
 	case "mailgun":
@@ -48,6 +59,8 @@ func getUpstream(msgStorage *storages.MessagesStorage) (upstreams.Upstream, erro
 			return nil, err
 		}
 		return upstreams.NewMailgun(mg, msgStorage, viper.GetString("sender_name"), viper.GetString("sender_mail")), nil
+	case "dummy":
+		return upstreams.NewDummyUpstream(), nil
 	default:
 		return nil, errors.New("invalid upstream")
 	}
@@ -58,7 +71,13 @@ func getListenAddr() string {
 	return viper.GetString("listen_addr")
 }
 
-func getUserManagerClient() *clients.UserManagerClient {
-	viper.SetDefault("user_manager_url", "http://user-manager:8111")
-	return clients.NewUserManagerClient(viper.GetString("user_manager_url"))
+func getUserManagerClient() (clients.UserManagerClient, error) {
+	viper.SetDefault("user_manager", "http")
+	switch viper.GetString("user_manager") {
+	case "http":
+		viper.SetDefault("user_manager_url", "http://user-manager:8111")
+		return clients.NewHTTPUserManagerClient(viper.GetString("user_manager_url")), nil
+	default:
+		return nil, errors.New("invalid user manager client")
+	}
 }

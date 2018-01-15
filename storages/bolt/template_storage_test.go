@@ -1,4 +1,4 @@
-package storages
+package bolt
 
 import (
 	"io/ioutil"
@@ -15,7 +15,7 @@ const testDB = "test.db"
 func TestTemplateStorage(t *testing.T) {
 	logrus.SetOutput(ioutil.Discard) // do not write logs during test
 	Convey("Test template storage", t, func() {
-		storage, err := NewTemplateStorage(testDB, nil)
+		storage, err := NewBoltTemplateStorage(testDB, nil)
 		So(err, ShouldBeNil)
 
 		Convey("Put and get one version", func() {

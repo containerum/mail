@@ -35,12 +35,15 @@ func main() {
 	app.Use(ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true))
 
 	ts, err := getTemplatesStorage()
+	defer ts.Close()
 	exitOnErr(err)
 	ms, err := getMessagesStorage()
+	defer ms.Close()
 	exitOnErr(err)
 	us, err := getUpstream(ms)
 	exitOnErr(err)
-	um := getUserManagerClient()
+	um, err := getUserManagerClient()
+	exitOnErr(err)
 
 	routes.Setup(app, &routes.Services{
 		TemplateStorage:   ts,

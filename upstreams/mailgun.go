@@ -10,22 +10,24 @@ import (
 
 	"encoding/base64"
 
+	"context"
+
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"git.containerum.net/ch/mail-templater/storages"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/mailgun/mailgun-go.v1"
 )
 
-type Mailgun struct {
+type mgUpstream struct {
 	api        mailgun.Mailgun
 	log        *logrus.Entry
-	msgStorage *storages.MessagesStorage
+	msgStorage storages.MessagesStorage
 	senderName string
 	senderMail string
 }
 
-func NewMailgun(conn mailgun.Mailgun, msgStorage *storages.MessagesStorage, senderName, senderMail string) *Mailgun {
-	return &Mailgun{
+func NewMailgun(conn mailgun.Mailgun, msgStorage storages.MessagesStorage, senderName, senderMail string) Upstream {
+	return &mgUpstream{
 		api:        conn,
 		log:        logrus.WithField("component", "mailgun"),
 		msgStorage: msgStorage,
@@ -34,7 +36,7 @@ func NewMailgun(conn mailgun.Mailgun, msgStorage *storages.MessagesStorage, send
 	}
 }
 
-func (mg *Mailgun) executeTemplate(tmpl *template.Template, recipient *mttypes.Recipient, commonVars map[string]string) (string, error) {
+func (mg *mgUpstream) executeTemplate(tmpl *template.Template, recipient *mttypes.Recipient, commonVars map[string]string) (string, error) {
 	var buf bytes.Buffer
 	tmplData := make(map[string]interface{})
 	for k, v := range commonVars {
@@ -52,7 +54,7 @@ func (mg *Mailgun) executeTemplate(tmpl *template.Template, recipient *mttypes.R
 	return buf.String(), nil
 }
 
-func (mg *Mailgun) constructMessage(text, subj, to string, delayMinutes int) *mailgun.Message {
+func (mg *mgUpstream) constructMessage(text, subj, to string, delayMinutes int) *mailgun.Message {
 	msg := mg.api.NewMessage(mg.senderMail, subj, "", to)
 	msg.SetHtml(text)
 	if delayMinutes > 0 {
@@ -65,7 +67,7 @@ func (mg *Mailgun) constructMessage(text, subj, to string, delayMinutes int) *ma
 	return msg
 }
 
-func (mg *Mailgun) errCollector(ch chan error, errs *[]string, wg *sync.WaitGroup) {
+func (mg *mgUpstream) errCollector(ch chan error, errs *[]string, wg *sync.WaitGroup) {
 	for err := range ch {
 		if err != nil {
 			mg.log.WithError(err).Debug("caught error")
@@ -75,7 +77,7 @@ func (mg *Mailgun) errCollector(ch chan error, errs *[]string, wg *sync.WaitGrou
 	wg.Done()
 }
 
-func (mg *Mailgun) statusCollector(ch chan mttypes.SendStatus, statuses *[]mttypes.SendStatus, wg *sync.WaitGroup) {
+func (mg *mgUpstream) statusCollector(ch chan mttypes.SendStatus, statuses *[]mttypes.SendStatus, wg *sync.WaitGroup) {
 	for s := range ch {
 		mg.log.Debugf("caught status: %#v", s)
 		*statuses = append(*statuses, s)
@@ -83,7 +85,7 @@ func (mg *Mailgun) statusCollector(ch chan mttypes.SendStatus, statuses *[]mttyp
 	wg.Done()
 }
 
-func (mg *Mailgun) parseTemplate(templateName string, tsv *mttypes.TemplateStorageValue) (tmpl *template.Template, err error) {
+func (mg *mgUpstream) parseTemplate(templateName string, tsv *mttypes.TemplateStorageValue) (tmpl *template.Template, err error) {
 	mg.log.Debugln("Parsing template ", templateName)
 	templateText, err := base64.StdEncoding.DecodeString(tsv.Data)
 	if err != nil {
@@ -97,7 +99,7 @@ func (mg *Mailgun) parseTemplate(templateName string, tsv *mttypes.TemplateStora
 	return tmpl, err
 }
 
-func (mg *Mailgun) Send(templateName string, tsv *mttypes.TemplateStorageValue, request *mttypes.SendRequest) (resp *mttypes.SendResponse, err error) {
+func (mg *mgUpstream) Send(ctx context.Context, templateName string, tsv *mttypes.TemplateStorageValue, request *mttypes.SendRequest) (resp *mttypes.SendResponse, err error) {
 
 	tmpl, err := mg.parseTemplate(templateName, tsv)
 	if err != nil {
@@ -106,62 +108,75 @@ func (mg *Mailgun) Send(templateName string, tsv *mttypes.TemplateStorageValue, 
 
 	resp = &mttypes.SendResponse{}
 
-	wg := sync.WaitGroup{}
-	wg.Add(2) // error and status collectors
+	mgDoneCh := make(chan struct{}) // for cancelling with context support. Mailgun api has no methods with context
 
-	var errs []string
-	errChan := make(chan error)
-	go mg.errCollector(errChan, &errs, &wg)
+	go func() {
+		defer close(mgDoneCh)
+		wg := sync.WaitGroup{}
+		wg.Add(2) // error and status collectors
 
-	statusChan := make(chan mttypes.SendStatus)
-	go mg.statusCollector(statusChan, &resp.Statuses, &wg)
+		var errs []string
+		errChan := make(chan error)
+		go mg.errCollector(errChan, &errs, &wg)
 
-	msgWG := sync.WaitGroup{}
-	msgWG.Add(len(request.Message.Recipients))
-	for _, recipient := range request.Message.Recipients {
-		text, err := mg.executeTemplate(tmpl, &recipient, request.Message.CommonVariables)
-		if err != nil {
-			errChan <- err
-			continue
+		statusChan := make(chan mttypes.SendStatus)
+		go mg.statusCollector(statusChan, &resp.Statuses, &wg)
+
+		msgWG := sync.WaitGroup{}
+		msgWG.Add(len(request.Message.Recipients))
+		for _, recipient := range request.Message.Recipients {
+			text, err := mg.executeTemplate(tmpl, &recipient, request.Message.CommonVariables)
+			if err != nil {
+				errChan <- err
+				continue
+			}
+
+			msg := mg.constructMessage(text, tsv.Subject, recipient.Email, request.Delay)
+
+			go func(msg *mailgun.Message, recipient mttypes.Recipient, text string) {
+				defer msgWG.Done()
+				status, id, err := mg.api.Send(msg)
+				if err != nil {
+					mg.log.WithError(err).Errorln("Message send failed")
+					errChan <- err
+					return
+				}
+				mg.log.WithField("status", status).WithField("id", id).Infoln("Message sent")
+				statusChan <- mttypes.SendStatus{
+					RecipientID:  recipient.ID,
+					TemplateName: templateName,
+					Status:       status,
+				}
+				errChan <- mg.msgStorage.PutValue(id, &mttypes.MessagesStorageValue{
+					UserId:       recipient.ID,
+					TemplateName: templateName,
+					Variables:    recipient.Variables,
+					CreatedAt:    time.Now().UTC(),
+					Message:      base64.StdEncoding.EncodeToString([]byte(text)),
+				})
+			}(msg, recipient, text)
 		}
 
-		msg := mg.constructMessage(text, tsv.Subject, recipient.Email, request.Delay)
+		msgWG.Wait()
+		close(errChan)
+		close(statusChan)
+		wg.Wait()
+		if len(errs) > 0 {
+			err = errors.New(strings.Join(errs, "; "))
+		}
+	}()
 
-		go func(msg *mailgun.Message, recipient mttypes.Recipient, text string) {
-			defer msgWG.Done()
-			status, id, err := mg.api.Send(msg)
-			if err != nil {
-				mg.log.WithError(err).Errorln("Message send failed")
-				errChan <- err
-				return
-			}
-			mg.log.WithField("status", status).WithField("id", id).Infoln("Message sent")
-			statusChan <- mttypes.SendStatus{
-				RecipientID:  recipient.ID,
-				TemplateName: templateName,
-				Status:       status,
-			}
-			errChan <- mg.msgStorage.PutValue(id, &mttypes.MessagesStorageValue{
-				UserId:       recipient.ID,
-				TemplateName: templateName,
-				Variables:    recipient.Variables,
-				CreatedAt:    time.Now().UTC(),
-				Message:      base64.StdEncoding.EncodeToString([]byte(text)),
-			})
-		}(msg, recipient, text)
+	select {
+	case <-ctx.Done():
+		mg.log.Info("Operation cancelled")
+		err = ctx.Err()
+	case <-mgDoneCh:
 	}
 
-	msgWG.Wait()
-	close(errChan)
-	close(statusChan)
-	wg.Wait()
-	if len(errs) > 0 {
-		err = errors.New(strings.Join(errs, "; "))
-	}
 	return resp, err
 }
 
-func (mg *Mailgun) SimpleSend(templateName string, tsv *mttypes.TemplateStorageValue, recipient *mttypes.Recipient) (status *mttypes.SendStatus, err error) {
+func (mg *mgUpstream) SimpleSend(ctx context.Context, templateName string, tsv *mttypes.TemplateStorageValue, recipient *mttypes.Recipient) (status *mttypes.SendStatus, err error) {
 	tmpl, err := mg.parseTemplate(templateName, tsv)
 	if err != nil {
 		return nil, err
@@ -173,26 +188,41 @@ func (mg *Mailgun) SimpleSend(templateName string, tsv *mttypes.TemplateStorageV
 	}
 
 	msg := mg.constructMessage(text, tsv.Subject, recipient.Email, 0)
-	s, id, err := mg.api.Send(msg)
-	if err != nil {
-		mg.log.WithError(err).Errorln("Message send failed")
-		return nil, err
-	}
-	mg.log.WithField("status", s).WithField("id", id).Infoln("Message sent")
 
-	status = &mttypes.SendStatus{
-		RecipientID:  recipient.ID,
-		TemplateName: templateName,
-		Status:       s,
-	}
+	mgDoneCh := make(chan struct{})
+	go func() {
+		defer close(mgDoneCh)
 
-	err = mg.msgStorage.PutValue(id, &mttypes.MessagesStorageValue{
-		UserId:       recipient.ID,
-		TemplateName: templateName,
-		Variables:    recipient.Variables,
-		CreatedAt:    time.Now().UTC(),
-		Message:      base64.StdEncoding.EncodeToString([]byte(text)),
-	})
+		var s, id string
+
+		s, id, err = mg.api.Send(msg)
+		if err != nil {
+			mg.log.WithError(err).Errorln("Message send failed")
+			return
+		}
+		mg.log.WithField("status", s).WithField("id", id).Infoln("Message sent")
+
+		status = &mttypes.SendStatus{
+			RecipientID:  recipient.ID,
+			TemplateName: templateName,
+			Status:       s,
+		}
+
+		err = mg.msgStorage.PutValue(id, &mttypes.MessagesStorageValue{
+			UserId:       recipient.ID,
+			TemplateName: templateName,
+			Variables:    recipient.Variables,
+			CreatedAt:    time.Now().UTC(),
+			Message:      base64.StdEncoding.EncodeToString([]byte(text)),
+		})
+	}()
+
+	select {
+	case <-ctx.Done():
+		mg.log.Info("Operation cancelled")
+		err = ctx.Err()
+	case <-mgDoneCh:
+	}
 
 	return status, err
 }
