@@ -45,8 +45,6 @@ spec:
           value: '${MG_URL}'
         - name: CH_MAIL_LISTEN_ADDR
           value: '${CH_MAIL_LISTEN_ADDR}'
-      nodeSelector:
-        role: master
       imagePullSecrets:
       - name: gitlab-registry
       volumes:
