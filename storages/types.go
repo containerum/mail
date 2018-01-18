@@ -6,6 +6,8 @@ import (
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 )
 
+// TemplateStorage used to store email templates.
+// Implementation must support tagging and versioning with "semantic versioning 2.0"
 type TemplateStorage interface {
 	// PutTemplate puts template to storage. If template with specified name and version exists it will be overwritten.
 	PutTemplate(templateName, templateVersion, templateData, templateSubject string) error
@@ -28,6 +30,7 @@ type TemplateStorage interface {
 	io.Closer
 }
 
+// MessagesStorage used to store sent emails.
 type MessagesStorage interface {
 	// PutValue puts MessageStorageValue to storage.
 	// If message with specified id already exists in storage it will be overwritten.

@@ -17,8 +17,8 @@ type boltTemplateStorage struct {
 	log *logrus.Entry
 }
 
-var _ storages.TemplateStorage = &boltTemplateStorage{}
-
+// NewBoltTemplateStorage returns BoltDB-based template storage.
+// Supports template tagging and versioning with "semantic versioning 2.0" standard
 func NewBoltTemplateStorage(file string, options *bolt.Options) (storages.TemplateStorage, error) {
 	log := logrus.WithField("component", "template_storage")
 	log.Infof("Opening storage at %s with options %#v", file, options)

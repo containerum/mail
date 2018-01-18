@@ -15,12 +15,12 @@ type boltMessagesStorage struct {
 	log *logrus.Entry
 }
 
-var _ storages.MessagesStorage = &boltMessagesStorage{}
-
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 const boltMessagesStorageBucket = "messages"
 
+// NewBoltMessagesStorage BoltDB-based messages storage.
+// Used for storing sent messages
 func NewBoltMessagesStorage(file string, options *bolt.Options) (storages.MessagesStorage, error) {
 	log := logrus.WithField("component", "messages_storage")
 	log.Infof("Opening storage at %s with options %#v", file, options)
@@ -32,8 +32,8 @@ func NewBoltMessagesStorage(file string, options *bolt.Options) (storages.Messag
 
 	log.Infof("Creating bucket %s", boltMessagesStorageBucket)
 	err = db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte(boltMessagesStorageBucket))
-		return err
+		_, txerr := tx.CreateBucketIfNotExists([]byte(boltMessagesStorageBucket))
+		return txerr
 	})
 	if err != nil {
 		log.WithError(err).Errorln("Create bucket failed")

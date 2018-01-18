@@ -26,6 +26,7 @@ type mgUpstream struct {
 	senderMail string
 }
 
+// NewMailgun returns mail upstream which uses "Mailgun" service to send emails.
 func NewMailgun(conn mailgun.Mailgun, msgStorage storages.MessagesStorage, senderName, senderMail string) Upstream {
 	return &mgUpstream{
 		api:        conn,
@@ -125,9 +126,9 @@ func (mg *mgUpstream) Send(ctx context.Context, templateName string, tsv *mttype
 		msgWG := sync.WaitGroup{}
 		msgWG.Add(len(request.Message.Recipients))
 		for _, recipient := range request.Message.Recipients {
-			text, err := mg.executeTemplate(tmpl, &recipient, request.Message.CommonVariables)
-			if err != nil {
-				errChan <- err
+			text, tmplError := mg.executeTemplate(tmpl, &recipient, request.Message.CommonVariables)
+			if tmplError != nil {
+				errChan <- tmplError
 				continue
 			}
 
@@ -135,10 +136,10 @@ func (mg *mgUpstream) Send(ctx context.Context, templateName string, tsv *mttype
 
 			go func(msg *mailgun.Message, recipient mttypes.Recipient, text string) {
 				defer msgWG.Done()
-				status, id, err := mg.api.Send(msg)
-				if err != nil {
-					mg.log.WithError(err).Errorln("Message send failed")
-					errChan <- err
+				status, id, mgErr := mg.api.Send(msg)
+				if mgErr != nil {
+					mg.log.WithError(mgErr).Errorln("Message send failed")
+					errChan <- mgErr
 					return
 				}
 				mg.log.WithField("status", status).WithField("id", id).Infoln("Message sent")

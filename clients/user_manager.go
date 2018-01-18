@@ -10,6 +10,7 @@ import (
 	"gopkg.in/resty.v1"
 )
 
+// UserManagerClient is interface to user-manager service
 type UserManagerClient interface {
 	UserInfoByID(ctx context.Context, userID string) (*umtypes.UserInfoGetResponse, error)
 }
@@ -19,11 +20,12 @@ type httpUserManagerClient struct {
 	client *resty.Client
 }
 
-func NewHTTPUserManagerClient(serverUrl string) UserManagerClient {
+// NewHTTPUserManagerClient returns rest-client to user-manager service
+func NewHTTPUserManagerClient(serverURL string) UserManagerClient {
 	log := logrus.WithField("component", "user_manager_client")
 	client := resty.New().
 		SetLogger(log.WriterLevel(logrus.DebugLevel)).
-		SetHostURL(serverUrl).
+		SetHostURL(serverURL).
 		SetDebug(true).
 		SetError(errors.Error{})
 	client.JSONMarshal = jsoniter.Marshal

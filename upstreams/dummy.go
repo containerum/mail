@@ -11,6 +11,8 @@ type dummyUpstream struct {
 	log *logrus.Entry
 }
 
+// NewDummyUpstream returns a new dummy email upstream.
+// It actually does nothing, only logs actions
 func NewDummyUpstream() Upstream {
 	return &dummyUpstream{
 		log: logrus.WithField("component", "dummy_upstream"),
