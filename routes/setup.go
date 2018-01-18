@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Services is a collection of dependencies to perform server operations
 type Services struct {
 	MessagesStorage   storages.MessagesStorage
 	TemplateStorage   storages.TemplateStorage
@@ -16,6 +17,7 @@ type Services struct {
 
 var svc *Services
 
+// Setup sets up routes
 func Setup(app *gin.Engine, services *Services) {
 	svc = services
 

@@ -7,11 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type MessageGetResponse struct {
-	Id string `json:"id"`
-	*mttypes.MessagesStorageValue
-}
-
 func messageGetHandler(ctx *gin.Context) {
 	id := ctx.Param("message_id")
 	v, err := svc.MessagesStorage.GetValue(id)
@@ -20,7 +15,7 @@ func messageGetHandler(ctx *gin.Context) {
 		sendStorageError(ctx, err)
 		return
 	}
-	ctx.JSON(http.StatusOK, MessageGetResponse{
+	ctx.JSON(http.StatusOK, &mttypes.MessageGetResponse{
 		Id:                   id,
 		MessagesStorageValue: v,
 	})
