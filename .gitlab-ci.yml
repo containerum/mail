@@ -49,6 +49,7 @@ docker-build-test:
   script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
     - docker build --pull -t ${CI_REGISTRY_IMAGE}:${TAG} .
+    - docker rmi -f ${CI_REGISTRY_IMAGE}:${TAG}
   except:
     - develop
 
@@ -63,6 +64,7 @@ unit-tests:
   script:
     - docker build --pull -f Dockerfile.unittests -t ${CI_REGISTRY_IMAGE}-unittests:${TAG} .
     - docker run --rm ${CI_REGISTRY_IMAGE}-unittests:${TAG}
+    - docker rmi -f ${CI_REGISTRY_IMAGE}-unittests:${TAG}
 
 lint-check:
   <<: *create_tag
@@ -75,3 +77,4 @@ lint-check:
   script:
     - docker build --pull -f Dockerfile.gometalinter -t ${CI_REGISTRY_IMAGE}-lint:${TAG} .
     - docker run --rm ${CI_REGISTRY_IMAGE}-lint:${TAG}
+    - docker rmi -f ${CI_REGISTRY_IMAGE}-lint:${TAG}
