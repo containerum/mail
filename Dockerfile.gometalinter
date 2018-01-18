@@ -1,0 +1,7 @@
+FROM golang:1.9-alpine
+RUN apk add --no-cache git && \
+    go get -v -u gopkg.in/alecthomas/gometalinter.v2 && \
+    gometalinter.v2 --install --vendored-linters
+WORKDIR src/git.containerum.net/ch/mail-templater
+COPY . .
+CMD gometalinter.v2 ./...

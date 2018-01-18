@@ -1,0 +1,4 @@
+FROM golang:1.9-alpine
+WORKDIR src/git.containerum.net/ch/mail-templater
+COPY . .
+ENTRYPOINT go test -v -cover ./...
