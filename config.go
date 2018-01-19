@@ -60,7 +60,7 @@ func getUpstream(msgStorage storages.MessagesStorage) (upstreams.Upstream, error
 		}
 		return upstreams.NewMailgun(mg, msgStorage, viper.GetString("sender_name"), viper.GetString("sender_mail")), nil
 	case "smtp":
-		return upstreams.NewSmtpUpstream(msgStorage, viper.GetString("sender_name"), viper.GetString("sender_mail"), viper.GetString("smtp_addr"), viper.GetString("smtp_login"), viper.GetString("smtp_password")), nil
+		return upstreams.NewSMTPUpstream(msgStorage, viper.GetString("sender_name"), viper.GetString("sender_mail"), viper.GetString("smtp_addr"), viper.GetString("smtp_login"), viper.GetString("smtp_password")), nil
 	case "dummy":
 		return upstreams.NewDummyUpstream(), nil
 	default:
@@ -78,7 +78,7 @@ func getUpstreamSimple(msgStorage storages.MessagesStorage) (upstreams.Upstream,
 		}
 		return upstreams.NewMailgun(mg, msgStorage, viper.GetString("sender_name"), viper.GetString("sender_mail")), nil
 	case "smtp":
-		return upstreams.NewSmtpUpstream(msgStorage, viper.GetString("sender_name"), viper.GetString("sender_mail"), viper.GetString("smtp_addr"), viper.GetString("smtp_login"), viper.GetString("smtp_password")), nil
+		return upstreams.NewSMTPUpstream(msgStorage, viper.GetString("sender_name"), viper.GetString("sender_mail"), viper.GetString("smtp_addr"), viper.GetString("smtp_login"), viper.GetString("smtp_password")), nil
 	case "dummy":
 		return upstreams.NewDummyUpstream(), nil
 	default:

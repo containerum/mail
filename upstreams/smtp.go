@@ -20,6 +20,8 @@ import (
 
 	"net"
 
+	"io"
+
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"git.containerum.net/ch/mail-templater/storages"
 	"github.com/sirupsen/logrus"
@@ -35,7 +37,8 @@ type smtpUpstream struct {
 	smtpPassword string
 }
 
-func NewSmtpUpstream(msgStorage storages.MessagesStorage, senderName string, senderMail string, smtpAddress string, smtpLogin string, smtpPassword string) Upstream {
+// NewSMTPUpstream returns mail upstream which uses SMTP service to send emails.
+func NewSMTPUpstream(msgStorage storages.MessagesStorage, senderName string, senderMail string, smtpAddress string, smtpLogin string, smtpPassword string) Upstream {
 	return &smtpUpstream{
 		log:          logrus.WithField("component", "smtp"),
 		msgStorage:   msgStorage,
@@ -134,6 +137,64 @@ func (smtpu *smtpUpstream) parseTemplate(templateName string, tsv *mttypes.Templ
 	return tmpl, err
 }
 
+func (smtpu *smtpUpstream) newSMTPClient(recipientEmail string, text string) error {
+	host, _, _ := net.SplitHostPort(smtpu.smtpAddress)
+
+	auth := smtp.PlainAuth("", smtpu.smtpLogin, smtpu.smtpPassword, host)
+
+	tlsconfig := &tls.Config{
+		InsecureSkipVerify: false,
+		ServerName:         host,
+	}
+
+	conn, err := tls.Dial("tcp", smtpu.smtpAddress, tlsconfig)
+	if err != nil {
+		smtpu.log.WithError(err).Errorln("Message send failed")
+		return err
+	}
+
+	client, err := smtp.NewClient(conn, host)
+	if err != nil {
+		smtpu.log.WithError(err).Errorln("Message send failed")
+		return err
+	}
+	defer client.Quit()
+
+	if err = client.Auth(auth); err != nil {
+		smtpu.log.WithError(err).Errorln("Message send failed")
+		return err
+	}
+	if err = client.Mail(smtpu.senderMail); err != nil {
+		smtpu.log.WithError(err).Errorln("Message send failed")
+		return err
+	}
+
+	if err = client.Rcpt(recipientEmail); err != nil {
+		smtpu.log.WithError(err).Errorln("Message send failed")
+		return err
+	}
+
+	var w io.WriteCloser
+	w, err = client.Data()
+	if err != nil {
+		smtpu.log.WithError(err).Errorln("Message send failed")
+		return err
+	}
+	defer w.Close()
+
+	_, err = w.Write([]byte(text))
+	if err != nil {
+		smtpu.log.WithError(err).Errorln("Message send failed")
+		return err
+	}
+
+	if err != nil {
+		smtpu.log.WithError(err).Errorln("Message send failed")
+		return err
+	}
+	return nil
+}
+
 func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *mttypes.TemplateStorageValue, request *mttypes.SendRequest) (resp *mttypes.SendResponse, err error) {
 
 	tmpl, err := smtpu.parseTemplate(templateName, tsv)
@@ -172,78 +233,25 @@ func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *m
 				continue
 			}
 
-			msgID := time.Now().UTC().Format("20060102150405.") + strconv.Itoa(rand.Int())
-			mailtext, err := smtpu.constructMessage(tmplemail, recipient, msgID, tsv.Subject, text)
+			messageID := time.Now().UTC().Format("20060102150405.") + strconv.Itoa(rand.Int())
+			mailtext, err := smtpu.constructMessage(tmplemail, recipient, messageID, tsv.Subject, text)
 			if err != nil {
 				errChan <- err
 				msgWG.Done()
 				continue
 			}
 
-			auth := smtp.PlainAuth("", smtpu.smtpLogin, smtpu.smtpPassword, smtpu.smtpAddress)
-
-			tlsconfig := &tls.Config{
-				InsecureSkipVerify: true,
-				ServerName:         smtpu.smtpAddress,
-			}
-
-			conn, err := tls.Dial("tcp", smtpu.smtpAddress, tlsconfig)
-			if err != nil {
-				smtpu.log.WithError(err).Errorln("Message send failed")
-				errChan <- err
-				return
-			}
-			client, err := smtp.NewClient(conn, smtpu.smtpAddress)
-			defer client.Quit()
-			if err != nil {
-				smtpu.log.WithError(err).Errorln("Message send failed")
-				errChan <- err
-				return
-			}
-			if err = client.Auth(auth); err != nil {
-				smtpu.log.WithError(err).Errorln("Message send failed")
-				errChan <- err
-				return
-			}
-			if err = client.Mail(smtpu.senderMail); err != nil {
-				smtpu.log.WithError(err).Errorln("Message send failed")
-				errChan <- err
-				return
-			}
-			if err = client.Rcpt(recipient.Email); err != nil {
-				smtpu.log.WithError(err).Errorln("Message send failed (wrong email)")
-				errChan <- err
-				msgWG.Done()
-				continue
-			}
-
-			go func(client *smtp.Client, recipient mttypes.Recipient, text string, messageID string) {
+			go func(recipient mttypes.Recipient, mailtext string, messageID string) {
 				defer msgWG.Done()
-				defer client.Quit()
-
-				w, err := client.Data()
-				if err != nil {
-					smtpu.log.WithError(err).Errorln("Message send failed")
-					errChan <- err
-					return
-				}
-				defer w.Close()
-
-				_, err = w.Write([]byte(text))
-				if err != nil {
-					smtpu.log.WithError(err).Errorln("Message send failed")
-					errChan <- err
-					return
-				}
-
-				if err != nil {
-					smtpu.log.WithError(err).Errorln("Message send failed")
-					errChan <- err
-					return
-				}
 
 				smtpu.log.WithField("id", messageID).Infoln("Message sent")
 				smtpu.log.Infoln("Message sent")
+
+				err = smtpu.newSMTPClient(recipient.Email, mailtext)
+				if err != nil {
+					errChan <- err
+					return
+				}
 
 				statusChan <- mttypes.SendStatus{
 					RecipientID:  recipient.ID,
@@ -258,7 +266,7 @@ func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *m
 					CreatedAt:    time.Now().UTC(),
 					Message:      base64.StdEncoding.EncodeToString([]byte(text)),
 				})
-			}(client, recipient, mailtext, msgID)
+			}(recipient, mailtext, messageID)
 		}
 
 		msgWG.Wait()
@@ -296,69 +304,20 @@ func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, 
 		return nil, err
 	}
 
-	msgID := time.Now().UTC().Format("20060102150405.") + strconv.Itoa(rand.Int())
-	mailtext, err := smtpu.constructMessage(tmplemail, *recipient, msgID, tsv.Subject, text)
+	messageID := time.Now().UTC().Format("20060102150405.") + strconv.Itoa(rand.Int())
+	mailtext, err := smtpu.constructMessage(tmplemail, *recipient, messageID, tsv.Subject, text)
 	if err != nil {
 		return nil, err
 	}
 
 	mgDoneCh := make(chan struct{})
-	go func() {
+	go func(recipient mttypes.Recipient, mailtext string, messageID string) {
 		defer close(mgDoneCh)
 
-		host, _, _ := net.SplitHostPort(smtpu.smtpAddress)
-
-		auth := smtp.PlainAuth("", smtpu.smtpLogin, smtpu.smtpPassword, host)
-
-		tlsconfig := &tls.Config{
-			InsecureSkipVerify: true,
-			ServerName:         host,
-		}
-
-		conn, err := tls.Dial("tcp", smtpu.smtpAddress, tlsconfig)
+		err = smtpu.newSMTPClient(recipient.Email, mailtext)
 		if err != nil {
-			smtpu.log.WithError(err).Errorln("Message send failed")
 			return
 		}
-		client, err := smtp.NewClient(conn, host)
-		defer client.Quit()
-		if err != nil {
-			smtpu.log.WithError(err).Errorln("Message send failed")
-			return
-		}
-
-		if err = client.Auth(auth); err != nil {
-			smtpu.log.WithError(err).Errorln("Message send failed")
-			return
-		}
-		if err = client.Mail(smtpu.senderMail); err != nil {
-			smtpu.log.WithError(err).Errorln("Message send failed")
-			return
-		}
-		if err = client.Rcpt(recipient.Email); err != nil {
-			smtpu.log.WithError(err).Errorln("Message send failed")
-			return
-		}
-
-		w, err := client.Data()
-		if err != nil {
-			smtpu.log.WithError(err).Errorln("Message send failed")
-			return
-		}
-		defer w.Close()
-
-		_, err = w.Write([]byte(mailtext))
-		if err != nil {
-			smtpu.log.WithError(err).Errorln("Message send failed")
-			return
-		}
-
-		if err != nil {
-			smtpu.log.WithError(err).Errorln("Message send failed")
-			return
-		}
-
-		smtpu.log.WithField("id", msgID).Infoln("Message sent")
 
 		status = &mttypes.SendStatus{
 			RecipientID:  recipient.ID,
@@ -366,14 +325,18 @@ func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, 
 			Status:       "Sent",
 		}
 
-		err = smtpu.msgStorage.PutValue(msgID, &mttypes.MessagesStorageValue{
+		err = smtpu.msgStorage.PutValue(messageID, &mttypes.MessagesStorageValue{
 			UserId:       recipient.ID,
 			TemplateName: templateName,
 			Variables:    recipient.Variables,
 			CreatedAt:    time.Now().UTC(),
 			Message:      base64.StdEncoding.EncodeToString([]byte(text)),
 		})
-	}()
+		if err != nil {
+			smtpu.log.WithError(err).Errorln("Message save failed")
+			return
+		}
+	}(*recipient, mailtext, messageID)
 
 	select {
 	case <-ctx.Done():
