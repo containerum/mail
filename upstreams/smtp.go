@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"html/template"
-	"math/rand"
 	"strings"
 	"sync"
 	texttemplate "text/template"
@@ -237,7 +236,8 @@ func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *m
 
 			messageID := time.Now().UTC().Format("20060102150405.123456.") + strconv.Itoa(msgNumber)
 			msgNumber++
-			mailtext, err := smtpu.constructMessage(tmplemail, recipient, messageID, tsv.Subject, text)
+			var mailtext string
+			mailtext, err = smtpu.constructMessage(tmplemail, recipient, messageID, tsv.Subject, text)
 			if err != nil {
 				errChan <- err
 				msgWG.Done()
@@ -307,7 +307,7 @@ func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, 
 		return nil, err
 	}
 
-	messageID := time.Now().UTC().Format("20060102150405.") + strconv.Itoa(rand.Int())
+	messageID := time.Now().UTC().Format("20060102150405.123456.") + "1"
 	mailtext, err := smtpu.constructMessage(tmplemail, *recipient, messageID, tsv.Subject, text)
 	if err != nil {
 		return nil, err
