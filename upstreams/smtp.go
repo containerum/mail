@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"html/template"
+	"math/rand"
 	"strings"
 	"sync"
 	texttemplate "text/template"
@@ -14,7 +15,6 @@ import (
 	"context"
 
 	"crypto/tls"
-	"math/rand"
 	"net/smtp"
 	"strconv"
 
@@ -196,7 +196,6 @@ func (smtpu *smtpUpstream) newSMTPClient(recipientEmail string, text string) err
 }
 
 func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *mttypes.TemplateStorageValue, request *mttypes.SendRequest) (resp *mttypes.SendResponse, err error) {
-
 	tmpl, err := smtpu.parseTemplate(templateName, tsv)
 	if err != nil {
 		return nil, err
@@ -216,6 +215,8 @@ func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *m
 		wg := sync.WaitGroup{}
 		wg.Add(2) // error and status collectors
 
+		msgNumber := 1
+
 		var errs []string
 		errChan := make(chan error)
 		go smtpu.errCollector(errChan, &errs, &wg)
@@ -226,14 +227,16 @@ func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *m
 		msgWG := sync.WaitGroup{}
 		msgWG.Add(len(request.Message.Recipients))
 		for _, recipient := range request.Message.Recipients {
-			text, err := smtpu.executeTemplate(tmpl, &recipient, request.Message.CommonVariables)
+			var text string
+			text, err = smtpu.executeTemplate(tmpl, &recipient, request.Message.CommonVariables)
 			if err != nil {
 				errChan <- err
 				msgWG.Done()
 				continue
 			}
 
-			messageID := time.Now().UTC().Format("20060102150405.") + strconv.Itoa(rand.Int())
+			messageID := time.Now().UTC().Format("20060102150405.123456.") + strconv.Itoa(msgNumber)
+			msgNumber++
 			mailtext, err := smtpu.constructMessage(tmplemail, recipient, messageID, tsv.Subject, text)
 			if err != nil {
 				errChan <- err
