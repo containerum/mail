@@ -42,6 +42,8 @@ func main() {
 	exitOnErr(err)
 	us, err := getUpstream(ms)
 	exitOnErr(err)
+	uss, err := getUpstreamSimple(ms)
+	exitOnErr(err)
 	um, err := getUserManagerClient()
 	exitOnErr(err)
 
@@ -49,6 +51,7 @@ func main() {
 		TemplateStorage:   ts,
 		MessagesStorage:   ms,
 		Upstream:          us,
+		UpstreamSimple:    uss,
 		UserManagerClient: um,
 	})
 
