@@ -12,6 +12,7 @@ type Services struct {
 	MessagesStorage   storages.MessagesStorage
 	TemplateStorage   storages.TemplateStorage
 	Upstream          upstreams.Upstream
+	UpstreamSimple     upstreams.Upstream
 	UserManagerClient clients.UserManagerClient
 }
 

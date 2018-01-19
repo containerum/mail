@@ -23,6 +23,7 @@ ENV GIN_MODE=release \
     CH_MAIL_TEMPLATE_DB=/storage/template.db \
     CH_MAIL_MESSAGES_DB=/storage/messages.db \
     CH_MAIL_UPSTREAM=mailgun \
+    CH_MAIL_UPSTREAM_SIMPLE=mailgun \
     MG_API_KEY=apikey \
     MG_DOMAIN=domain \
     MG_PUBLIC_API_KEY=pubkey \
@@ -30,6 +31,9 @@ ENV GIN_MODE=release \
     CH_MAIL_SENDER_NAME=containerum \
     CH_MAIL_SENDER_MAIL=support@containerum.com \
     CH_MAIL_USER_MANAGER_URL=http://user-manager:8111 \
-    CH_MAIL_LISTEN_ADDR=:7070
+    CH_MAIL_LISTEN_ADDR=:7070 \
+    CH_MAIL_SMTP_ADDR=mail.example.com:465 \
+    CH_MAIL_SMTP_LOGIN=noreply-test@example.com \
+    CH_MAIL_SMTP_PASSWORD=password
 VOLUME ["/storage"]
 ENTRYPOINT ["/mail-templater"]

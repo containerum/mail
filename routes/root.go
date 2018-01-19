@@ -32,7 +32,7 @@ func simpleSendHandler(ctx *gin.Context) {
 		Name:  info.Login,
 		Email: info.Login,
 	}
-	status, err := svc.Upstream.SimpleSend(ctx, request.Template, tv, recipient)
+	status, err := svc.UpstreamSimple.SimpleSend(ctx, request.Template, tv, recipient)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
