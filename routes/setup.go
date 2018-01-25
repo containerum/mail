@@ -12,7 +12,7 @@ type Services struct {
 	MessagesStorage   storages.MessagesStorage
 	TemplateStorage   storages.TemplateStorage
 	Upstream          upstreams.Upstream
-	UpstreamSimple     upstreams.Upstream
+	UpstreamSimple    upstreams.Upstream
 	UserManagerClient clients.UserManagerClient
 }
 
@@ -31,6 +31,7 @@ func Setup(app *gin.Engine, services *Services) {
 
 	templates := app.Group("/templates")
 	{
+		templates.GET("/", templateListGetHandler)
 		templates.POST("/", templateCreateHandler)
 		templates.GET("/:name", templateGetHandler)
 		templates.PUT("/:name", templateUpdateHandler)

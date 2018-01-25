@@ -27,6 +27,9 @@ type TemplateStorage interface {
 	// DeleteTemplates deletes all versions of template. Returns nil on successful delete.
 	DeleteTemplates(templateName string) error
 
+	// GetTemplatesList returns list of all of templates.
+	GetTemplatesList() (*mttypes.TemplatesListResponse, error)
+
 	io.Closer
 }
 

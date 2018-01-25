@@ -3,67 +3,106 @@ package resource
 import (
 	"time"
 
-	dec "github.com/shopspring/decimal"
+	"database/sql"
+
+	"git.containerum.net/ch/json-types/misc"
 )
 
-type User struct {
-	ID        string      `json:"user_id,omitempty"`
-	Login     string      `json:"login,omitempty"`
-	Country   int         `json:"country,omitempty"`
-	Balance   dec.Decimal `json:"balance,omitempty"`
-	BillingID string      `json:"billing_id,omitempty"`
-	CreatedAt time.Time   `json:"created_at,omitempty"`
-}
+type Kind string // constants KindNamespace, KindVolume, ... It`s recommended to use strings.ToLower before comparsion
 
-type Tariff struct {
-	ID        string      `json:"id,omitempty"`
-	Label     string      `json:"label,omitempty"`
-	Type      string      `json:"type,omitempty"`
-	Price     dec.Decimal `json:"price,omitempty"`
-	IsActive  bool        `json:"is_active,omitempty"`
-	IsPublic  bool        `json:"is_public,omitempty"`
-	BillingID string      `json:"billing_id,omitempty"`
-}
+const (
+	KindNamespace  Kind = "namespace"
+	KindVolume          = "volume"
+	KindExtService      = "extservice"
+	KindIntService      = "intservice"
+	KindDomain          = "domain"
+)
 
-type NamespaceTariff struct {
-	ID          string    `json:"id,omitempty"`
-	TariffID    string    `json:"tariff_id,omitempty"`
-	Description string    `json:"description,omitempty"`
-	CreatedAt   time.Time `json:"created_at,omitempty"`
+type PermissionStatus string // constants PermissionStatusOwner, PermissionStatusRead
 
-	CpuLimit         int         `json:"cpu_limit,omitempty"`
-	MemoryLimit      int         `json:"memory_limit,omitempty"`
-	Traffic          int         `json:"traffic,omitempty"`
-	TrafficPrice     dec.Decimal `json:"traffic_price,omitempty"`
-	ExternalServices int         `json:"external_services,omitempty"`
-	InternalServices int         `json:"internal_services,omitempty"`
-
-	VV *VolumeTariff `json:"VV,omitempty"`
-
-	IsActive bool        `json:"is_active,omitempty"`
-	IsPublic bool        `json:"is_public,omitempty"`
-	Price    dec.Decimal `json:"price,omitempty"`
-}
-
-type VolumeTariff struct {
-	ID          string    `json:"id,omitempty"`
-	TariffID    string    `json:"tariff_id,omitempty"`
-	Description string    `json:"description,omitempty"`
-	CreatedAt   time.Time `json:"created_at,omitempty"`
-
-	StorageLimit  int  `json:"storage_limit,omitempty"`
-	ReplicasLimit int  `json:"replicas_limit,omitempty"`
-	IsPersistent  bool `json:"is_persistent,omitempty"`
-
-	IsActive bool        `json:"is_active,omitempty"`
-	IsPublic bool        `json:"is_public,omitempty"`
-	Price    dec.Decimal `json:"price,omitempty"`
-}
+const (
+	PermissionStatusOwner      PermissionStatus = "owner"
+	PermissionStatusRead                        = "read"
+	PermissionStatusWrite                       = "write"
+	PermissionStatusReadDelete                  = "readdelete"
+	PermissionStatusNone                        = "none"
+)
 
 type Resource struct {
-	ResourceID string `json:"resource_id,omitempty"`
-	UserID     string `json:"user_id,omitempty"`
-	TariffID   string `json:"tariff_id,omitempty"`
-	BillingID  string `json:"billing_id,omitempty"`
-	Status     string `json:"status,omitempty"`
+	ID         string          `json:"id" db:"id"`
+	CreateTime string          `json:"create_time,omitempty" db:"create_time"`
+	Deleted    bool            `json:"deleted,omitempty" db:"deleted"`
+	DeleteTime misc.PqNullTime `json:"delete_time,omitempty" db:"delete_time"`
+	TariffID   string          `json:"tariff_id,omitempty" db:"tariff_id"`
+}
+
+type Namespace struct {
+	Resource
+
+	RAM                 int `json:"ram" db:"ram"` // megabytes
+	CPU                 int `json:"cpu" db:"cpu"`
+	MaxExternalServices int `json:"max_external_services" db:"max_ext_services"`
+	MaxIntServices      int `json:"max_internal_services" db:"max_int_services"`
+	MaxTraffic          int `json:"max_traffic" db:"max_traffic"` // megabytes per month
+}
+
+type Volume struct {
+	Resource
+
+	Active     *bool `json:"active,omitempty" db:"active"`
+	Capacity   int   `json:"capacity" db:"capacity"` // gigabytes
+	Replicas   int   `json:"replicas" db:"replicas"`
+	Persistent bool  `json:"is_persistent" db:"is_persistent"`
+}
+
+type Deployment struct {
+	ID          string          `json:"id" db:"id"`
+	NamespaceID string          `json:"namespace_id" db:"ns_id"`
+	Name        string          `json:"name" db:"name"`
+	RAM         int             `json:"ram" db:"ram"`
+	CPU         int             `json:"cpu" db:"cpu"`
+	CreateTime  time.Time       `json:"create_time,omitempty" db:"create_time"`
+	Deleted     *bool           `json:"deleted,omitempty" db:"deleted"`
+	DeleteTime  misc.PqNullTime `json:"delete_time,omitempty" db:"delete_time"`
+}
+
+type PermissionRecord struct {
+	ID                    string           `json:"id,omitempty" db:"id"`
+	Kind                  Kind             `json:"kind,omitempty" db:"kind"`
+	ResourceID            sql.NullString   `json:"resource_id,omitempty" db:"resource_id"` // it can be null for resources without tables
+	ResourceLabel         string           `json:"label,omitempty" db:"resource_label"`
+	OwnerUserID           string           `json:"owner_user_id,omitempty" db:"owner_user_id"`
+	CreateTime            time.Time        `json:"create_time,omitempty" db:"create_time"`
+	UserID                string           `json:"user_id" db:"user_id"`
+	AccessLevel           PermissionStatus `json:"access_level" db:"access_level"`
+	Limited               bool             `json:"limited" db:"limited"`
+	AccessLevelChangeTime time.Time        `json:"access_level_change_time" db:"access_level_change_time"`
+	NewAccessLevel        PermissionStatus `json:"new_access_level,omitempty" db:"new_access_level"`
+}
+
+// Types below is not for storing in db
+
+type NamespaceWithPermission struct {
+	Namespace
+	PermissionRecord
+}
+
+type VolumeWithPermission struct {
+	Volume
+	PermissionRecord
+}
+
+type NamespaceWithVolumes struct {
+	NamespaceWithPermission
+	Volume []VolumeWithPermission `json:"volumes"`
+}
+
+type NamespaceWithUserPermissions struct {
+	NamespaceWithPermission
+	Users []PermissionRecord `json:"users"`
+}
+
+type VolumeWithUserPermissions struct {
+	VolumeWithPermission
+	Users []PermissionRecord `json:"users"`
 }

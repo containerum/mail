@@ -216,6 +216,40 @@ func (s *boltTemplateStorage) DeleteTemplates(templateName string) error {
 	})
 }
 
+func (s *boltTemplateStorage) GetTemplatesList() (*mttypes.TemplatesListResponse, error) {
+	loge := s.log.WithField("name", "templates list")
+	loge.Infoln("Trying to get list of all templates")
+
+	resp := mttypes.TemplatesListResponse{
+		Templates: []mttypes.TemplatesListEntry{},
+	}
+	err := s.db.View(func(tx *bolt.Tx) error {
+		return tx.ForEach(func(name []byte, _ *bolt.Bucket) (err error) {
+			template, err := s.GetTemplates(string(name))
+			if err != nil {
+				return err
+			}
+
+			var versions []string
+			for version, _ := range template {
+				versions = append(versions, version)
+			}
+
+			resp.Templates = append(resp.Templates, mttypes.TemplatesListEntry{
+				Name:     string(name),
+				Versions: versions,
+			})
+			return nil
+
+		})
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp, nil
+}
+
 func (s *boltTemplateStorage) Close() error {
 	return s.db.Close()
 }
