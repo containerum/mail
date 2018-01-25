@@ -119,3 +119,13 @@ func templateSendHandler(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, status)
 }
+
+func templateListGetHandler(ctx *gin.Context) {
+	respObj, err := svc.TemplateStorage.GetTemplatesList()
+	if err != nil {
+		ctx.Error(err)
+		sendStorageError(ctx, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, respObj)
+}

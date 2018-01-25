@@ -4,17 +4,6 @@ import (
 	"time"
 )
 
-type ProfileData struct {
-	Email          string `json:"email,omitempty" binding:"omitempty,email"`
-	Address        string `json:"address,omitempty"`
-	Phone          string `json:"phone,omitempty"`
-	FirstName      string `json:"first_name,omitempty"`
-	LastName       string `json:"last_name,omitempty"`
-	IsOrganization bool   `json:"is_organization,omitempty"`
-	TaxCode        string `json:"tax_code,omitempty"`
-	Company        string `json:"company,omitempty"`
-}
-
 type LinkType string
 
 const (
@@ -31,13 +20,6 @@ type Link struct {
 	IsActive  bool      `json:"is_active"`
 	SentAt    time.Time `json:"sent_at,omitempty"`
 }
-
-type UserRole int
-
-const (
-	RoleUser UserRole = iota
-	RoleAdmin
-)
 
 type BasicLoginRequest struct {
 	Username  string `json:"username" binding:"required,email"`
@@ -81,6 +63,15 @@ type UserCreateResponse struct {
 	IsActive bool   `json:"is_active"`
 }
 
+type UserCreateWebAPIRequest struct {
+	ID        string                 `json:"id"`
+	UserName  string                 `json:"username" binding:"required,email"`
+	Password  string                 `json:"password" binding:"required"`
+	Data      map[string]interface{} `json:"data"`
+	CreatedAt string                 `json:"created_at"`
+	IsActive  bool                   `json:"is_active"`
+}
+
 type ActivateRequest struct {
 	Link string `json:"link" binding:"required"`
 }
@@ -90,8 +81,8 @@ type ResendLinkRequest struct {
 }
 
 type UserInfoByIDGetResponse struct {
-	Login string      `json:"login"`
-	Data  ProfileData `json:"data"`
+	Login string                 `json:"login"`
+	Data  map[string]interface{} `json:"data"`
 }
 
 type BlacklistedUserEntry struct {
@@ -108,26 +99,28 @@ type LinksGetResponse struct {
 }
 
 type UserInfoGetResponse struct {
-	Login     string      `json:"login"`
-	Data      ProfileData `json:"data"`
-	ID        string      `json:"id"`
-	IsActive  bool        `json:"is_active"`
-	CreatedAt time.Time   `json:"created_at"`
+	Login     string                 `json:"login"`
+	Data      map[string]interface{} `json:"data"`
+	ID        string                 `json:"id"`
+	Role      string                 `json:"role"`
+	IsActive  bool                   `json:"is_active"`
+	CreatedAt time.Time              `json:"created_at"`
 }
 
 type UserListEntry struct {
-	ID            string      `json:"id"`
-	Login         string      `json:"login"`
-	Referral      string      `json:"referral"`
-	Role          UserRole    `json:"role"`
-	Access        string      `json:"access"`
-	CreatedAt     time.Time   `json:"created_at"`
-	DeletedAt     time.Time   `json:"deleted_at"`
-	BlacklistedAt time.Time   `json:"blacklisted_at"`
-	Data          ProfileData `json:"data"`
-	IsActive      bool        `json:"is_active"`
-	IsInBlacklist bool        `json:"is_in_blacklist"`
-	IsDeleted     bool        `json:"is_deleted"`
+	ID            string                 `json:"id"`
+	Login         string                 `json:"login"`
+	Referral      string                 `json:"referral"`
+	Role          string                 `json:"role"`
+	Access        string                 `json:"access"`
+	CreatedAt     string                 `json:"created_at"`
+	DeletedAt     string                 `json:"deleted_at"`
+	BlacklistedAt string                 `json:"blacklisted_at"`
+	Data          map[string]interface{} `json:"data"`
+	IsActive      bool                   `json:"is_active"`
+	IsInBlacklist bool                   `json:"is_in_blacklist"`
+	IsDeleted     bool                   `json:"is_deleted"`
+	Accounts      map[string]string      `json:"accounts"`
 }
 
 type UserListGetResponse struct {
@@ -146,4 +139,16 @@ type UserToBlacklistRequest struct {
 type UserListQuery struct {
 	Page    int `form:"page" binding:"required,gt=0"`
 	PerPage int `form:"per_page" binding:"required,gt=0"`
+}
+
+type CompleteDeleteHandlerRequest struct {
+	UserID string `json:"user_id" binding:"required,uuid4"`
+}
+
+type BoundAccountsResponce struct {
+	Accounts map[string]string `json:"accounts" binding:"required"`
+}
+
+type BoundAccountDeleteRequest struct {
+	Resource string `json:"resource" binding:"required"`
 }

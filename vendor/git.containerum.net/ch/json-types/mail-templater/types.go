@@ -88,3 +88,12 @@ type SendStatus struct {
 type SendResponse struct {
 	Statuses []SendStatus `json:"email_list"`
 }
+
+type TemplatesListEntry struct {
+	Name     string   `json:"template_name"`
+	Versions []string `json:"template_versions"`
+}
+
+type TemplatesListResponse struct {
+	Templates []TemplatesListEntry `json:"templates"`
+}
