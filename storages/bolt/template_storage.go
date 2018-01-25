@@ -231,7 +231,7 @@ func (s *boltTemplateStorage) GetTemplatesList() (*mttypes.TemplatesListResponse
 			}
 
 			var versions []string
-			for version, _ := range template {
+			for version := range template {
 				versions = append(versions, version)
 			}
 
