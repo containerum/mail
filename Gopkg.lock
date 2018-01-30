@@ -5,7 +5,7 @@
   branch = "master"
   name = "git.containerum.net/ch/json-types"
   packages = ["errors","mail-templater","user-manager"]
-  revision = "5258fc0f23631438360b963cddd865056e28736d"
+  revision = "3d60cc778bf96a82fe81e3d6deef8c478008eeb5"
 
 [[projects]]
   name = "github.com/blang/semver"
