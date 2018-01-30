@@ -152,3 +152,17 @@ type BoundAccountsResponce struct {
 type BoundAccountDeleteRequest struct {
 	Resource string `json:"resource" binding:"required"`
 }
+
+type DomainToBlacklistRequest struct {
+	Domain string `json:"domain" binding:"required"`
+}
+
+type DomainListResponce struct {
+	DomainList []DomainResponce `json:"domain_list"`
+}
+
+type DomainResponce struct {
+	Domain    string `json:"domain"`
+	AddedBy   string `json:"added_by"`
+	CreatedAt string `json:"created_at"`
+}

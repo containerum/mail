@@ -29,9 +29,9 @@ const (
 )
 
 type Resource struct {
-	ID         string          `json:"id" db:"id"`
+	ID         string          `json:"id,omitempty" db:"id"`
 	CreateTime string          `json:"create_time,omitempty" db:"create_time"`
-	Deleted    bool            `json:"deleted,omitempty" db:"deleted"`
+	Deleted    *bool           `json:"deleted,omitempty" db:"deleted"`
 	DeleteTime misc.PqNullTime `json:"delete_time,omitempty" db:"delete_time"`
 	TariffID   string          `json:"tariff_id,omitempty" db:"tariff_id"`
 }
@@ -56,8 +56,8 @@ type Volume struct {
 }
 
 type Deployment struct {
-	ID          string          `json:"id" db:"id"`
-	NamespaceID string          `json:"namespace_id" db:"ns_id"`
+	ID          string          `json:"id,omitempty" db:"id"`
+	NamespaceID string          `json:"namespace_id,omitempty" db:"ns_id"`
 	Name        string          `json:"name" db:"name"`
 	RAM         int             `json:"ram" db:"ram"`
 	CPU         int             `json:"cpu" db:"cpu"`
@@ -75,7 +75,7 @@ type PermissionRecord struct {
 	CreateTime            time.Time        `json:"create_time,omitempty" db:"create_time"`
 	UserID                string           `json:"user_id" db:"user_id"`
 	AccessLevel           PermissionStatus `json:"access_level" db:"access_level"`
-	Limited               bool             `json:"limited" db:"limited"`
+	Limited               *bool            `json:"limited,omitempty" db:"limited"`
 	AccessLevelChangeTime time.Time        `json:"access_level_change_time" db:"access_level_change_time"`
 	NewAccessLevel        PermissionStatus `json:"new_access_level,omitempty" db:"new_access_level"`
 }

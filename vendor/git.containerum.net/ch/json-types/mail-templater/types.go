@@ -44,8 +44,8 @@ type TemplateCreateResponse struct {
 }
 
 type TemplateUpdateRequest struct {
-	Data    string `json:"template_data" binding:"required,base64"`
-	Subject string `json:"template_subject" binding:"required"`
+	Data    string `json:"template_data" binding:"omitempty,base64"`
+	Subject string `json:"template_subject" binding:"omitempty"`
 }
 
 type TemplateUpdateResponse struct {
