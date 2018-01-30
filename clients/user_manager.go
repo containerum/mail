@@ -41,9 +41,8 @@ func (u *httpUserManagerClient) UserInfoByID(ctx context.Context, userID string)
 	ret := umtypes.UserInfoGetResponse{}
 	resp, err := u.client.R().
 		SetContext(ctx).
-		SetHeader(umtypes.UserIDHeader, userID).
 		SetResult(&ret).
-		Get("/user/info")
+		Get("/user/info/" + userID)
 	if err != nil {
 		return nil, err
 	}
