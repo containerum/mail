@@ -30,9 +30,9 @@ func requireAdminRole(ctx *gin.Context) {
 		return
 	}
 
-	userId := ctx.GetHeader(umtypes.UserIDHeader)
+	userID := ctx.GetHeader(umtypes.UserIDHeader)
 
-	info, err := svc.UserManagerClient.UserInfoByID(ctx, userId)
+	info, err := svc.UserManagerClient.UserInfoByID(ctx, userID)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusForbidden, err.Error())
