@@ -35,7 +35,25 @@ func templateUpdateHandler(ctx *gin.Context) {
 	}
 	name := ctx.Param("name")
 	version := ctx.Query("version")
-	err := svc.TemplateStorage.PutTemplate(name, version, request.Data, request.Subject)
+
+	respObj, err := svc.TemplateStorage.GetTemplate(name, version)
+	if err != nil {
+		ctx.Error(err)
+		sendStorageError(ctx, err)
+		return
+	}
+
+	data := respObj.Data
+	subject := respObj.Subject
+	if request.Data != "" {
+		data = request.Data
+	}
+
+	if request.Subject != "" {
+		subject = request.Subject
+	}
+
+	err = svc.TemplateStorage.PutTemplate(name, version, data, subject)
 	if err != nil {
 		ctx.Error(err)
 		sendStorageError(ctx, err)
