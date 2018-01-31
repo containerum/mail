@@ -59,7 +59,7 @@ unit-tests:
   tags:
     - test
   script:
-    - go-wrapper download
+    - ln -s $(pwd) /go/src/git.containerum.net/${CI_PROJECT_PATH}
     - go test -v -cover ./...
 
 lint-check:
@@ -71,4 +71,5 @@ lint-check:
     - apk add --no-cache openssl
     - wget -O - https://github.com/alecthomas/gometalinter/releases/download/v2.0.3/gometalinter-v2.0.3-linux-amd64.tar.bz2 | tar -C /go -xjf -
     - export PATH=$PATH:/go/gometalinter-v2.0.3-linux-amd64:/go/gometalinter-v2.0.3-linux-amd64/linters
+    - ln -s $(pwd) /go/src/git.containerum.net/${CI_PROJECT_PATH}
     - gometalinter ./...
