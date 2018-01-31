@@ -69,6 +69,6 @@ lint-check:
     - test
   script:
     - apk add --no-cache openssl
-    - wget -O -https://github.com/alecthomas/gometalinter/releases/download/v2.0.3/gometalinter-v2.0.3-linux-amd64.tar.bz2 | tar -C /go -xjf -
+    - wget -O - https://github.com/alecthomas/gometalinter/releases/download/v2.0.3/gometalinter-v2.0.3-linux-amd64.tar.bz2 | tar -C /go -xjf -
     - export PATH=$PATH:/go/gometalinter-v2.0.3-linux-amd64:/go/gometalinter-v2.0.3-linux-amd64/linters
     - gometalinter ./...
