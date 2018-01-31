@@ -42,5 +42,8 @@ type MessagesStorage interface {
 	// GetValue returns value by specified ID.
 	GetValue(id string) (*mttypes.MessagesStorageValue, error)
 
+	// GetValue returns all messages.
+	GetMessageList(page int, perPage int) (*mttypes.MessageListResponse, error)
+
 	io.Closer
 }

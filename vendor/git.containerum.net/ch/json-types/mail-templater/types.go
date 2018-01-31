@@ -97,3 +97,19 @@ type TemplatesListEntry struct {
 type TemplatesListResponse struct {
 	Templates []TemplatesListEntry `json:"templates"`
 }
+
+type MessageListQuery struct {
+	Page    int `form:"page" binding:"required,gt=0"`
+	PerPage int `form:"per_page" binding:"required,gt=0"`
+}
+
+type MessageListEntry struct {
+	ID           string    `json:"id"`
+	UserID       string    `json:"user_id"`
+	TemplateName string    `json:"template_name"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+type MessageListResponse struct {
+	Messages []MessageListEntry `json:"message_list"`
+}

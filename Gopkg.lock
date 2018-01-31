@@ -5,7 +5,7 @@
   branch = "master"
   name = "git.containerum.net/ch/json-types"
   packages = ["errors","mail-templater","user-manager"]
-  revision = "3d60cc778bf96a82fe81e3d6deef8c478008eeb5"
+  revision = "d3eafbe69d108817df9c7bd74295ad97efdc3004"
 
 [[projects]]
   name = "github.com/blang/semver"
@@ -44,10 +44,10 @@
   revision = "783c7ee9c14eac0e65b501664b4f553291556b43"
 
 [[projects]]
-  branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   revision = "925541529c1fa6821df4e44ce2723319eb2be768"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -208,6 +208,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "76902eca6eb875c0d92ba236f235909891eb3c00a4026e699b7ab684e533eba0"
+  inputs-digest = "b1b87853eb256fe6282f1259185966001a8640cddc42f8b1431755f6e26fe959"
   solver-name = "gps-cdcl"
   solver-version = 1

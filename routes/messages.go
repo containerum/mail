@@ -20,3 +20,20 @@ func messageGetHandler(ctx *gin.Context) {
 		MessagesStorageValue: v,
 	})
 }
+
+func messageListGetHandler(ctx *gin.Context) {
+	var params mttypes.MessageListQuery
+	if err := ctx.ShouldBindQuery(&params); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
+		return
+	}
+
+	v, err := svc.MessagesStorage.GetMessageList(params.Page, params.PerPage)
+	if err != nil {
+		ctx.Error(err)
+		sendStorageError(ctx, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, v)
+}
