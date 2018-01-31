@@ -56,7 +56,7 @@ docker-build-test:
 .correct_workdir: &correct_workdir
   before_script:
     - mkdir -p /go/src/git.containerum.net/${CI_PROJECT_PATH}
-    - ln -sf $(pwd) /go/src/git.containerum.net/${CI_PROJECT_PATH}
+    - ln -sf ${CI_PROJECT_DIR} /go/src/git.containerum.net/${CI_PROJECT_PATH}
     - cd /go/src/git.containerum.net/${CI_PROJECT_PATH}
 
 unit-tests:
