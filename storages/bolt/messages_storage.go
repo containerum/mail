@@ -1,6 +1,7 @@
 package bolt
 
 import (
+	"errors"
 	"os"
 
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
@@ -88,6 +89,56 @@ func (s *boltMessagesStorage) GetValue(id string) (*mttypes.MessagesStorageValue
 		return nil
 	})
 	return &value, err
+}
+
+func (s *boltMessagesStorage) GetMessageList(page int, perPage int) (*mttypes.MessageListResponse, error) {
+	loge := s.log.WithField("name", "message list")
+	loge.Infoln("Trying to get list of all messages")
+
+	resp := mttypes.MessageListResponse{
+		Messages: []mttypes.MessageListEntry{},
+	}
+	err := s.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("messages"))
+
+		startMessage := (page - 1) * perPage
+		var messageNumber int
+
+		err := b.ForEach(func(k, v []byte) error {
+
+			if messageNumber >= startMessage+perPage {
+				return errors.New("Iteration finished")
+			}
+
+			var value mttypes.MessageListEntry
+			err := json.Unmarshal(v, &value)
+
+			if messageNumber >= startMessage {
+				resp.Messages = append(resp.Messages, mttypes.MessageListEntry{
+					ID:           string(k),
+					UserID:       value.UserID,
+					TemplateName: value.TemplateName,
+					CreatedAt:    value.CreatedAt,
+				})
+			}
+
+			messageNumber++
+
+			return err
+		})
+		if err != nil {
+			if err.Error() == "Iteration finished" {
+				return nil
+			}
+		}
+		return err
+	})
+
+	if err != nil {
+		loge.WithError(err).Errorln("Iterating error")
+	}
+
+	return &resp, nil
 }
 
 func (s *boltMessagesStorage) Close() error {

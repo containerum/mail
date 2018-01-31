@@ -26,7 +26,7 @@ func (nt PqNullTime) Value() (driver.Value, error) {
 }
 
 // UnmarshalJSON extends a standard Time.UnmarshalJSON functionality. If received data is null, set IsNull to true
-func (nt PqNullTime) UnmarshalJSON(data []byte) error {
+func (nt *PqNullTime) UnmarshalJSON(data []byte) error {
 	if len(data) == 0 || string(data) == "null" {
 		nt.IsNull = true
 		return nil
@@ -38,7 +38,7 @@ func (nt PqNullTime) UnmarshalJSON(data []byte) error {
 // MarshalJSON extends a standard Time.Marshal functionality. If IsNull set to true, return nil data
 func (nt PqNullTime) MarshalJSON() ([]byte, error) {
 	if nt.IsNull {
-		return nil, nil
+		return []byte("null"), nil
 	}
 	return nt.Time.MarshalJSON()
 }

@@ -30,6 +30,7 @@ func Setup(app *gin.Engine, services *Services) {
 	messages := app.Group("/messages")
 	{
 		messages.GET("/:message_id", requireIdentityHeaders, requireAdminRole, messageGetHandler)
+		messages.GET("/", requireIdentityHeaders, requireAdminRole, messageListGetHandler)
 	}
 
 	templates := app.Group("/templates")
