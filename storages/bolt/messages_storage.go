@@ -49,8 +49,7 @@ func NewBoltMessagesStorage(file string, options *bolt.Options) (storages.Messag
 
 func (s *boltMessagesStorage) PutValue(id string, value *mttypes.MessagesStorageValue) error {
 	loge := s.log.WithFields(logrus.Fields{
-		"id":    id,
-		"value": value,
+		"id": id,
 	})
 	loge.Infof("Putting value")
 	return s.db.Update(func(tx *bolt.Tx) error {

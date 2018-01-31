@@ -28,9 +28,10 @@ func simpleSendHandler(ctx *gin.Context) {
 	}
 
 	recipient := &mttypes.Recipient{
-		ID:    request.UserID,
-		Name:  info.Login,
-		Email: info.Login,
+		ID:        request.UserID,
+		Name:      info.Login,
+		Email:     info.Login,
+		Variables: request.Variables,
 	}
 	status, err := svc.UpstreamSimple.SimpleSend(ctx, request.Template, tv, recipient)
 	if err != nil {
