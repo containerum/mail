@@ -43,7 +43,7 @@ docker-build-test:
   services:
     - docker:dind
   image: docker:latest
-  stage: build
+  stage: test
   tags:
     - test
   script:
@@ -53,17 +53,23 @@ docker-build-test:
   except:
     - develop
 
+.correct_workdir: &correct_workdir
+  before_script:
+    - mkdir -p /go/src/git.containerum.net/${CI_PROJECT_PATH}
+    - ln -sf $(pwd) /go/src/git.containerum.net/${CI_PROJECT_PATH}
+    - cd /go/src/git.containerum.net/${CI_PROJECT_PATH}
+
 unit-tests:
+  <<: *correct_workdir
   image: golang:1.9-alpine
   stage: test
   tags:
     - test
   script:
-    - mkdir -p /go/src/git.containerum.net/${CI_PROJECT_PATH}
-    - ln -sf $(pwd) /go/src/git.containerum.net/${CI_PROJECT_PATH}
     - go test -v -cover ./...
 
 lint-check:
+  <<: *correct_workdir
   image: golang:1.9-alpine
   stage: test
   tags:
@@ -72,6 +78,4 @@ lint-check:
     - apk add --no-cache openssl
     - wget -O - https://github.com/alecthomas/gometalinter/releases/download/v2.0.3/gometalinter-v2.0.3-linux-amd64.tar.bz2 | tar -C /go -xjf -
     - export PATH=$PATH:/go/gometalinter-v2.0.3-linux-amd64:/go/gometalinter-v2.0.3-linux-amd64/linters
-    - mkdir -p /go/src/git.containerum.net/${CI_PROJECT_PATH}
-    - ln -sf $(pwd) /go/src/git.containerum.net/${CI_PROJECT_PATH}
     - gometalinter ./...
