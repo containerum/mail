@@ -32,8 +32,8 @@ ENV GIN_MODE=release \
     CH_MAIL_SENDER_MAIL=support@containerum.com \
     CH_MAIL_USER_MANAGER_URL=http://user-manager:8111 \
     CH_MAIL_LISTEN_ADDR=:7070 \
-    CH_MAIL_SMTP_ADDR=mail.example.com:465 \
-    CH_MAIL_SMTP_LOGIN=noreply-test@example.com \
-    CH_MAIL_SMTP_PASSWORD=password
+    CH_MAIL_SMTP_ADDR=mail.containerum.io:465 \
+    CH_MAIL_SMTP_LOGIN=noreply-test@containerum.io \
+    CH_MAIL_SMTP_PASSWORD=PuRrAtZzMzEATlYQ
 VOLUME ["/storage"]
 ENTRYPOINT ["/mail-templater"]
