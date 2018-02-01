@@ -1,7 +1,0 @@
-FROM golang:1.9-alpine
-ADD https://github.com/alecthomas/gometalinter/releases/download/v2.0.3/gometalinter-v2.0.3-linux-amd64.tar.bz2 /go/
-RUN tar -xjf /go/gometalinter-v2.0.3-linux-amd64.tar.bz2
-ENV PATH=$PATH:/go/gometalinter-v2.0.3-linux-amd64:/go/gometalinter-v2.0.3-linux-amd64/linters
-WORKDIR src/git.containerum.net/ch/mail-templater
-COPY . .
-CMD gometalinter ./...
