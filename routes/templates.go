@@ -11,7 +11,7 @@ func templateCreateHandler(ctx *gin.Context) {
 	var request mttypes.TemplateCreateRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		sendValidationError(ctx, err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 	err := svc.TemplateStorage.PutTemplate(request.Name, request.Version, request.Data, request.Subject)
@@ -30,7 +30,7 @@ func templateUpdateHandler(ctx *gin.Context) {
 	var request mttypes.TemplateUpdateRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		sendValidationError(ctx, err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 	name := ctx.Param("name")
@@ -114,7 +114,7 @@ func templateSendHandler(ctx *gin.Context) {
 	var request mttypes.SendRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		sendValidationError(ctx, err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 	var tv *mttypes.TemplateStorageValue

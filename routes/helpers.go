@@ -12,12 +12,8 @@ func sendStorageError(ctx *gin.Context, err error) {
 	switch err {
 	case nil:
 	case mttypes.ErrTemplateNotExists, mttypes.ErrVersionNotExists, mttypes.ErrMessageNotExists:
-		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, []*errors.Error{errors.New(err.Error())})
 	default:
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 	}
-}
-
-func sendValidationError(ctx *gin.Context, err error) {
-	ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
 }

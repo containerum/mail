@@ -19,14 +19,14 @@ func requireHeaders(headers ...string) gin.HandlerFunc {
 		if len(notFoundHeaders) > 0 {
 			err := errors.Format("required headers %v was not provided", notFoundHeaders)
 			ctx.Error(err)
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, []*errors.Error{errors.New(err.Error())})
 		}
 	}
 }
 
 func requireAdminRole(ctx *gin.Context) {
 	if ctx.GetHeader(umtypes.UserRoleHeader) != "admin" {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.New("Only admin can do this"))
+		ctx.AbortWithStatusJSON(http.StatusForbidden, []*errors.Error{errors.New("Only admin can do this")})
 		return
 	}
 
@@ -35,16 +35,16 @@ func requireAdminRole(ctx *gin.Context) {
 	info, err := svc.UserManagerClient.UserInfoByID(ctx, userID)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, err.Error())
+		ctx.AbortWithStatusJSON(http.StatusForbidden, []*errors.Error{errors.New(err.Error())})
 		return
 	}
 
 	if info != nil {
 		if info.Role != "admin" {
-			ctx.AbortWithStatusJSON(http.StatusForbidden, errors.New("Only admin can do this"))
+			ctx.AbortWithStatusJSON(http.StatusForbidden, []*errors.Error{errors.New("Only admin can do this")})
 			return
 		}
 	} else {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.New("Unable to verify your permissions"))
+		ctx.AbortWithStatusJSON(http.StatusForbidden, []*errors.Error{errors.New("Unable to verify your permissions")})
 	}
 }

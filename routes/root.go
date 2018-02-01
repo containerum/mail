@@ -11,7 +11,7 @@ func simpleSendHandler(ctx *gin.Context) {
 	var request mttypes.SimpleSendRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		sendValidationError(ctx, err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 	_, tv, err := svc.TemplateStorage.GetLatestVersionTemplate(request.Template)

@@ -9,6 +9,7 @@ import (
 	"git.containerum.net/ch/mail-templater/storages"
 	"github.com/blang/semver"
 	"github.com/boltdb/bolt"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -24,13 +25,13 @@ func NewBoltTemplateStorage(file string, options *bolt.Options) (storages.Templa
 	log.Infof("Opening storage at %s with options %#v", file, options)
 	db, err := bolt.Open(file, os.ModePerm, options)
 	if err != nil {
-		log.WithError(err).Errorln("Failed to open storage")
-		return nil, err
+		log.WithError(err).Errorln(storageOpenFailed)
+		return nil, errors.New(storageOpenFailed)
 	}
 	return &boltTemplateStorage{
 		db:  db,
 		log: log,
-	}, err
+	}, nil
 }
 
 func (s *boltTemplateStorage) PutTemplate(templateName, templateVersion, templateData, templateSubject string) error {
@@ -39,7 +40,7 @@ func (s *boltTemplateStorage) PutTemplate(templateName, templateVersion, templat
 		"version": templateVersion,
 	})
 	loge.Infoln("Putting template to storage")
-	return s.db.Update(func(tx *bolt.Tx) error {
+	err := s.db.Update(func(tx *bolt.Tx) error {
 		loge.Debugln("Creating bucket")
 		b, err := tx.CreateBucketIfNotExists([]byte(templateName))
 		if err != nil {
@@ -60,6 +61,11 @@ func (s *boltTemplateStorage) PutTemplate(templateName, templateVersion, templat
 
 		return nil
 	})
+	if err != nil {
+		loge.WithError(err).Errorln(templatePutFailed)
+		return errors.New(templatePutFailed)
+	}
+	return nil
 }
 
 func (s *boltTemplateStorage) GetTemplate(templateName, templateVersion string) (*mttypes.TemplateStorageValue, error) {
@@ -87,7 +93,11 @@ func (s *boltTemplateStorage) GetTemplate(templateName, templateVersion string) 
 		return json.Unmarshal(templateB, &templateValue)
 	})
 
-	return &templateValue, err
+	if err != nil {
+		loge.WithError(err).Errorln(templateGetFailed)
+		return nil, errors.New(templateGetFailed)
+	}
+	return &templateValue, nil
 }
 
 func (s *boltTemplateStorage) GetLatestVersionTemplate(templateName string) (string, *mttypes.TemplateStorageValue, error) {
@@ -123,6 +133,7 @@ func (s *boltTemplateStorage) GetLatestVersionTemplate(templateName string) (str
 		})
 		if err != nil {
 			loge.WithError(err).Errorln("Iterating error")
+			return err
 		}
 
 		loge.Debugf("Extracting latest version %v", latestVerStr)
@@ -133,8 +144,12 @@ func (s *boltTemplateStorage) GetLatestVersionTemplate(templateName string) (str
 		}
 		return json.Unmarshal(templateB, &templateValue)
 	})
+	if err != nil {
+		loge.WithError(err).Errorln(templateGetLatestFailed)
+		return "", nil, errors.New(templateGetLatestFailed)
+	}
 
-	return templateVersion, &templateValue, err
+	return templateVersion, &templateValue, nil
 }
 
 func (s *boltTemplateStorage) GetTemplates(templateName string) (map[string]*mttypes.TemplateStorageValue, error) {
@@ -160,12 +175,16 @@ func (s *boltTemplateStorage) GetTemplates(templateName string) (map[string]*mtt
 		})
 		if err != nil {
 			loge.WithError(err).Errorln("Iterating error")
+			return err
 		}
 
 		return nil
 	})
-
-	return templates, err
+	if err != nil {
+		loge.WithError(err).Errorln(templateGetAllFailed)
+		return nil, errors.New(templateGetAllFailed)
+	}
+	return templates, nil
 }
 
 func (s *boltTemplateStorage) DeleteTemplate(templateName, templateVersion string) error {
@@ -175,7 +194,7 @@ func (s *boltTemplateStorage) DeleteTemplate(templateName, templateVersion strin
 	})
 	loge.Infoln("Trying to delete template")
 
-	return s.db.Update(func(tx *bolt.Tx) error {
+	err := s.db.Update(func(tx *bolt.Tx) error {
 		loge.Debugln("Getting bucket")
 		b := tx.Bucket([]byte(templateName))
 		if b == nil {
@@ -196,13 +215,17 @@ func (s *boltTemplateStorage) DeleteTemplate(templateName, templateVersion strin
 
 		return nil
 	})
+	if err != nil {
+		loge.WithError(err).Errorln(templateDeleteFailed)
+		return errors.New(templateDeleteFailed)
+	}
 }
 
 func (s *boltTemplateStorage) DeleteTemplates(templateName string) error {
 	loge := s.log.WithField("name", templateName)
 	loge.Infoln("Trying to delete all versions of template")
 
-	return s.db.Update(func(tx *bolt.Tx) error {
+	err := s.db.Update(func(tx *bolt.Tx) error {
 		loge.Debugln("Deleting bucket")
 		if err := tx.DeleteBucket([]byte(templateName)); err == bolt.ErrBucketNotFound {
 			loge.WithError(err).Errorf("Bucket not found")
@@ -214,6 +237,11 @@ func (s *boltTemplateStorage) DeleteTemplates(templateName string) error {
 
 		return nil
 	})
+	if err != nil {
+		loge.WithError(err).Errorln(templateDeleteAllFailed)
+		return errors.New(templateDeleteAllFailed)
+	}
+	return nil
 }
 
 func (s *boltTemplateStorage) GetTemplatesList() (*mttypes.TemplatesListResponse, error) {
@@ -244,7 +272,8 @@ func (s *boltTemplateStorage) GetTemplatesList() (*mttypes.TemplatesListResponse
 		})
 	})
 	if err != nil {
-		return nil, err
+		loge.WithError(err).Errorln(templatesGetFailed)
+		return nil, errors.New(templatesGetFailed)
 	}
 
 	return &resp, nil
