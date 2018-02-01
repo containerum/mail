@@ -43,7 +43,7 @@ func FormatWithCode(code int, format string, data ...interface{}) *Error {
 	}
 }
 
-func errorWithHTTPStatus(err error) (int, []*Error) {
+func ErrorWithHTTPStatus(err error) (int, []*Error) {
 	switch err.(type) {
 	case *AccessDeniedError:
 		return http.StatusForbidden, []*Error{err.(*AccessDeniedError).Err}
