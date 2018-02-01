@@ -219,6 +219,7 @@ func (s *boltTemplateStorage) DeleteTemplate(templateName, templateVersion strin
 		loge.WithError(err).Errorln(templateDeleteFailed)
 		return errors.New(templateDeleteFailed)
 	}
+	return nil
 }
 
 func (s *boltTemplateStorage) DeleteTemplates(templateName string) error {
