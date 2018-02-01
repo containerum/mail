@@ -25,9 +25,8 @@ type GetAllResourcesQueryParams struct {
 	Filters string `form:"filters"`
 }
 
-type SetResourceAccessRequest struct {
-	UserID string           `json:"user_id" binding:"uuid4"`
-	Access PermissionStatus `json:"access"`
+type SetResourcesAccessRequest struct {
+	Access PermissionStatus `json:"access" binding:"eq=owner|eq=read|eq=write|eq=readdelete|eq=none"`
 }
 
 type ResizeResourceRequest struct {
@@ -38,17 +37,32 @@ type ResizeResourceRequest struct {
 
 type CreateNamespaceRequest = CreateResourceRequest
 
-type GetUserNamespacesResponse = []NamespaceWithVolumes
+type GetUserNamespacesResponse []NamespaceWithVolumes
+
+func (r GetUserNamespacesResponse) Mask() {
+	for i := range r {
+		r[i].Mask()
+	}
+}
 
 type GetUserNamespaceResponse = NamespaceWithVolumes
 
-type GetAllNamespacesResponse = []NamespaceWithVolumes
+type GetAllNamespacesResponse []NamespaceWithVolumes
+
+func (r GetAllNamespacesResponse) Mask() {
+	for i := range r {
+		r[i].Mask()
+	}
+}
 
 type GetUserNamespaceAccessesResponse = NamespaceWithUserPermissions
 
 type RenameNamespaceRequest = RenameResourceRequest
 
-type SetNamespaceAccessRequest = SetResourceAccessRequest
+type SetNamespaceAccessRequest struct {
+	Username string           `json:"username" binding:"email"`
+	Access   PermissionStatus `json:"access" binding:"eq=owner|eq=read|eq=write|eq=readdelete|eq=none"`
+}
 
 type ResizeNamespaceRequest = ResizeResourceRequest
 
@@ -56,17 +70,29 @@ type ResizeNamespaceRequest = ResizeResourceRequest
 
 type CreateVolumeRequest = CreateResourceRequest
 
-type GetUserVolumesResponse = []VolumeWithPermission
+type GetUserVolumesResponse []VolumeWithPermission
+
+func (r GetUserVolumesResponse) Mask() {
+	for i := range r {
+		r[i].Mask()
+	}
+}
 
 type GetUserVolumeResponse = VolumeWithPermission
 
-type GetAllVolumesResponse = []VolumeWithPermission
+type GetAllVolumesResponse []VolumeWithPermission
+
+func (r GetAllVolumesResponse) Mask() {
+	for i := range r {
+		r[i].Mask()
+	}
+}
 
 type GetVolumeAccessesResponse = VolumeWithUserPermissions
 
 type RenameVolumeRequest = RenameResourceRequest
 
-type SetVolumeAccessRequest = SetResourceAccessRequest
+type SetVolumeAccessRequest = SetNamespaceAccessRequest
 
 type ResizeVolumeRequest = ResizeResourceRequest
 

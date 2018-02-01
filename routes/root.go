@@ -5,19 +5,21 @@ import (
 
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"github.com/gin-gonic/gin"
+
+	"git.containerum.net/ch/json-types/errors"
 )
 
 func simpleSendHandler(ctx *gin.Context) {
 	var request mttypes.SimpleSendRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		sendValidationError(ctx, err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 	_, tv, err := svc.TemplateStorage.GetLatestVersionTemplate(request.Template)
 	if err != nil {
 		ctx.Error(err)
-		sendStorageError(ctx, err)
+		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
 		return
 	}
 	info, err := svc.UserManagerClient.UserInfoByID(ctx, request.UserID)

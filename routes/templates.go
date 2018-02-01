@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 
+	"git.containerum.net/ch/json-types/errors"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"github.com/gin-gonic/gin"
 )
@@ -11,13 +12,13 @@ func templateCreateHandler(ctx *gin.Context) {
 	var request mttypes.TemplateCreateRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		sendValidationError(ctx, err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 	err := svc.TemplateStorage.PutTemplate(request.Name, request.Version, request.Data, request.Subject)
 	if err != nil {
 		ctx.Error(err)
-		sendStorageError(ctx, err)
+		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
 		return
 	}
 	ctx.JSON(http.StatusCreated, &mttypes.TemplateCreateResponse{
@@ -30,7 +31,7 @@ func templateUpdateHandler(ctx *gin.Context) {
 	var request mttypes.TemplateUpdateRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		sendValidationError(ctx, err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 	name := ctx.Param("name")
@@ -39,7 +40,7 @@ func templateUpdateHandler(ctx *gin.Context) {
 	respObj, err := svc.TemplateStorage.GetTemplate(name, version)
 	if err != nil {
 		ctx.Error(err)
-		sendStorageError(ctx, err)
+		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
 		return
 	}
 
@@ -56,7 +57,7 @@ func templateUpdateHandler(ctx *gin.Context) {
 	err = svc.TemplateStorage.PutTemplate(name, version, data, subject)
 	if err != nil {
 		ctx.Error(err)
-		sendStorageError(ctx, err)
+		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
 		return
 	}
 	ctx.JSON(http.StatusAccepted, &mttypes.TemplateUpdateResponse{
@@ -77,7 +78,7 @@ func templateGetHandler(ctx *gin.Context) {
 	}
 	if err != nil {
 		ctx.Error(err)
-		sendStorageError(ctx, err)
+		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
 		return
 	}
 	ctx.JSON(http.StatusOK, respObj)
@@ -102,7 +103,7 @@ func templateDeleteHandler(ctx *gin.Context) {
 	}
 	if err != nil {
 		ctx.Error(err)
-		sendStorageError(ctx, err)
+		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
 		return
 	}
 	ctx.JSON(http.StatusOK, respObj)
@@ -114,7 +115,7 @@ func templateSendHandler(ctx *gin.Context) {
 	var request mttypes.SendRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		sendValidationError(ctx, err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 	var tv *mttypes.TemplateStorageValue
@@ -126,7 +127,7 @@ func templateSendHandler(ctx *gin.Context) {
 	}
 	if err != nil {
 		ctx.Error(err)
-		sendStorageError(ctx, err)
+		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
 		return
 	}
 	status, err := svc.Upstream.Send(ctx, name, tv, &request)
@@ -142,7 +143,8 @@ func templateListGetHandler(ctx *gin.Context) {
 	respObj, err := svc.TemplateStorage.GetTemplatesList()
 	if err != nil {
 		ctx.Error(err)
-		sendStorageError(ctx, err)
+		//sendStorageError(ctx, err)
+		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
 		return
 	}
 	ctx.JSON(http.StatusOK, respObj)

@@ -27,8 +27,8 @@ func NewBoltMessagesStorage(file string, options *bolt.Options) (storages.Messag
 	log.Infof("Opening storage at %s with options %#v", file, options)
 	db, err := bolt.Open(file, os.ModePerm, options)
 	if err != nil {
-		log.WithError(err).Errorln("Failed to open storage")
-		return nil, err
+		log.WithError(err).Errorln(mttypes.ErrStorageOpenFailed)
+		return nil, mttypes.ErrStorageOpenFailed
 	}
 
 	log.Infof("Creating bucket %s", boltMessagesStorageBucket)
@@ -37,8 +37,8 @@ func NewBoltMessagesStorage(file string, options *bolt.Options) (storages.Messag
 		return txerr
 	})
 	if err != nil {
-		log.WithError(err).Errorln("Create bucket failed")
-		return nil, err
+		log.WithError(err).Errorln(mttypes.ErrCreateBucketFailed)
+		return nil, mttypes.ErrCreateBucketFailed
 	}
 
 	return &boltMessagesStorage{
@@ -52,17 +52,23 @@ func (s *boltMessagesStorage) PutValue(id string, value *mttypes.MessagesStorage
 		"id": id,
 	})
 	loge.Infof("Putting value")
-	return s.db.Update(func(tx *bolt.Tx) error {
+	err := s.db.Update(func(tx *bolt.Tx) error {
 		loge.Debugln("Get bucket")
 		b := tx.Bucket([]byte(boltMessagesStorageBucket))
 
 		loge.Debugln("Marshal json")
 		valueB, err := json.Marshal(value)
 		if err != nil {
-			loge.WithError(err).Errorln("Error marshalling value")
+			loge.Errorln("Error marshalling value")
+			return err
 		}
 		return b.Put([]byte(id), valueB)
 	})
+	if err != nil {
+		loge.WithError(err).Errorln(mttypes.ErrMessagePutFailed)
+		return mttypes.ErrMessagePutFailed
+	}
+	return nil
 }
 
 func (s *boltMessagesStorage) GetValue(id string) (*mttypes.MessagesStorageValue, error) {
@@ -81,13 +87,23 @@ func (s *boltMessagesStorage) GetValue(id string) (*mttypes.MessagesStorageValue
 		}
 
 		if err := json.Unmarshal(valueB, &value); err != nil {
-			loge.WithError(err).Errorln("Value unmarshal failed")
+			loge.Errorln("Value unmarshal failed")
 			return err
 		}
 
 		return nil
 	})
-	return &value, err
+	if err != nil {
+		loge.WithError(err).Errorln(mttypes.ErrMessageGetFailed)
+
+		switch err {
+		case mttypes.ErrMessageNotExists:
+			return nil, err
+		default:
+			return nil, mttypes.ErrMessageGetFailed
+		}
+	}
+	return &value, nil
 }
 
 func (s *boltMessagesStorage) GetMessageList(page int, perPage int) (*mttypes.MessageListResponse, error) {
@@ -98,7 +114,7 @@ func (s *boltMessagesStorage) GetMessageList(page int, perPage int) (*mttypes.Me
 		Messages: []mttypes.MessageListEntry{},
 	}
 	err := s.db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("messages"))
+		b := tx.Bucket([]byte(boltMessagesStorageBucket))
 
 		startMessage := (page - 1) * perPage
 		var messageNumber int
@@ -110,7 +126,11 @@ func (s *boltMessagesStorage) GetMessageList(page int, perPage int) (*mttypes.Me
 			}
 
 			var value mttypes.MessageListEntry
-			err := json.Unmarshal(v, &value)
+
+			if err := json.Unmarshal(v, &value); err != nil {
+				loge.Errorln("Value unmarshal failed")
+				return err
+			}
 
 			if messageNumber >= startMessage {
 				resp.Messages = append(resp.Messages, mttypes.MessageListEntry{
@@ -123,18 +143,20 @@ func (s *boltMessagesStorage) GetMessageList(page int, perPage int) (*mttypes.Me
 
 			messageNumber++
 
-			return err
+			return nil
 		})
 		if err != nil {
 			if err.Error() == "Iteration finished" {
 				return nil
 			}
+			return err
 		}
-		return err
+		return nil
 	})
 
 	if err != nil {
-		loge.WithError(err).Errorln("Iterating error")
+		loge.WithError(err).Errorln(mttypes.ErrMessagesGetFailed)
+		return nil, mttypes.ErrMessagesGetFailed
 	}
 
 	return &resp, nil

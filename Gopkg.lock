@@ -5,7 +5,7 @@
   branch = "master"
   name = "git.containerum.net/ch/json-types"
   packages = ["errors","mail-templater","user-manager"]
-  revision = "d3eafbe69d108817df9c7bd74295ad97efdc3004"
+  revision = "a6a779086d0b8aeb7f8aa8325f8e406c054c263f"
 
 [[projects]]
   name = "github.com/blang/semver"
@@ -167,7 +167,7 @@
   branch = "master"
   name = "golang.org/x/net"
   packages = ["idna","publicsuffix"]
-  revision = "0ed95abb35c445290478a5348a7b38bb154135fd"
+  revision = "309822c5b9b9f80db67f016069a12628d94fad34"
 
 [[projects]]
   branch = "master"

@@ -42,12 +42,14 @@ func (u *httpUserManagerClient) UserInfoByID(ctx context.Context, userID string)
 	resp, err := u.client.R().
 		SetContext(ctx).
 		SetResult(&ret).
+		SetError([]errors.Error{}).
 		Get("/user/info/" + userID)
 	if err != nil {
 		return nil, err
 	}
-	if err := resp.Error(); err != nil {
-		return nil, err.(*errors.Error)
+
+	if err := *resp.Error().(*[]errors.Error); len(err) > 0 {
+		return nil, errors.New(err[0].Text)
 	}
 	return &ret, nil
 }
