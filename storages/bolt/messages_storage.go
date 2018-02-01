@@ -27,8 +27,8 @@ func NewBoltMessagesStorage(file string, options *bolt.Options) (storages.Messag
 	log.Infof("Opening storage at %s with options %#v", file, options)
 	db, err := bolt.Open(file, os.ModePerm, options)
 	if err != nil {
-		log.WithError(err).Errorln(storageOpenFailed)
-		return nil, errors.New(storageOpenFailed)
+		log.WithError(err).Errorln(mttypes.ErrStorageOpenFailed)
+		return nil, mttypes.ErrStorageOpenFailed
 	}
 
 	log.Infof("Creating bucket %s", boltMessagesStorageBucket)
@@ -37,8 +37,8 @@ func NewBoltMessagesStorage(file string, options *bolt.Options) (storages.Messag
 		return txerr
 	})
 	if err != nil {
-		log.WithError(err).Errorln(createBuccetFailed)
-		return nil, errors.New(createBuccetFailed)
+		log.WithError(err).Errorln(mttypes.ErrCreateBucketFailed)
+		return nil, mttypes.ErrCreateBucketFailed
 	}
 
 	return &boltMessagesStorage{
@@ -65,8 +65,8 @@ func (s *boltMessagesStorage) PutValue(id string, value *mttypes.MessagesStorage
 		return b.Put([]byte(id), valueB)
 	})
 	if err != nil {
-		loge.WithError(err).Errorln(messagePutFailed)
-		return errors.New(messagePutFailed)
+		loge.WithError(err).Errorln(mttypes.ErrMessagePutFailed)
+		return mttypes.ErrMessagePutFailed
 	}
 	return nil
 }
@@ -94,8 +94,14 @@ func (s *boltMessagesStorage) GetValue(id string) (*mttypes.MessagesStorageValue
 		return nil
 	})
 	if err != nil {
-		loge.WithError(err).Errorln(messageGetFailed)
-		return nil, errors.New(messageGetFailed)
+		loge.WithError(err).Errorln(mttypes.ErrMessageGetFailed)
+
+		switch err {
+		case mttypes.ErrMessageNotExists:
+			return nil, err
+		default:
+			return nil, mttypes.ErrMessageGetFailed
+		}
 	}
 	return &value, nil
 }
@@ -149,8 +155,8 @@ func (s *boltMessagesStorage) GetMessageList(page int, perPage int) (*mttypes.Me
 	})
 
 	if err != nil {
-		loge.WithError(err).Errorln(messagesGetFailed)
-		return nil, errors.New(messagesGetFailed)
+		loge.WithError(err).Errorln(mttypes.ErrMessagesGetFailed)
+		return nil, mttypes.ErrMessagesGetFailed
 	}
 
 	return &resp, nil

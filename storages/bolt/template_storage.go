@@ -9,7 +9,6 @@ import (
 	"git.containerum.net/ch/mail-templater/storages"
 	"github.com/blang/semver"
 	"github.com/boltdb/bolt"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -25,8 +24,8 @@ func NewBoltTemplateStorage(file string, options *bolt.Options) (storages.Templa
 	log.Infof("Opening storage at %s with options %#v", file, options)
 	db, err := bolt.Open(file, os.ModePerm, options)
 	if err != nil {
-		log.WithError(err).Errorln(storageOpenFailed)
-		return nil, errors.New(storageOpenFailed)
+		log.WithError(err).WithError(mttypes.ErrStorageOpenFailed)
+		return nil, mttypes.ErrStorageOpenFailed
 	}
 	return &boltTemplateStorage{
 		db:  db,
@@ -62,8 +61,8 @@ func (s *boltTemplateStorage) PutTemplate(templateName, templateVersion, templat
 		return nil
 	})
 	if err != nil {
-		loge.WithError(err).Errorln(templatePutFailed)
-		return errors.New(templatePutFailed)
+		loge.WithError(err).WithError(mttypes.ErrTemplatePutFailed)
+		return mttypes.ErrTemplatePutFailed
 	}
 	return nil
 }
@@ -88,14 +87,19 @@ func (s *boltTemplateStorage) GetTemplate(templateName, templateVersion string) 
 		templateB := b.Get([]byte(templateVersion))
 		if templateB == nil {
 			loge.Infoln("Cannot find version")
-			return mttypes.ErrVersionNotExists
+			return mttypes.ErrTemplateVersionNotExists
 		}
 		return json.Unmarshal(templateB, &templateValue)
 	})
 
 	if err != nil {
-		loge.WithError(err).Errorln(templateGetFailed)
-		return nil, errors.New(templateGetFailed)
+		loge.WithError(err).WithError(mttypes.ErrTemplateGetFailed)
+		switch err {
+		case mttypes.ErrTemplateNotExists, mttypes.ErrTemplateVersionNotExists:
+			return nil, err
+		default:
+			return nil, mttypes.ErrTemplateDeleteFailed
+		}
 	}
 	return &templateValue, nil
 }
@@ -140,13 +144,19 @@ func (s *boltTemplateStorage) GetLatestVersionTemplate(templateName string) (str
 		templateB := b.Get([]byte(latestVerStr))
 		if templateB == nil {
 			loge.Infof("Cannot find version %v", latestVerStr)
-			return mttypes.ErrVersionNotExists
+			return mttypes.ErrTemplateVersionNotExists
 		}
 		return json.Unmarshal(templateB, &templateValue)
 	})
 	if err != nil {
-		loge.WithError(err).Errorln(templateGetLatestFailed)
-		return "", nil, errors.New(templateGetLatestFailed)
+		loge.WithError(err).WithError(mttypes.ErrTemplateGetLatestFailed)
+
+		switch err {
+		case mttypes.ErrTemplateNotExists, mttypes.ErrTemplateVersionNotExists:
+			return "", nil, err
+		default:
+			return "", nil, mttypes.ErrTemplateDeleteFailed
+		}
 	}
 
 	return templateVersion, &templateValue, nil
@@ -181,8 +191,13 @@ func (s *boltTemplateStorage) GetTemplates(templateName string) (map[string]*mtt
 		return nil
 	})
 	if err != nil {
-		loge.WithError(err).Errorln(templateGetAllFailed)
-		return nil, errors.New(templateGetAllFailed)
+		loge.WithError(err).Errorln(mttypes.ErrTemplateGetAllFailed)
+		switch err {
+		case mttypes.ErrTemplateNotExists, mttypes.ErrTemplateVersionNotExists:
+			return nil, err
+		default:
+			return nil, mttypes.ErrTemplateDeleteFailed
+		}
 	}
 	return templates, nil
 }
@@ -206,7 +221,7 @@ func (s *boltTemplateStorage) DeleteTemplate(templateName, templateVersion strin
 		// check if entry exists
 		if v := b.Get([]byte(templateVersion)); v == nil {
 			loge.Infoln("Cannot find version")
-			return mttypes.ErrVersionNotExists
+			return mttypes.ErrTemplateVersionNotExists
 		}
 		if err := b.Delete([]byte(templateVersion)); err != nil {
 			loge.WithError(err).Errorln("Version delete failed")
@@ -216,8 +231,14 @@ func (s *boltTemplateStorage) DeleteTemplate(templateName, templateVersion strin
 		return nil
 	})
 	if err != nil {
-		loge.WithError(err).Errorln(templateDeleteFailed)
-		return errors.New(templateDeleteFailed)
+		loge.WithError(err).WithError(mttypes.ErrTemplateDeleteFailed)
+
+		switch err {
+		case mttypes.ErrTemplateNotExists, mttypes.ErrTemplateVersionNotExists:
+			return err
+		default:
+			return mttypes.ErrTemplateDeleteFailed
+		}
 	}
 	return nil
 }
@@ -239,8 +260,13 @@ func (s *boltTemplateStorage) DeleteTemplates(templateName string) error {
 		return nil
 	})
 	if err != nil {
-		loge.WithError(err).Errorln(templateDeleteAllFailed)
-		return errors.New(templateDeleteAllFailed)
+		loge.WithError(err).WithError(mttypes.ErrTemplateDeleteAllFailed)
+		switch err {
+		case mttypes.ErrTemplateNotExists, mttypes.ErrTemplateVersionNotExists:
+			return err
+		default:
+			return mttypes.ErrTemplateDeleteFailed
+		}
 	}
 	return nil
 }
@@ -273,8 +299,8 @@ func (s *boltTemplateStorage) GetTemplatesList() (*mttypes.TemplatesListResponse
 		})
 	})
 	if err != nil {
-		loge.WithError(err).Errorln(templatesGetFailed)
-		return nil, errors.New(templatesGetFailed)
+		loge.WithError(err).WithError(mttypes.ErrTemplatesGetFailed)
+		return nil, mttypes.ErrTemplatesGetFailed
 	}
 
 	return &resp, nil

@@ -19,7 +19,7 @@ func requireHeaders(headers ...string) gin.HandlerFunc {
 		if len(notFoundHeaders) > 0 {
 			err := errors.Format("required headers %v was not provided", notFoundHeaders)
 			ctx.Error(err)
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, []*errors.Error{errors.New(err.Error())})
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, []*errors.Error{err})
 		}
 	}
 }
@@ -35,16 +35,19 @@ func requireAdminRole(ctx *gin.Context) {
 	info, err := svc.UserManagerClient.UserInfoByID(ctx, userID)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, []*errors.Error{errors.New(err.Error())})
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusForbidden, err)
 		return
 	}
 
 	if info != nil {
 		if info.Role != "admin" {
+			ctx.Error(errors.New("Only admin can do this"))
 			ctx.AbortWithStatusJSON(http.StatusForbidden, []*errors.Error{errors.New("Only admin can do this")})
 			return
 		}
 	} else {
+		ctx.Error(errors.New("Unable to verify your permissions"))
 		ctx.AbortWithStatusJSON(http.StatusForbidden, []*errors.Error{errors.New("Unable to verify your permissions")})
 	}
 }

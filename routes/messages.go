@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 
+	"git.containerum.net/ch/json-types/errors"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"github.com/gin-gonic/gin"
 )
@@ -12,7 +13,7 @@ func messageGetHandler(ctx *gin.Context) {
 	v, err := svc.MessagesStorage.GetValue(id)
 	if err != nil {
 		ctx.Error(err)
-		sendStorageError(ctx, err)
+		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
 		return
 	}
 	ctx.JSON(http.StatusOK, &mttypes.MessageGetResponse{
@@ -32,7 +33,7 @@ func messageListGetHandler(ctx *gin.Context) {
 	v, err := svc.MessagesStorage.GetMessageList(params.Page, params.PerPage)
 	if err != nil {
 		ctx.Error(err)
-		sendStorageError(ctx, err)
+		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
 		return
 	}
 	ctx.JSON(http.StatusOK, v)

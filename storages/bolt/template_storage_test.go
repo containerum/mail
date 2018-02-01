@@ -29,7 +29,7 @@ func TestTemplateStorage(t *testing.T) {
 
 			So(storage.PutTemplate("tmpl2", "1", "a", "s"), ShouldBeNil)
 			_, err = storage.GetTemplate("tmpl2", "-1")
-			So(err, ShouldEqual, mttypes.ErrVersionNotExists)
+			So(err, ShouldEqual, mttypes.ErrTemplateVersionNotExists)
 		})
 
 		Convey("Put and get multiple versions", func() {
@@ -60,9 +60,9 @@ func TestTemplateStorage(t *testing.T) {
 
 			So(storage.DeleteTemplate("tmpl4", "1"), ShouldBeNil)
 			_, err := storage.GetTemplate("tmpl4", "-1")
-			So(err, ShouldEqual, mttypes.ErrVersionNotExists)
+			So(err, ShouldEqual, mttypes.ErrTemplateVersionNotExists)
 
-			So(storage.DeleteTemplate("tmpl4", "-1"), ShouldEqual, mttypes.ErrVersionNotExists)
+			So(storage.DeleteTemplate("tmpl4", "-1"), ShouldEqual, mttypes.ErrTemplateVersionNotExists)
 
 			So(storage.DeleteTemplates("tmpl4"), ShouldBeNil)
 			_, err = storage.GetTemplate("tmpl4", "2")
