@@ -5,7 +5,7 @@ import (
 
 	"git.containerum.net/ch/json-types/errors"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
-	"git.containerum.net/ch/mail-templater/pkg/router"
+	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,7 +16,10 @@ func TemplateCreateHandler(ctx *gin.Context) {
 		//	ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
-	err := router.Svc.TemplateStorage.PutTemplate(request.Name, request.Version, request.Data, request.Subject)
+
+	svc := ctx.MustGet(m.MTServices).(*m.Services)
+
+	err := svc.TemplateStorage.PutTemplate(request.Name, request.Version, request.Data, request.Subject)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
@@ -38,7 +41,9 @@ func TemplateUpdateHandler(ctx *gin.Context) {
 	name := ctx.Param("name")
 	version := ctx.Query("version")
 
-	respObj, err := router.Svc.TemplateStorage.GetTemplate(name, version)
+	svc := ctx.MustGet(m.MTServices).(*m.Services)
+
+	respObj, err := svc.TemplateStorage.GetTemplate(name, version)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
@@ -55,7 +60,7 @@ func TemplateUpdateHandler(ctx *gin.Context) {
 		subject = request.Subject
 	}
 
-	err = router.Svc.TemplateStorage.PutTemplate(name, version, data, subject)
+	err = svc.TemplateStorage.PutTemplate(name, version, data, subject)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
@@ -70,12 +75,15 @@ func TemplateUpdateHandler(ctx *gin.Context) {
 func TemplateGetHandler(ctx *gin.Context) {
 	name := ctx.Param("name")
 	version, hasVersion := ctx.GetQuery("version")
+
+	svc := ctx.MustGet(m.MTServices).(*m.Services)
+
 	var err error
 	var respObj interface{}
 	if !hasVersion { // if no "version" parameter specified, send all versions
-		respObj, err = router.Svc.TemplateStorage.GetTemplates(name)
+		respObj, err = svc.TemplateStorage.GetTemplates(name)
 	} else {
-		respObj, err = router.Svc.TemplateStorage.GetTemplate(name, version)
+		respObj, err = svc.TemplateStorage.GetTemplate(name, version)
 	}
 	if err != nil {
 		ctx.Error(err)
@@ -88,15 +96,18 @@ func TemplateGetHandler(ctx *gin.Context) {
 func TemplateDeleteHandler(ctx *gin.Context) {
 	name := ctx.Param("name")
 	version, hasVersion := ctx.GetQuery("version")
+
+	svc := ctx.MustGet(m.MTServices).(*m.Services)
+
 	var err error
 	var respObj interface{}
 	if !hasVersion { // if no "version" parameter specified, delete all versions
-		err = router.Svc.TemplateStorage.DeleteTemplates(name)
+		err = svc.TemplateStorage.DeleteTemplates(name)
 		respObj = &mttypes.TemplatesDeleteResponse{
 			Name: name,
 		}
 	} else {
-		err = router.Svc.TemplateStorage.DeleteTemplate(name, version)
+		err = svc.TemplateStorage.DeleteTemplate(name, version)
 		respObj = &mttypes.TemplateDeleteResponse{
 			Name:    name,
 			Version: version,
@@ -119,19 +130,22 @@ func TemplateSendHandler(ctx *gin.Context) {
 		//	ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
+
+	svc := ctx.MustGet(m.MTServices).(*m.Services)
+
 	var tv *mttypes.TemplateStorageValue
 	var err error
 	if !hasVersion {
-		_, tv, err = router.Svc.TemplateStorage.GetLatestVersionTemplate(name)
+		_, tv, err = svc.TemplateStorage.GetLatestVersionTemplate(name)
 	} else {
-		tv, err = router.Svc.TemplateStorage.GetTemplate(name, version)
+		tv, err = svc.TemplateStorage.GetTemplate(name, version)
 	}
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
 		return
 	}
-	status, err := router.Svc.Upstream.Send(ctx, name, tv, &request)
+	status, err := svc.Upstream.Send(ctx, name, tv, &request)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
@@ -141,7 +155,9 @@ func TemplateSendHandler(ctx *gin.Context) {
 }
 
 func TemplateListGetHandler(ctx *gin.Context) {
-	respObj, err := router.Svc.TemplateStorage.GetTemplatesList()
+	svc := ctx.MustGet(m.MTServices).(*m.Services)
+
+	respObj, err := svc.TemplateStorage.GetTemplatesList()
 	if err != nil {
 		ctx.Error(err)
 		//sendStorageError(ctx, err)

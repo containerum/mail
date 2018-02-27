@@ -1,41 +1,47 @@
 package router
 
 import (
+	"time"
+
+	"net/http"
+
 	umtypes "git.containerum.net/ch/json-types/user-manager"
-	"git.containerum.net/ch/mail-templater/pkg/clients"
 	h "git.containerum.net/ch/mail-templater/pkg/router/handlers"
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
-	"git.containerum.net/ch/mail-templater/pkg/storages"
-	"git.containerum.net/ch/mail-templater/pkg/upstreams"
+	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
-// Services is a collection of dependencies to perform server operations
-type Services struct {
-	MessagesStorage   storages.MessagesStorage
-	TemplateStorage   storages.TemplateStorage
-	Upstream          upstreams.Upstream
-	UpstreamSimple    upstreams.Upstream
-	UserManagerClient clients.UserManagerClient
+func CreateRouter(svc *m.Services) http.Handler {
+	e := gin.New()
+	initMiddlewares(e, svc)
+	initRoutes(e)
+	return e
 }
 
-var Svc *Services
+func initMiddlewares(e *gin.Engine, svc *m.Services) {
+	/* System */
+	e.Use(ginrus.Ginrus(logrus.WithField("component", "gin"), time.RFC3339, true))
+	e.Use(gin.RecoveryWithWriter(logrus.WithField("component", "gin_recovery").WriterLevel(logrus.ErrorLevel)))
+	/* Custom */
+	e.Use(m.RegisterServices(svc))
+}
 
 // Setup sets up routes
-func Setup(app *gin.Engine, services *Services) {
-	Svc = services
+func initRoutes(e *gin.Engine) {
 
 	requireIdentityHeaders := m.RequireHeaders(umtypes.UserIDHeader, umtypes.UserRoleHeader, umtypes.SessionIDHeader)
 
-	app.POST("/send", h.SimpleSendHandler)
+	e.POST("/send", h.SimpleSendHandler)
 
-	messages := app.Group("/messages")
+	messages := e.Group("/messages")
 	{
 		messages.GET("/:message_id", requireIdentityHeaders, m.RequireAdminRole, h.MessageGetHandler)
 		messages.GET("/", requireIdentityHeaders, m.RequireAdminRole, h.MessageListGetHandler)
 	}
 
-	templates := app.Group("/templates")
+	templates := e.Group("/templates")
 	{
 		templates.GET("/", requireIdentityHeaders, m.RequireAdminRole, h.TemplateListGetHandler)
 		templates.POST("/", requireIdentityHeaders, m.RequireAdminRole, h.TemplateCreateHandler)

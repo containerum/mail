@@ -7,12 +7,15 @@ import (
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"github.com/gin-gonic/gin"
 
-	"git.containerum.net/ch/mail-templater/pkg/router"
+	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
 )
 
 func MessageGetHandler(ctx *gin.Context) {
 	id := ctx.Param("message_id")
-	v, err := router.Svc.MessagesStorage.GetValue(id)
+
+	svc := ctx.MustGet(m.MTServices).(*m.Services)
+
+	v, err := svc.MessagesStorage.GetValue(id)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
@@ -32,7 +35,9 @@ func MessageListGetHandler(ctx *gin.Context) {
 		return
 	}
 
-	v, err := router.Svc.MessagesStorage.GetMessageList(params.Page, params.PerPage)
+	svc := ctx.MustGet(m.MTServices).(*m.Services)
+
+	v, err := svc.MessagesStorage.GetMessageList(params.Page, params.PerPage)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))

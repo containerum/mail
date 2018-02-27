@@ -1,6 +1,7 @@
 FROM golang:1.9-alpine as builder
 WORKDIR src/git.containerum.net/ch/mail-templater
 COPY . .
+WORKDIR cmd/mail-templater
 RUN CGO_ENABLED=0 go build -v -tags "jsoniter" -ldflags="-w -s -extldflags '-static'" -o /bin/mail-templater
 
 FROM alpine:3.7 as alpine

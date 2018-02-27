@@ -10,8 +10,7 @@ import (
 	"os/signal"
 
 	"git.containerum.net/ch/mail-templater/pkg/router"
-	"github.com/gin-gonic/contrib/ginrus"
-	"github.com/gin-gonic/gin"
+	"git.containerum.net/ch/mail-templater/pkg/router/middleware"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -30,10 +29,6 @@ func main() {
 
 	logrus.Infoln("starting server...")
 
-	app := gin.New()
-	app.Use(gin.RecoveryWithWriter(logrus.StandardLogger().WithField("component", "gin_recovery").WriterLevel(logrus.ErrorLevel)))
-	app.Use(ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true))
-
 	ts, err := getTemplatesStorage()
 	defer ts.Close()
 	exitOnErr(err)
@@ -47,7 +42,7 @@ func main() {
 	um, err := getUserManagerClient()
 	exitOnErr(err)
 
-	router.Setup(app, &router.Services{
+	app := router.CreateRouter(&middleware.Services{
 		TemplateStorage:   ts,
 		MessagesStorage:   ms,
 		Upstream:          us,

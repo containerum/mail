@@ -30,6 +30,8 @@ func RequireAdminRole(ctx *gin.Context) {
 		return
 	}
 
+	svc := ctx.MustGet(MTServices).(*Services)
+
 	userID := ctx.GetHeader(umtypes.UserIDHeader)
 
 	info, err := svc.UserManagerClient.UserInfoByID(ctx, userID)
