@@ -1,4 +1,4 @@
-package routes
+package handlers
 
 import (
 	"net/http"
@@ -6,11 +6,13 @@ import (
 	"git.containerum.net/ch/json-types/errors"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"github.com/gin-gonic/gin"
+
+	"git.containerum.net/ch/mail-templater/pkg/router"
 )
 
-func messageGetHandler(ctx *gin.Context) {
+func MessageGetHandler(ctx *gin.Context) {
 	id := ctx.Param("message_id")
-	v, err := svc.MessagesStorage.GetValue(id)
+	v, err := router.Svc.MessagesStorage.GetValue(id)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
@@ -22,15 +24,15 @@ func messageGetHandler(ctx *gin.Context) {
 	})
 }
 
-func messageListGetHandler(ctx *gin.Context) {
+func MessageListGetHandler(ctx *gin.Context) {
 	var params mttypes.MessageListQuery
 	if err := ctx.ShouldBindQuery(&params); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
+		//ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 
-	v, err := svc.MessagesStorage.GetMessageList(params.Page, params.PerPage)
+	v, err := router.Svc.MessagesStorage.GetMessageList(params.Page, params.PerPage)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))

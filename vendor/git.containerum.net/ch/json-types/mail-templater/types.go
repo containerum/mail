@@ -69,14 +69,12 @@ type Recipient struct {
 	Variables map[string]interface{} `json:"variables"`
 }
 
-type SendRequestMessage struct {
-	CommonVariables map[string]string `json:"common_variables"`
-	Recipients      []Recipient       `json:"recipient_data" binding:"required"`
-}
-
 type SendRequest struct {
-	Delay   int                `json:"delay" binding:"omitempty,min=0"` // in minutes
-	Message SendRequestMessage `json:"message" binding:"required"`
+	Delay   int `json:"delay" binding:"omitempty,min=0"` // in minutes
+	Message struct {
+		CommonVariables map[string]string `json:"common_variables"`
+		Recipients      []Recipient       `json:"recipient_data" binding:"required"`
+	} `json:"message" binding:"required"`
 }
 
 type SendStatus struct {

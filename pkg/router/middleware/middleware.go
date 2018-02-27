@@ -1,4 +1,4 @@
-package routes
+package middleware
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func requireHeaders(headers ...string) gin.HandlerFunc {
+func RequireHeaders(headers ...string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var notFoundHeaders []string
 		for _, v := range headers {
@@ -24,7 +24,7 @@ func requireHeaders(headers ...string) gin.HandlerFunc {
 	}
 }
 
-func requireAdminRole(ctx *gin.Context) {
+func RequireAdminRole(ctx *gin.Context) {
 	if ctx.GetHeader(umtypes.UserRoleHeader) != "admin" {
 		ctx.AbortWithStatusJSON(http.StatusForbidden, []*errors.Error{errors.New("Only admin can do this")})
 		return

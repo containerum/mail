@@ -1,28 +1,29 @@
-package routes
+package handlers
 
 import (
 	"net/http"
 
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
+	"git.containerum.net/ch/mail-templater/pkg/router"
 	"github.com/gin-gonic/gin"
 
 	"git.containerum.net/ch/json-types/errors"
 )
 
-func simpleSendHandler(ctx *gin.Context) {
+func SimpleSendHandler(ctx *gin.Context) {
 	var request mttypes.SimpleSendRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
+		//	ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
-	_, tv, err := svc.TemplateStorage.GetLatestVersionTemplate(request.Template)
+	_, tv, err := router.Svc.TemplateStorage.GetLatestVersionTemplate(request.Template)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
 		return
 	}
-	info, err := svc.UserManagerClient.UserInfoByID(ctx, request.UserID)
+	info, err := router.Svc.UserManagerClient.UserInfoByID(ctx, request.UserID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
@@ -35,7 +36,7 @@ func simpleSendHandler(ctx *gin.Context) {
 		Email:     info.Login,
 		Variables: request.Variables,
 	}
-	status, err := svc.UpstreamSimple.SimpleSend(ctx, request.Template, tv, recipient)
+	status, err := router.Svc.UpstreamSimple.SimpleSend(ctx, request.Template, tv, recipient)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)

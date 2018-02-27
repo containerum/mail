@@ -1,21 +1,22 @@
-package routes
+package handlers
 
 import (
 	"net/http"
 
 	"git.containerum.net/ch/json-types/errors"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
+	"git.containerum.net/ch/mail-templater/pkg/router"
 	"github.com/gin-gonic/gin"
 )
 
-func templateCreateHandler(ctx *gin.Context) {
+func TemplateCreateHandler(ctx *gin.Context) {
 	var request mttypes.TemplateCreateRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
+		//	ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
-	err := svc.TemplateStorage.PutTemplate(request.Name, request.Version, request.Data, request.Subject)
+	err := router.Svc.TemplateStorage.PutTemplate(request.Name, request.Version, request.Data, request.Subject)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
@@ -27,17 +28,17 @@ func templateCreateHandler(ctx *gin.Context) {
 	})
 }
 
-func templateUpdateHandler(ctx *gin.Context) {
+func TemplateUpdateHandler(ctx *gin.Context) {
 	var request mttypes.TemplateUpdateRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
+		//	ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 	name := ctx.Param("name")
 	version := ctx.Query("version")
 
-	respObj, err := svc.TemplateStorage.GetTemplate(name, version)
+	respObj, err := router.Svc.TemplateStorage.GetTemplate(name, version)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
@@ -54,7 +55,7 @@ func templateUpdateHandler(ctx *gin.Context) {
 		subject = request.Subject
 	}
 
-	err = svc.TemplateStorage.PutTemplate(name, version, data, subject)
+	err = router.Svc.TemplateStorage.PutTemplate(name, version, data, subject)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
@@ -66,15 +67,15 @@ func templateUpdateHandler(ctx *gin.Context) {
 	})
 }
 
-func templateGetHandler(ctx *gin.Context) {
+func TemplateGetHandler(ctx *gin.Context) {
 	name := ctx.Param("name")
 	version, hasVersion := ctx.GetQuery("version")
 	var err error
 	var respObj interface{}
 	if !hasVersion { // if no "version" parameter specified, send all versions
-		respObj, err = svc.TemplateStorage.GetTemplates(name)
+		respObj, err = router.Svc.TemplateStorage.GetTemplates(name)
 	} else {
-		respObj, err = svc.TemplateStorage.GetTemplate(name, version)
+		respObj, err = router.Svc.TemplateStorage.GetTemplate(name, version)
 	}
 	if err != nil {
 		ctx.Error(err)
@@ -84,18 +85,18 @@ func templateGetHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, respObj)
 }
 
-func templateDeleteHandler(ctx *gin.Context) {
+func TemplateDeleteHandler(ctx *gin.Context) {
 	name := ctx.Param("name")
 	version, hasVersion := ctx.GetQuery("version")
 	var err error
 	var respObj interface{}
 	if !hasVersion { // if no "version" parameter specified, delete all versions
-		err = svc.TemplateStorage.DeleteTemplates(name)
+		err = router.Svc.TemplateStorage.DeleteTemplates(name)
 		respObj = &mttypes.TemplatesDeleteResponse{
 			Name: name,
 		}
 	} else {
-		err = svc.TemplateStorage.DeleteTemplate(name, version)
+		err = router.Svc.TemplateStorage.DeleteTemplate(name, version)
 		respObj = &mttypes.TemplateDeleteResponse{
 			Name:    name,
 			Version: version,
@@ -109,28 +110,28 @@ func templateDeleteHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, respObj)
 }
 
-func templateSendHandler(ctx *gin.Context) {
+func TemplateSendHandler(ctx *gin.Context) {
 	name := ctx.Param("name")
 	version, hasVersion := ctx.GetQuery("version")
 	var request mttypes.SendRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
+		//	ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 	var tv *mttypes.TemplateStorageValue
 	var err error
 	if !hasVersion {
-		_, tv, err = svc.TemplateStorage.GetLatestVersionTemplate(name)
+		_, tv, err = router.Svc.TemplateStorage.GetLatestVersionTemplate(name)
 	} else {
-		tv, err = svc.TemplateStorage.GetTemplate(name, version)
+		tv, err = router.Svc.TemplateStorage.GetTemplate(name, version)
 	}
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
 		return
 	}
-	status, err := svc.Upstream.Send(ctx, name, tv, &request)
+	status, err := router.Svc.Upstream.Send(ctx, name, tv, &request)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
@@ -139,8 +140,8 @@ func templateSendHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, status)
 }
 
-func templateListGetHandler(ctx *gin.Context) {
-	respObj, err := svc.TemplateStorage.GetTemplatesList()
+func TemplateListGetHandler(ctx *gin.Context) {
+	respObj, err := router.Svc.TemplateStorage.GetTemplatesList()
 	if err != nil {
 		ctx.Error(err)
 		//sendStorageError(ctx, err)

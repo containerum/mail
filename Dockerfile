@@ -3,14 +3,14 @@ WORKDIR src/git.containerum.net/ch/mail-templater
 COPY . .
 RUN CGO_ENABLED=0 go build -v -tags "jsoniter" -ldflags="-w -s -extldflags '-static'" -o /bin/mail-templater
 
-FROM alpine:latest as alpine
+FROM alpine:3.7 as alpine
 RUN apk --no-cache add tzdata zip ca-certificates
 WORKDIR /usr/share/zoneinfo
 # -0 means no compression.  Needed because go's
 # tz loader doesn't handle compressed data.
 RUN zip -r -0 /zoneinfo.zip .
 
-FROM scratch
+FROM alpine:3.7
 # app
 COPY --from=builder /bin/mail-templater /
 # timezone data

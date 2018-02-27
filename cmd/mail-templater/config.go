@@ -3,10 +3,10 @@ package main
 import (
 	"errors"
 
-	"git.containerum.net/ch/mail-templater/clients"
-	"git.containerum.net/ch/mail-templater/storages"
-	"git.containerum.net/ch/mail-templater/storages/bolt"
-	"git.containerum.net/ch/mail-templater/upstreams"
+	"git.containerum.net/ch/mail-templater/pkg/clients"
+	"git.containerum.net/ch/mail-templater/pkg/storages"
+	"git.containerum.net/ch/mail-templater/pkg/storages/bolt"
+	"git.containerum.net/ch/mail-templater/pkg/upstreams"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"

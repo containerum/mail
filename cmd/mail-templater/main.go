@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"os/signal"
 
-	"git.containerum.net/ch/mail-templater/routes"
+	"git.containerum.net/ch/mail-templater/pkg/router"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -47,7 +47,7 @@ func main() {
 	um, err := getUserManagerClient()
 	exitOnErr(err)
 
-	routes.Setup(app, &routes.Services{
+	router.Setup(app, &router.Services{
 		TemplateStorage:   ts,
 		MessagesStorage:   ms,
 		Upstream:          us,

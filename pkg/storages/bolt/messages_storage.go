@@ -5,7 +5,7 @@ import (
 	"os"
 
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
-	"git.containerum.net/ch/mail-templater/storages"
+	"git.containerum.net/ch/mail-templater/pkg/storages"
 	"github.com/boltdb/bolt"
 	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"

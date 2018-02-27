@@ -6,7 +6,7 @@ import (
 	"time"
 
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
-	"git.containerum.net/ch/mail-templater/storages"
+	"git.containerum.net/ch/mail-templater/pkg/storages"
 	"github.com/blang/semver"
 	"github.com/boltdb/bolt"
 	"github.com/sirupsen/logrus"
