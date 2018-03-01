@@ -10,16 +10,16 @@ import (
 // Implementation must support tagging and versioning with "semantic versioning 2.0"
 type TemplateStorage interface {
 	// PutTemplate puts template to storage. If template with specified name and version exists it will be overwritten.
-	PutTemplate(templateName, templateVersion, templateData, templateSubject string) error
+	PutTemplate(templateName, templateVersion, templateData, templateSubject string, new bool) error
 
 	// GetTemplate returns specified version of template.
-	GetTemplate(templateName, templateVersion string) (*mttypes.TemplateStorageValue, error)
+	GetTemplate(templateName, templateVersion string) (*mttypes.Template, error)
 
 	// GetLatestVersionTemplate returns latest version of template and it`s value using semver to compare versions.
-	GetLatestVersionTemplate(templateName string) (string, *mttypes.TemplateStorageValue, error)
+	GetLatestVersionTemplate(templateName string) (*string, *mttypes.Template, error)
 
 	// GetTemplates returns all versions of templates in map (key is version, value is template).
-	GetTemplates(templateName string) (map[string]*mttypes.TemplateStorageValue, error)
+	GetTemplates(templateName string) (map[string]*mttypes.Template, error)
 
 	// DeleteTemplate deletes specified version of template. Returns nil on successful delete.
 	DeleteTemplate(templateName, templateVersion string) error
@@ -35,12 +35,12 @@ type TemplateStorage interface {
 
 // MessagesStorage used to store sent emails.
 type MessagesStorage interface {
-	// PutValue puts MessageStorageValue to storage.
+	// PutMessage puts MessageStorageValue to storage.
 	// If message with specified id already exists in storage it will be overwritten.
-	PutValue(id string, value *mttypes.MessagesStorageValue) error
+	PutMessage(id string, value *mttypes.MessagesStorageValue) error
 
-	// GetValue returns value by specified ID.
-	GetValue(id string) (*mttypes.MessagesStorageValue, error)
+	// GetMessage returns value by specified ID.
+	GetMessage(id string) (*mttypes.MessagesStorageValue, error)
 
 	// GetValue returns all messages.
 	GetMessageList(page int, perPage int) (*mttypes.MessageListResponse, error)

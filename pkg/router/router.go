@@ -5,7 +5,6 @@ import (
 
 	"net/http"
 
-	umtypes "git.containerum.net/ch/json-types/user-manager"
 	h "git.containerum.net/ch/mail-templater/pkg/router/handlers"
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
 	"github.com/gin-gonic/contrib/ginrus"
@@ -31,23 +30,21 @@ func initMiddlewares(e *gin.Engine, svc *m.Services) {
 // Setup sets up routes
 func initRoutes(e *gin.Engine) {
 
-	requireIdentityHeaders := m.RequireHeaders(umtypes.UserIDHeader, umtypes.UserRoleHeader, umtypes.SessionIDHeader)
-
 	e.POST("/send", h.SimpleSendHandler)
 
 	messages := e.Group("/messages")
 	{
-		messages.GET("/:message_id", requireIdentityHeaders, m.RequireAdminRole, h.MessageGetHandler)
-		messages.GET("/", requireIdentityHeaders, m.RequireAdminRole, h.MessageListGetHandler)
+		messages.GET("/:message_id", m.RequireAdminRole, h.MessageGetHandler)
+		messages.GET("/", m.RequireAdminRole, h.MessageListGetHandler)
 	}
 
 	templates := e.Group("/templates")
 	{
-		templates.GET("/", requireIdentityHeaders, m.RequireAdminRole, h.TemplateListGetHandler)
-		templates.POST("/", requireIdentityHeaders, m.RequireAdminRole, h.TemplateCreateHandler)
-		templates.GET("/:name", requireIdentityHeaders, m.RequireAdminRole, h.TemplateGetHandler)
-		templates.PUT("/:name", requireIdentityHeaders, m.RequireAdminRole, h.TemplateUpdateHandler)
-		templates.DELETE("/:name", requireIdentityHeaders, m.RequireAdminRole, h.TemplateDeleteHandler)
-		templates.POST("/:name", h.TemplateSendHandler)
+		templates.GET("/", m.RequireAdminRole, h.TemplateListGetHandler)
+		templates.POST("/", m.RequireAdminRole, h.TemplateCreateHandler)
+		templates.GET("/:name", m.RequireAdminRole, h.TemplateGetHandler)
+		templates.PUT("/:name", m.RequireAdminRole, h.TemplateUpdateHandler)
+		templates.DELETE("/:name", m.RequireAdminRole, h.TemplateDeleteHandler)
+		templates.POST("/:name", h.SendHandler)
 	}
 }

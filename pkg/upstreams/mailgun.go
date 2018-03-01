@@ -86,7 +86,7 @@ func (mg *mgUpstream) statusCollector(ch chan mttypes.SendStatus, statuses *[]mt
 	wg.Done()
 }
 
-func (mg *mgUpstream) parseTemplate(templateName string, tsv *mttypes.TemplateStorageValue) (tmpl *template.Template, err error) {
+func (mg *mgUpstream) parseTemplate(templateName string, tsv *mttypes.Template) (tmpl *template.Template, err error) {
 	mg.log.Debugln("Parsing template ", templateName)
 	templateText, err := base64.StdEncoding.DecodeString(tsv.Data)
 	if err != nil {
@@ -100,7 +100,7 @@ func (mg *mgUpstream) parseTemplate(templateName string, tsv *mttypes.TemplateSt
 	return tmpl, err
 }
 
-func (mg *mgUpstream) Send(ctx context.Context, templateName string, tsv *mttypes.TemplateStorageValue, request *mttypes.SendRequest) (resp *mttypes.SendResponse, err error) {
+func (mg *mgUpstream) Send(ctx context.Context, templateName string, tsv *mttypes.Template, request *mttypes.SendRequest) (resp *mttypes.SendResponse, err error) {
 
 	tmpl, err := mg.parseTemplate(templateName, tsv)
 	if err != nil {
@@ -148,7 +148,7 @@ func (mg *mgUpstream) Send(ctx context.Context, templateName string, tsv *mttype
 					TemplateName: templateName,
 					Status:       status,
 				}
-				errChan <- mg.msgStorage.PutValue(id, &mttypes.MessagesStorageValue{
+				errChan <- mg.msgStorage.PutMessage(id, &mttypes.MessagesStorageValue{
 					UserId:       recipient.ID,
 					TemplateName: templateName,
 					Variables:    recipient.Variables,
@@ -177,7 +177,7 @@ func (mg *mgUpstream) Send(ctx context.Context, templateName string, tsv *mttype
 	return resp, err
 }
 
-func (mg *mgUpstream) SimpleSend(ctx context.Context, templateName string, tsv *mttypes.TemplateStorageValue, recipient *mttypes.Recipient) (status *mttypes.SendStatus, err error) {
+func (mg *mgUpstream) SimpleSend(ctx context.Context, templateName string, tsv *mttypes.Template, recipient *mttypes.Recipient) (status *mttypes.SendStatus, err error) {
 	tmpl, err := mg.parseTemplate(templateName, tsv)
 	if err != nil {
 		return nil, err
@@ -209,7 +209,7 @@ func (mg *mgUpstream) SimpleSend(ctx context.Context, templateName string, tsv *
 			Status:       s,
 		}
 
-		err = mg.msgStorage.PutValue(id, &mttypes.MessagesStorageValue{
+		err = mg.msgStorage.PutMessage(id, &mttypes.MessagesStorageValue{
 			UserId:       recipient.ID,
 			TemplateName: templateName,
 			Variables:    recipient.Variables,

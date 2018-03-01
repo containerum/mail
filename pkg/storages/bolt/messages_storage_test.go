@@ -8,6 +8,7 @@ import (
 	"time"
 
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
+	cherry "git.containerum.net/ch/kube-client/pkg/cherry/mail-templater"
 	"github.com/sirupsen/logrus"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -28,13 +29,13 @@ func TestMessagesStorage(t *testing.T) {
 			Message:      "message",
 		}
 
-		So(storage.PutValue("id", testValue), ShouldBeNil)
-		v, err := storage.GetValue("id")
+		So(storage.PutMessage("id", testValue), ShouldBeNil)
+		v, err := storage.GetMessage("id")
 		So(err, ShouldBeNil)
 		So(v, ShouldResemble, testValue)
 
-		_, err = storage.GetValue("blah")
-		So(err, ShouldEqual, mttypes.ErrMessageNotExists)
+		_, err = storage.GetMessage("blah")
+		So(err.Error(), ShouldEqual, cherry.ErrMessageNotExist().Error())
 
 		// cleanup
 		So(storage.Close(), ShouldBeNil)

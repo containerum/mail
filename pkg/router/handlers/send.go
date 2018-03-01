@@ -4,17 +4,25 @@ import (
 	"net/http"
 
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
+	ch "git.containerum.net/ch/kube-client/pkg/cherry"
+	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
+	cherry "git.containerum.net/ch/kube-client/pkg/cherry/mail-templater"
+	"git.containerum.net/ch/mail-templater/pkg/model"
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
 	"github.com/gin-gonic/gin"
-
-	"git.containerum.net/ch/json-types/errors"
+	"github.com/gin-gonic/gin/binding"
 )
 
 func SimpleSendHandler(ctx *gin.Context) {
 	var request mttypes.SimpleSendRequest
-	if err := ctx.ShouldBindJSON(&request); err != nil {
-		ctx.Error(err)
-		//	ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
+	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		return
+	}
+
+	errs := model.ValidateSimpleSendRequest(request)
+	if errs != nil {
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -23,14 +31,14 @@ func SimpleSendHandler(ctx *gin.Context) {
 	_, tv, err := svc.TemplateStorage.GetLatestVersionTemplate(request.Template)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
+		gonic.Gonic(cherry.ErrTemplateNotExist(), ctx)
 		return
 	}
 
 	info, err := svc.UserManagerClient.UserInfoByID(ctx, request.UserID)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		gonic.Gonic(cherry.ErrPermissionsError(), ctx)
 		return
 	}
 
@@ -40,13 +48,56 @@ func SimpleSendHandler(ctx *gin.Context) {
 		Email:     info.Login,
 		Variables: request.Variables,
 	}
+
 	status, err := svc.UpstreamSimple.SimpleSend(ctx, request.Template, tv, recipient)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		gonic.Gonic(cherry.ErrMailSendFailed(), ctx)
 		return
 	}
 	ctx.JSON(http.StatusOK, mttypes.SimpleSendResponse{
 		UserID: status.RecipientID,
 	})
+}
+
+func SendHandler(ctx *gin.Context) {
+	name := ctx.Param("name")
+	version, hasVersion := ctx.GetQuery("version")
+	var request mttypes.SendRequest
+	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		return
+	}
+
+	errs := model.ValidateSendRequest(request)
+	if errs != nil {
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		return
+	}
+
+	svc := ctx.MustGet(m.MTServices).(*m.Services)
+
+	var tv *mttypes.Template
+	var err error
+	if !hasVersion {
+		_, tv, err = svc.TemplateStorage.GetLatestVersionTemplate(name)
+	} else {
+		tv, err = svc.TemplateStorage.GetTemplate(name, version)
+	}
+	if err != nil {
+		if cherr, ok := err.(*ch.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(cherry.ErrMailSendFailed(), ctx)
+		}
+		return
+	}
+	status, err := svc.Upstream.Send(ctx, name, tv, &request)
+	if err != nil {
+		ctx.Error(err)
+		gonic.Gonic(cherry.ErrMailSendFailed().AddDetailsErr(err), ctx)
+		return
+	}
+	ctx.JSON(http.StatusOK, status)
 }

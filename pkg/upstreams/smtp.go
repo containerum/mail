@@ -122,7 +122,7 @@ func (smtpu *smtpUpstream) statusCollector(ch chan mttypes.SendStatus, statuses 
 	wg.Done()
 }
 
-func (smtpu *smtpUpstream) parseTemplate(templateName string, tsv *mttypes.TemplateStorageValue) (tmpl *template.Template, err error) {
+func (smtpu *smtpUpstream) parseTemplate(templateName string, tsv *mttypes.Template) (tmpl *template.Template, err error) {
 	smtpu.log.Debugln("Parsing template ", templateName)
 	templateText, err := base64.StdEncoding.DecodeString(tsv.Data)
 	if err != nil {
@@ -194,7 +194,7 @@ func (smtpu *smtpUpstream) newSMTPClient(recipientEmail string, text string) err
 	return nil
 }
 
-func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *mttypes.TemplateStorageValue, request *mttypes.SendRequest) (resp *mttypes.SendResponse, err error) {
+func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *mttypes.Template, request *mttypes.SendRequest) (resp *mttypes.SendResponse, err error) {
 	tmpl, err := smtpu.parseTemplate(templateName, tsv)
 	if err != nil {
 		return nil, err
@@ -262,7 +262,7 @@ func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *m
 					Status:       "Sent",
 				}
 
-				errChan <- smtpu.msgStorage.PutValue(messageID, &mttypes.MessagesStorageValue{
+				errChan <- smtpu.msgStorage.PutMessage(messageID, &mttypes.MessagesStorageValue{
 					UserId:       recipient.ID,
 					TemplateName: templateName,
 					Variables:    recipient.Variables,
@@ -291,7 +291,7 @@ func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *m
 	return resp, err
 }
 
-func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, tsv *mttypes.TemplateStorageValue, recipient *mttypes.Recipient) (status *mttypes.SendStatus, err error) {
+func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, tsv *mttypes.Template, recipient *mttypes.Recipient) (status *mttypes.SendStatus, err error) {
 	tmpl, err := smtpu.parseTemplate(templateName, tsv)
 	if err != nil {
 		return nil, err
@@ -328,7 +328,7 @@ func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, 
 			Status:       "Sent",
 		}
 
-		err = smtpu.msgStorage.PutValue(messageID, &mttypes.MessagesStorageValue{
+		err = smtpu.msgStorage.PutMessage(messageID, &mttypes.MessagesStorageValue{
 			UserId:       recipient.ID,
 			TemplateName: templateName,
 			Variables:    recipient.Variables,

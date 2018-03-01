@@ -3,55 +3,84 @@ package handlers
 import (
 	"net/http"
 
-	"git.containerum.net/ch/json-types/errors"
+	"fmt"
+
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
+	ch "git.containerum.net/ch/kube-client/pkg/cherry"
+	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
+	cherry "git.containerum.net/ch/kube-client/pkg/cherry/mail-templater"
+	"git.containerum.net/ch/mail-templater/pkg/model"
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 func TemplateCreateHandler(ctx *gin.Context) {
-	var request mttypes.TemplateCreateRequest
-	if err := ctx.ShouldBindJSON(&request); err != nil {
-		ctx.Error(err)
-		//	ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
+	var request mttypes.Template
+	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		return
+	}
+
+	errs := model.ValidateCreateTemplate(request)
+	if errs != nil {
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	svc := ctx.MustGet(m.MTServices).(*m.Services)
 
-	err := svc.TemplateStorage.PutTemplate(request.Name, request.Version, request.Data, request.Subject)
+	err := svc.TemplateStorage.PutTemplate(request.Name, request.Version, request.Data, request.Subject, true)
 	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
+		if cherr, ok := err.(*ch.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(cherry.ErrUnableSaveTemplate(), ctx)
+		}
 		return
 	}
-	ctx.JSON(http.StatusCreated, &mttypes.TemplateCreateResponse{
+	ctx.JSON(http.StatusCreated, &mttypes.Template{
 		Name:    request.Name,
 		Version: request.Version,
 	})
 }
 
 func TemplateUpdateHandler(ctx *gin.Context) {
-	var request mttypes.TemplateUpdateRequest
-	if err := ctx.ShouldBindJSON(&request); err != nil {
-		ctx.Error(err)
-		//	ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
+	var request mttypes.Template
+	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
+
+	errs := model.ValidateUpdateTemplate(request)
+	if errs != nil {
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		return
+	}
+
 	name := ctx.Param("name")
 	version := ctx.Query("version")
+	if version == "" {
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(fmt.Errorf(model.IsRequiredQuery, "Version")), ctx)
+		return
+	}
 
 	svc := ctx.MustGet(m.MTServices).(*m.Services)
 
-	respObj, err := svc.TemplateStorage.GetTemplate(name, version)
+	oldTemplate, err := svc.TemplateStorage.GetTemplate(name, version)
 	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
+		if cherr, ok := err.(*ch.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(cherry.ErrUnableUpdateTemplate(), ctx)
+		}
 		return
 	}
 
-	data := respObj.Data
-	subject := respObj.Subject
+	data := oldTemplate.Data
+	subject := oldTemplate.Subject
 	if request.Data != "" {
 		data = request.Data
 	}
@@ -60,13 +89,21 @@ func TemplateUpdateHandler(ctx *gin.Context) {
 		subject = request.Subject
 	}
 
-	err = svc.TemplateStorage.PutTemplate(name, version, data, subject)
+	err = svc.TemplateStorage.PutTemplate(name, version, data, subject, false)
 	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
+		if cherr, ok := err.(*ch.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			if cherr, ok := err.(*ch.Err); ok {
+				gonic.Gonic(cherr, ctx)
+			} else {
+				ctx.Error(err)
+				gonic.Gonic(cherry.ErrUnableUpdateTemplate(), ctx)
+			}
+		}
 		return
 	}
-	ctx.JSON(http.StatusAccepted, &mttypes.TemplateUpdateResponse{
+	ctx.JSON(http.StatusAccepted, &mttypes.Template{
 		Name:    name,
 		Version: version,
 	})
@@ -86,8 +123,12 @@ func TemplateGetHandler(ctx *gin.Context) {
 		respObj, err = svc.TemplateStorage.GetTemplate(name, version)
 	}
 	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
+		if cherr, ok := err.(*ch.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(cherry.ErrUnableGetTemplate(), ctx)
+		}
 		return
 	}
 	ctx.JSON(http.StatusOK, respObj)
@@ -103,55 +144,26 @@ func TemplateDeleteHandler(ctx *gin.Context) {
 	var respObj interface{}
 	if !hasVersion { // if no "version" parameter specified, delete all versions
 		err = svc.TemplateStorage.DeleteTemplates(name)
-		respObj = &mttypes.TemplatesDeleteResponse{
+		respObj = &mttypes.Template{
 			Name: name,
 		}
 	} else {
 		err = svc.TemplateStorage.DeleteTemplate(name, version)
-		respObj = &mttypes.TemplateDeleteResponse{
+		respObj = &mttypes.Template{
 			Name:    name,
 			Version: version,
 		}
 	}
 	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
+		if cherr, ok := err.(*ch.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(cherry.ErrUnableDeleteTemplate(), ctx)
+		}
 		return
 	}
 	ctx.JSON(http.StatusOK, respObj)
-}
-
-func TemplateSendHandler(ctx *gin.Context) {
-	name := ctx.Param("name")
-	version, hasVersion := ctx.GetQuery("version")
-	var request mttypes.SendRequest
-	if err := ctx.ShouldBindJSON(&request); err != nil {
-		ctx.Error(err)
-		//	ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
-		return
-	}
-
-	svc := ctx.MustGet(m.MTServices).(*m.Services)
-
-	var tv *mttypes.TemplateStorageValue
-	var err error
-	if !hasVersion {
-		_, tv, err = svc.TemplateStorage.GetLatestVersionTemplate(name)
-	} else {
-		tv, err = svc.TemplateStorage.GetTemplate(name, version)
-	}
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
-		return
-	}
-	status, err := svc.Upstream.Send(ctx, name, tv, &request)
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	ctx.JSON(http.StatusOK, status)
 }
 
 func TemplateListGetHandler(ctx *gin.Context) {
@@ -159,9 +171,12 @@ func TemplateListGetHandler(ctx *gin.Context) {
 
 	respObj, err := svc.TemplateStorage.GetTemplatesList()
 	if err != nil {
-		ctx.Error(err)
-		//sendStorageError(ctx, err)
-		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
+		if cherr, ok := err.(*ch.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(cherry.ErrUnableGetMessagesList(), ctx)
+		}
 		return
 	}
 	ctx.JSON(http.StatusOK, respObj)

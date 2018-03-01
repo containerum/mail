@@ -3,10 +3,14 @@ package handlers
 import (
 	"net/http"
 
-	"git.containerum.net/ch/json-types/errors"
+	"strconv"
+
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
+	ch "git.containerum.net/ch/kube-client/pkg/cherry"
 	"github.com/gin-gonic/gin"
 
+	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
+	cherry "git.containerum.net/ch/kube-client/pkg/cherry/mail-templater"
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
 )
 
@@ -15,10 +19,14 @@ func MessageGetHandler(ctx *gin.Context) {
 
 	svc := ctx.MustGet(m.MTServices).(*m.Services)
 
-	v, err := svc.MessagesStorage.GetValue(id)
+	v, err := svc.MessagesStorage.GetMessage(id)
 	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
+		if cherr, ok := err.(*ch.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(cherry.ErrUnableGetMessage(), ctx)
+		}
 		return
 	}
 	ctx.JSON(http.StatusOK, &mttypes.MessageGetResponse{
@@ -28,19 +36,37 @@ func MessageGetHandler(ctx *gin.Context) {
 }
 
 func MessageListGetHandler(ctx *gin.Context) {
-	var params mttypes.MessageListQuery
-	if err := ctx.ShouldBindQuery(&params); err != nil {
-		ctx.Error(err)
-		//ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
-		return
+
+	page := int64(1)
+	pagestr, ok := ctx.GetQuery("page")
+	if ok {
+		var err error
+		page, err = strconv.ParseInt(pagestr, 10, 64)
+		if err != nil {
+			ctx.Error(err)
+		}
+	}
+
+	perPage := int64(10)
+	perPagestr, ok := ctx.GetQuery("per_page")
+	if ok {
+		var err error
+		perPage, err = strconv.ParseInt(perPagestr, 10, 64)
+		if err != nil {
+			ctx.Error(err)
+		}
 	}
 
 	svc := ctx.MustGet(m.MTServices).(*m.Services)
 
-	v, err := svc.MessagesStorage.GetMessageList(params.Page, params.PerPage)
+	v, err := svc.MessagesStorage.GetMessageList(int(page), int(perPage))
 	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(errors.ErrorWithHTTPStatus(err))
+		if cherr, ok := err.(*ch.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(cherry.ErrUnableGetMessagesList(), ctx)
+		}
 		return
 	}
 	ctx.JSON(http.StatusOK, v)
