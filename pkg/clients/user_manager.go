@@ -36,6 +36,7 @@ func NewHTTPUserManagerClient(serverURL string) UserManagerClient {
 	}
 }
 
+// NewHTTPUserManagerClient returns user info from user-manager
 func (u *httpUserManagerClient) UserInfoByID(ctx context.Context, userID string) (*umtypes.UserInfoByIDGetResponse, error) {
 	u.log.WithField("id", userID).Info("Get user info from")
 	ret := umtypes.UserInfoByIDGetResponse{}

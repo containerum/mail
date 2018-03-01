@@ -51,61 +51,14 @@ func NewBoltMessagesStorage(file string, options *bolt.Options) (storages.Messag
 	}, nil
 }
 
+// Close
+// Closes bolt storage
 func (s *boltMessagesStorage) Close() error {
 	return s.db.Close()
 }
 
-func (s *boltMessagesStorage) PutMessage(id string, value *mttypes.MessagesStorageValue) error {
-	loge := s.log.WithFields(logrus.Fields{
-		"id": id,
-	})
-	loge.Infof("Putting message")
-	err := s.db.Update(func(tx *bolt.Tx) error {
-		loge.Debugln("Get bucket")
-		b := tx.Bucket([]byte(boltMessagesStorageBucket))
-
-		loge.Debugln("Marshal json")
-		valueB, err := json.Marshal(value)
-		if err != nil {
-			loge.WithError(err).Errorln("Error marshalling value")
-			return cherry.ErrUnableSaveMessage()
-		}
-		return b.Put([]byte(id), valueB)
-	})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *boltMessagesStorage) GetMessage(id string) (*mttypes.MessagesStorageValue, error) {
-	loge := s.log.WithField("id", id)
-	loge.Infof("Getting message")
-	var value mttypes.MessagesStorageValue
-	err := s.db.View(func(tx *bolt.Tx) error {
-		loge.Debugln("Get bucket")
-		b := tx.Bucket([]byte(boltMessagesStorageBucket))
-
-		loge.Debugln("Extract value from storage")
-		valueB := b.Get([]byte(id))
-		if valueB == nil {
-			loge.Infoln("Cannot find value")
-			return cherry.ErrMessageNotExist() //mttypes.ErrMessageNotExists
-		}
-
-		if err := json.Unmarshal(valueB, &value); err != nil {
-			loge.WithError(err).Errorln("Value unmarshal failed")
-			return cherry.ErrUnableGetMessage()
-		}
-
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &value, nil
-}
-
+// GetMessageList
+// Gets messages list from db
 func (s *boltMessagesStorage) GetMessageList(page int, perPage int) (*mttypes.MessageListResponse, error) {
 	loge := s.log.WithField("name", "message list")
 	loge.Infoln("Trying to get list of all messages")
@@ -159,9 +112,63 @@ func (s *boltMessagesStorage) GetMessageList(page int, perPage int) (*mttypes.Me
 	})
 
 	if err != nil {
-		loge.WithError(err) //.Errorln(mttypes.ErrMessagesGetFailed)
 		return nil, err
 	}
 
 	return &resp, nil
+}
+
+// GetMessage
+// Gets message from db
+func (s *boltMessagesStorage) GetMessage(id string) (*mttypes.MessagesStorageValue, error) {
+	loge := s.log.WithField("id", id)
+	loge.Infof("Getting message")
+	var value mttypes.MessagesStorageValue
+	err := s.db.View(func(tx *bolt.Tx) error {
+		loge.Debugln("Get bucket")
+		b := tx.Bucket([]byte(boltMessagesStorageBucket))
+
+		loge.Debugln("Extract value from storage")
+		valueB := b.Get([]byte(id))
+		if valueB == nil {
+			loge.Infoln("Cannot find value")
+			return cherry.ErrMessageNotExist() //mttypes.ErrMessageNotExists
+		}
+
+		if err := json.Unmarshal(valueB, &value); err != nil {
+			loge.WithError(err).Errorln("Value unmarshal failed")
+			return cherry.ErrUnableGetMessage()
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &value, nil
+}
+
+// PutMessage
+// Saves message to db
+func (s *boltMessagesStorage) PutMessage(id string, value *mttypes.MessagesStorageValue) error {
+	loge := s.log.WithFields(logrus.Fields{
+		"id": id,
+	})
+	loge.Infof("Putting message")
+	err := s.db.Update(func(tx *bolt.Tx) error {
+		loge.Debugln("Get bucket")
+		b := tx.Bucket([]byte(boltMessagesStorageBucket))
+
+		loge.Debugln("Marshal json")
+		valueB, err := json.Marshal(value)
+		if err != nil {
+			loge.WithError(err).Errorln("Error marshalling value")
+			return cherry.ErrUnableSaveMessage()
+		}
+		return b.Put([]byte(id), valueB)
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }

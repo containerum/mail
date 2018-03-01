@@ -34,10 +34,14 @@ func NewBoltTemplateStorage(file string, options *bolt.Options) (storages.Templa
 	}, nil
 }
 
+// Close
+// Closes bolt storage
 func (s *boltTemplateStorage) Close() error {
 	return s.db.Close()
 }
 
+// GetTemplatesList
+// Gets templates list
 func (s *boltTemplateStorage) GetTemplatesList() (*mttypes.TemplatesListResponse, error) {
 	loge := s.log.WithField("name", "templates list")
 	loge.Infoln("Trying to get list of all templates")
@@ -71,6 +75,8 @@ func (s *boltTemplateStorage) GetTemplatesList() (*mttypes.TemplatesListResponse
 	return &resp, nil
 }
 
+// GetTemplates
+// Gets all versions of specific template
 func (s *boltTemplateStorage) GetTemplates(templateName string) (map[string]*mttypes.Template, error) {
 	loge := s.log.WithField("name", templateName)
 	loge.Infoln("Trying to get all versions of template")
@@ -104,6 +110,8 @@ func (s *boltTemplateStorage) GetTemplates(templateName string) (map[string]*mtt
 	return templates, nil
 }
 
+// GetTemplate
+// Gets specific version of specific template
 func (s *boltTemplateStorage) GetTemplate(templateName, templateVersion string) (*mttypes.Template, error) {
 	loge := s.log.WithFields(logrus.Fields{
 		"name":    templateName,
@@ -135,6 +143,8 @@ func (s *boltTemplateStorage) GetTemplate(templateName, templateVersion string) 
 	return &templateValue, nil
 }
 
+// GetTemplate
+// Gets latest version of specific template
 func (s *boltTemplateStorage) GetLatestVersionTemplate(templateName string) (*string, *mttypes.Template, error) {
 	loge := s.log.WithField("name", templateName)
 	loge.Infoln("Trying to get latest version of template")
@@ -186,6 +196,8 @@ func (s *boltTemplateStorage) GetLatestVersionTemplate(templateName string) (*st
 	return &templateVersion, &templateValue, nil
 }
 
+// PutTemplate
+// Saves template to db
 func (s *boltTemplateStorage) PutTemplate(templateName, templateVersion, templateData, templateSubject string, new bool) error {
 	loge := s.log.WithFields(logrus.Fields{
 		"name":    templateName,
@@ -227,6 +239,8 @@ func (s *boltTemplateStorage) PutTemplate(templateName, templateVersion, templat
 	return nil
 }
 
+// DeleteTemplate
+// Deletes specific template version from db
 func (s *boltTemplateStorage) DeleteTemplate(templateName, templateVersion string) error {
 	loge := s.log.WithFields(logrus.Fields{
 		"name":    templateName,
@@ -261,6 +275,8 @@ func (s *boltTemplateStorage) DeleteTemplate(templateName, templateVersion strin
 	return nil
 }
 
+// DeleteTemplate
+// Deletes template completely from db
 func (s *boltTemplateStorage) DeleteTemplates(templateName string) error {
 	loge := s.log.WithField("name", templateName)
 	loge.Infoln("Trying to delete all versions of template")

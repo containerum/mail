@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+//RequireAdminRole checks if user is admin
 func RequireAdminRole(ctx *gin.Context) {
 	if ctx.GetHeader(umtypes.UserRoleHeader) != "admin" {
 		gonic.Gonic(cherry.ErrAdminRequired(), ctx)

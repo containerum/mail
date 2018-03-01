@@ -7,6 +7,8 @@ import (
 	"github.com/goware/emailx"
 )
 
+//ValidateSimpleSendRequest validates simple send mail request
+//nolint: gocyclo
 func ValidateSimpleSendRequest(snd mttypes.SimpleSendRequest) []error {
 	errs := []error{}
 	if snd.UserID == "" {
@@ -25,6 +27,8 @@ func ValidateSimpleSendRequest(snd mttypes.SimpleSendRequest) []error {
 	return nil
 }
 
+//ValidateSendRequest validates send mail request
+//nolint: gocyclo
 func ValidateSendRequest(snd mttypes.SendRequest) []error {
 	errs := []error{}
 	if snd.Delay < 0 {

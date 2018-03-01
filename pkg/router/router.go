@@ -12,6 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+//CreateRouter initialises router and middlewares
 func CreateRouter(svc *m.Services) http.Handler {
 	e := gin.New()
 	initMiddlewares(e, svc)

@@ -15,6 +15,50 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
+//TemplateListGetHandler returns templates list
+func TemplateListGetHandler(ctx *gin.Context) {
+	svc := ctx.MustGet(m.MTServices).(*m.Services)
+
+	respObj, err := svc.TemplateStorage.GetTemplatesList()
+	if err != nil {
+		if cherr, ok := err.(*ch.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(cherry.ErrUnableGetMessagesList(), ctx)
+		}
+		return
+	}
+	ctx.JSON(http.StatusOK, respObj)
+}
+
+//TemplateGetHandler returns one template
+func TemplateGetHandler(ctx *gin.Context) {
+	name := ctx.Param("name")
+	version, hasVersion := ctx.GetQuery("version")
+
+	svc := ctx.MustGet(m.MTServices).(*m.Services)
+
+	var err error
+	var respObj interface{}
+	if !hasVersion { // if no "version" parameter specified, send all versions
+		respObj, err = svc.TemplateStorage.GetTemplates(name)
+	} else {
+		respObj, err = svc.TemplateStorage.GetTemplate(name, version)
+	}
+	if err != nil {
+		if cherr, ok := err.(*ch.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(cherry.ErrUnableGetTemplate(), ctx)
+		}
+		return
+	}
+	ctx.JSON(http.StatusOK, respObj)
+}
+
+//TemplateCreateHandler creates template
 func TemplateCreateHandler(ctx *gin.Context) {
 	var request mttypes.Template
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -46,6 +90,7 @@ func TemplateCreateHandler(ctx *gin.Context) {
 	})
 }
 
+//TemplateUpdateHandler updates template
 func TemplateUpdateHandler(ctx *gin.Context) {
 	var request mttypes.Template
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -94,12 +139,8 @@ func TemplateUpdateHandler(ctx *gin.Context) {
 		if cherr, ok := err.(*ch.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
-			if cherr, ok := err.(*ch.Err); ok {
-				gonic.Gonic(cherr, ctx)
-			} else {
-				ctx.Error(err)
-				gonic.Gonic(cherry.ErrUnableUpdateTemplate(), ctx)
-			}
+			ctx.Error(err)
+			gonic.Gonic(cherry.ErrUnableUpdateTemplate(), ctx)
 		}
 		return
 	}
@@ -109,31 +150,7 @@ func TemplateUpdateHandler(ctx *gin.Context) {
 	})
 }
 
-func TemplateGetHandler(ctx *gin.Context) {
-	name := ctx.Param("name")
-	version, hasVersion := ctx.GetQuery("version")
-
-	svc := ctx.MustGet(m.MTServices).(*m.Services)
-
-	var err error
-	var respObj interface{}
-	if !hasVersion { // if no "version" parameter specified, send all versions
-		respObj, err = svc.TemplateStorage.GetTemplates(name)
-	} else {
-		respObj, err = svc.TemplateStorage.GetTemplate(name, version)
-	}
-	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
-			gonic.Gonic(cherr, ctx)
-		} else {
-			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableGetTemplate(), ctx)
-		}
-		return
-	}
-	ctx.JSON(http.StatusOK, respObj)
-}
-
+//TemplateDeleteHandler deletes template
 func TemplateDeleteHandler(ctx *gin.Context) {
 	name := ctx.Param("name")
 	version, hasVersion := ctx.GetQuery("version")
@@ -160,22 +177,6 @@ func TemplateDeleteHandler(ctx *gin.Context) {
 		} else {
 			ctx.Error(err)
 			gonic.Gonic(cherry.ErrUnableDeleteTemplate(), ctx)
-		}
-		return
-	}
-	ctx.JSON(http.StatusOK, respObj)
-}
-
-func TemplateListGetHandler(ctx *gin.Context) {
-	svc := ctx.MustGet(m.MTServices).(*m.Services)
-
-	respObj, err := svc.TemplateStorage.GetTemplatesList()
-	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
-			gonic.Gonic(cherr, ctx)
-		} else {
-			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableGetMessagesList(), ctx)
 		}
 		return
 	}

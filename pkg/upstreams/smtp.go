@@ -194,6 +194,8 @@ func (smtpu *smtpUpstream) newSMTPClient(recipientEmail string, text string) err
 	return nil
 }
 
+//Send
+//Sends email using smtp
 func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *mttypes.Template, request *mttypes.SendRequest) (resp *mttypes.SendResponse, err error) {
 	tmpl, err := smtpu.parseTemplate(templateName, tsv)
 	if err != nil {
@@ -291,6 +293,8 @@ func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *m
 	return resp, err
 }
 
+//SimpleSend
+//Sends email using smtp in simple way
 func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, tsv *mttypes.Template, recipient *mttypes.Recipient) (status *mttypes.SendStatus, err error) {
 	tmpl, err := smtpu.parseTemplate(templateName, tsv)
 	if err != nil {

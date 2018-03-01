@@ -14,6 +14,7 @@ import (
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
 )
 
+//MessageGetHandler returns one message
 func MessageGetHandler(ctx *gin.Context) {
 	id := ctx.Param("message_id")
 
@@ -35,6 +36,7 @@ func MessageGetHandler(ctx *gin.Context) {
 	})
 }
 
+//MessageListGetHandler returns messages list
 func MessageListGetHandler(ctx *gin.Context) {
 
 	page := int64(1)

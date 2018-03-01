@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
+//SimpleSendHandler sends email in simple way
 func SimpleSendHandler(ctx *gin.Context) {
 	var request mttypes.SimpleSendRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -60,6 +61,7 @@ func SimpleSendHandler(ctx *gin.Context) {
 	})
 }
 
+//SendHandler sends email in not so simple way
 func SendHandler(ctx *gin.Context) {
 	name := ctx.Param("name")
 	version, hasVersion := ctx.GetQuery("version")

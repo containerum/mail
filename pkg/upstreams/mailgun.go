@@ -100,6 +100,8 @@ func (mg *mgUpstream) parseTemplate(templateName string, tsv *mttypes.Template) 
 	return tmpl, err
 }
 
+//Send
+//Sends email using mailgun
 func (mg *mgUpstream) Send(ctx context.Context, templateName string, tsv *mttypes.Template, request *mttypes.SendRequest) (resp *mttypes.SendResponse, err error) {
 
 	tmpl, err := mg.parseTemplate(templateName, tsv)
@@ -177,6 +179,8 @@ func (mg *mgUpstream) Send(ctx context.Context, templateName string, tsv *mttype
 	return resp, err
 }
 
+//SimpleSend
+//Sends email using mailgun in simple way
 func (mg *mgUpstream) SimpleSend(ctx context.Context, templateName string, tsv *mttypes.Template, recipient *mttypes.Recipient) (status *mttypes.SendStatus, err error) {
 	tmpl, err := mg.parseTemplate(templateName, tsv)
 	if err != nil {

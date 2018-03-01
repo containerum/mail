@@ -8,6 +8,8 @@ import (
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 )
 
+//ValidateCreateTemplate validates template creation request
+//nolint: gocyclo
 func ValidateCreateTemplate(tmpl mttypes.Template) []error {
 	errs := []error{}
 	if tmpl.Name == "" {
@@ -33,6 +35,8 @@ func ValidateCreateTemplate(tmpl mttypes.Template) []error {
 	return nil
 }
 
+//ValidateUpdateTemplate validates template update request
+//nolint: gocyclo
 func ValidateUpdateTemplate(tmpl mttypes.Template) []error {
 	errs := []error{}
 	if tmpl.Subject == "" {

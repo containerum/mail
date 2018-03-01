@@ -9,7 +9,7 @@ import (
 // TemplateStorage used to store email templates.
 // Implementation must support tagging and versioning with "semantic versioning 2.0"
 type TemplateStorage interface {
-	// PutTemplate puts template to storage. If template with specified name and version exists it will be overwritten.
+	// PutTemplate puts template to storage.
 	PutTemplate(templateName, templateVersion, templateData, templateSubject string, new bool) error
 
 	// GetTemplate returns specified version of template.

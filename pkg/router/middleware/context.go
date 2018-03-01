@@ -8,6 +8,7 @@ import (
 )
 
 const (
+	//MTServices is key for services
 	MTServices = "mt-service"
 )
 
@@ -20,6 +21,7 @@ type Services struct {
 	UserManagerClient clients.UserManagerClient
 }
 
+// RegisterServices adds services to context
 func RegisterServices(svc *Services) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set(MTServices, svc)
