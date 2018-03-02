@@ -86,7 +86,7 @@ func (smtpu *smtpUpstream) executeTemplate(tmpl *template.Template, recipient *m
 	return buf.String(), nil
 }
 
-func (smtpu *smtpUpstream) constructMessage(template *texttemplate.Template, recipient mttypes.Recipient, msgID string, subject string, text string) (string, error) {
+func (smtpu *smtpUpstream) constructMessage(template *texttemplate.Template, recipient mttypes.Recipient, msgID string, subject string, text string) (*string, error) {
 	newmail := mailData{SenderName: smtpu.senderName,
 		SenderMail:    smtpu.senderMail,
 		RecipientName: recipient.Name,
@@ -98,10 +98,11 @@ func (smtpu *smtpUpstream) constructMessage(template *texttemplate.Template, rec
 	var mailtext bytes.Buffer
 	err := template.Execute(&mailtext, newmail)
 	if err != nil {
-		return "Error", err
+		return nil, err
 	}
 
-	return mailtext.String(), nil
+	msg := mailtext.String()
+	return &msg, nil
 }
 
 func (smtpu *smtpUpstream) errCollector(ch chan error, errs *[]string, wg *sync.WaitGroup) {
@@ -238,7 +239,7 @@ func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *m
 
 			messageID := time.Now().UTC().Format("20060102150405.123456.") + strconv.Itoa(msgNumber)
 			msgNumber++
-			var mailtext string
+			var mailtext *string
 			mailtext, err = smtpu.constructMessage(tmplemail, recipient, messageID, tsv.Subject, text)
 			if err != nil {
 				errChan <- err
@@ -271,7 +272,7 @@ func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *m
 					CreatedAt:    time.Now().UTC(),
 					Message:      base64.StdEncoding.EncodeToString([]byte(text)),
 				})
-			}(recipient, mailtext, messageID)
+			}(recipient, *mailtext, messageID)
 		}
 
 		msgWG.Wait()
@@ -343,7 +344,7 @@ func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, 
 			smtpu.log.WithError(err).Errorln("Message save failed")
 			return
 		}
-	}(*recipient, mailtext, messageID)
+	}(*recipient, *mailtext, messageID)
 
 	select {
 	case <-ctx.Done():

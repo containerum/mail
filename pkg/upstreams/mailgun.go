@@ -37,7 +37,7 @@ func NewMailgun(conn mailgun.Mailgun, msgStorage storages.MessagesStorage, sende
 	}
 }
 
-func (mg *mgUpstream) executeTemplate(tmpl *template.Template, recipient *mttypes.Recipient, commonVars map[string]string) (string, error) {
+func (mg *mgUpstream) executeTemplate(tmpl *template.Template, recipient *mttypes.Recipient, commonVars map[string]string) (*string, error) {
 	var buf bytes.Buffer
 	tmplData := make(map[string]interface{})
 	for k, v := range commonVars {
@@ -50,9 +50,10 @@ func (mg *mgUpstream) executeTemplate(tmpl *template.Template, recipient *mttype
 	e.Debugln("Executing template")
 	if err := tmpl.Execute(&buf, tmplData); err != nil {
 		e.WithError(err).Errorln("Execute template failed")
-		return "", err
+		return nil, err
 	}
-	return buf.String(), nil
+	msg := buf.String()
+	return &msg, nil
 }
 
 func (mg *mgUpstream) constructMessage(text, subj, to string, delayMinutes int) *mailgun.Message {
@@ -106,6 +107,7 @@ func (mg *mgUpstream) Send(ctx context.Context, templateName string, tsv *mttype
 
 	tmpl, err := mg.parseTemplate(templateName, tsv)
 	if err != nil {
+		mg.log.WithError(err)
 		return nil, err
 	}
 
@@ -134,7 +136,7 @@ func (mg *mgUpstream) Send(ctx context.Context, templateName string, tsv *mttype
 				continue
 			}
 
-			msg := mg.constructMessage(text, tsv.Subject, recipient.Email, request.Delay)
+			msg := mg.constructMessage(*text, tsv.Subject, recipient.Email, request.Delay)
 
 			go func(msg *mailgun.Message, recipient mttypes.Recipient, text string) {
 				defer msgWG.Done()
@@ -157,7 +159,7 @@ func (mg *mgUpstream) Send(ctx context.Context, templateName string, tsv *mttype
 					CreatedAt:    time.Now().UTC(),
 					Message:      base64.StdEncoding.EncodeToString([]byte(text)),
 				})
-			}(msg, recipient, text)
+			}(msg, recipient, *text)
 		}
 
 		msgWG.Wait()
@@ -192,7 +194,7 @@ func (mg *mgUpstream) SimpleSend(ctx context.Context, templateName string, tsv *
 		return nil, err
 	}
 
-	msg := mg.constructMessage(text, tsv.Subject, recipient.Email, 0)
+	msg := mg.constructMessage(*text, tsv.Subject, recipient.Email, 0)
 
 	mgDoneCh := make(chan struct{})
 	go func() {
@@ -218,7 +220,7 @@ func (mg *mgUpstream) SimpleSend(ctx context.Context, templateName string, tsv *
 			TemplateName: templateName,
 			Variables:    recipient.Variables,
 			CreatedAt:    time.Now().UTC(),
-			Message:      base64.StdEncoding.EncodeToString([]byte(text)),
+			Message:      base64.StdEncoding.EncodeToString([]byte(*text)),
 		})
 	}()
 

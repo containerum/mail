@@ -6,12 +6,10 @@ import (
 	"github.com/google/uuid"
 )
 
-//nolint
 const (
-	IsRequiredQuery = "Field in query %v is required"
-	isRequired      = "Field %v is required"
-	notBase64       = "Field %v should be encoded in base64"
-	moreZero        = "Field %v should be >0"
+	isRequired = "Field %v is required"
+	notBase64  = "Field %v should be encoded in base64"
+	moreZero   = "Field %v should be >0"
 )
 
 //nolint

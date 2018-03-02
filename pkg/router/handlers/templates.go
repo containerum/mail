@@ -107,7 +107,7 @@ func TemplateUpdateHandler(ctx *gin.Context) {
 	name := ctx.Param("name")
 	version := ctx.Query("version")
 	if version == "" {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(fmt.Errorf(model.IsRequiredQuery, "Version")), ctx)
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(fmt.Errorf(isRequiredQuery, "Version")), ctx)
 		return
 	}
 
