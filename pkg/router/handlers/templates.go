@@ -9,8 +9,8 @@ import (
 	ch "git.containerum.net/ch/kube-client/pkg/cherry"
 	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/mail-templater"
-	"git.containerum.net/ch/mail-templater/pkg/model"
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
+	"git.containerum.net/ch/mail-templater/pkg/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
@@ -66,7 +66,7 @@ func TemplateCreateHandler(ctx *gin.Context) {
 		return
 	}
 
-	errs := model.ValidateCreateTemplate(request)
+	errs := validation.ValidateCreateTemplate(request)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -98,7 +98,7 @@ func TemplateUpdateHandler(ctx *gin.Context) {
 		return
 	}
 
-	errs := model.ValidateUpdateTemplate(request)
+	errs := validation.ValidateUpdateTemplate(request)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return

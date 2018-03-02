@@ -7,8 +7,8 @@ import (
 	ch "git.containerum.net/ch/kube-client/pkg/cherry"
 	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/mail-templater"
-	"git.containerum.net/ch/mail-templater/pkg/model"
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
+	"git.containerum.net/ch/mail-templater/pkg/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
@@ -21,7 +21,7 @@ func SimpleSendHandler(ctx *gin.Context) {
 		return
 	}
 
-	errs := model.ValidateSimpleSendRequest(request)
+	errs := validation.ValidateSimpleSendRequest(request)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
@@ -71,7 +71,7 @@ func SendHandler(ctx *gin.Context) {
 		return
 	}
 
-	errs := model.ValidateSendRequest(request)
+	errs := validation.ValidateSendRequest(request)
 	if errs != nil {
 		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
