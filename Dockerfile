@@ -19,10 +19,10 @@ ENV ZONEINFO /zoneinfo.zip
 COPY --from=alpine /zoneinfo.zip /
 # tls certificates
 COPY --from=alpine /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-ENV GIN_MODE=release \
-    CH_MAIL_LOG_LEVEL=4 \
-    CH_MAIL_TEMPLATE_DB=/storage/template.db \
-    CH_MAIL_MESSAGES_DB=/storage/messages.db \
+ENV GIN_MODE=debug \
+    CH_MAIL_LOG_LEVEL=5 \
+    CH_MAIL_TEMPLATE_DB="../../storage/template.db" \
+    CH_MAIL_MESSAGES_DB="../../storage/messages.db" \
     CH_MAIL_UPSTREAM=mailgun \
     CH_MAIL_UPSTREAM_SIMPLE=smtp \
     MG_API_KEY=apikey \

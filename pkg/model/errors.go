@@ -14,8 +14,7 @@ const (
 
 //nolint
 var (
-	ErrInvalidID         = errors.New("ID should be UUID")
-	ErrStorageOpenFailed = errors.New("Failed to open storage")
+	errInvalidID = errors.New("ID should be UUID")
 )
 
 // IsValidUUID checks if UUID is valid

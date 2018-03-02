@@ -6,7 +6,6 @@ import (
 
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/mail-templater"
-	"git.containerum.net/ch/mail-templater/pkg/model"
 	"git.containerum.net/ch/mail-templater/pkg/storages"
 	"github.com/blang/semver"
 	"github.com/boltdb/bolt"
@@ -25,7 +24,7 @@ func NewBoltTemplateStorage(file string, options *bolt.Options) (storages.Templa
 	log.Infof("Opening storage at %s with options %#v", file, options)
 	db, err := bolt.Open(file, os.ModePerm, options)
 	if err != nil {
-		log.WithError(err).WithError(model.ErrStorageOpenFailed)
+		log.WithError(err).WithError(errStorageOpenFailed)
 		return nil, err
 	}
 	return &boltTemplateStorage{

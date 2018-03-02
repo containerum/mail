@@ -15,7 +15,7 @@ func ValidateSimpleSendRequest(snd mttypes.SimpleSendRequest) []error {
 		errs = append(errs, fmt.Errorf(isRequired, "UserID"))
 	} else {
 		if !IsValidUUID(snd.UserID) {
-			errs = append(errs, ErrInvalidID)
+			errs = append(errs, errInvalidID)
 		}
 	}
 	if snd.Template == "" {
@@ -45,7 +45,7 @@ func ValidateSendRequest(snd mttypes.SendRequest) []error {
 				errs = append(errs, fmt.Errorf(isRequired, "ID"))
 			} else {
 				if !IsValidUUID(v.ID) {
-					errs = append(errs, ErrInvalidID)
+					errs = append(errs, errInvalidID)
 				}
 			}
 			if v.Email == "" {
