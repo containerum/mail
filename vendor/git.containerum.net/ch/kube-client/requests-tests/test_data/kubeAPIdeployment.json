@@ -1,0 +1,28 @@
+{
+    "name": "roma",
+    "owner": "",
+    "replicas": 1,
+    "containers": [{
+        "name": "ivan",
+        "env": [{
+            "name": "konstantin",
+            "value": "nemolodec"
+        }],
+        "image": "nginx",
+        "volume": null,
+        "limits": {
+            "cpu": "360m",
+            "memory": "512Mi"
+        }
+    }],
+    "status": {
+        "created_at": 1518161678,
+        "updated_at": 1518429767,
+        "replicas": 1,
+        "ready_replicas": 1,
+        "available_replicas": 1,
+        "unavailable_replicas": 0,
+        "updated_replicas": 1
+    },
+    "hostname": ""
+}
