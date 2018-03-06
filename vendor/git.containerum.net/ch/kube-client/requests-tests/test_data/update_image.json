@@ -1,0 +1,4 @@
+{
+    "container_name": "first",
+    "image": "nginx"
+}

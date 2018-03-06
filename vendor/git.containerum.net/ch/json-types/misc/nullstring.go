@@ -12,7 +12,7 @@ func (ns NullString) MarshalJSON() ([]byte, error) {
 	if !ns.Valid {
 		return []byte("null"), nil
 	}
-	return []byte(ns.String), nil
+	return []byte("\"" + ns.String + "\""), nil
 }
 
 // UnmarshalJSON unmarshals string from json. If null was received, marks as not valid
