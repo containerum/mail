@@ -13,7 +13,7 @@ type ErrSID uint64
 // ErrKind -- represents kind of error
 type ErrKind uint64
 
-// ErrID -- represnsents unique error ID
+// ErrID -- represents unique error ID
 type ErrID struct {
 	SID  ErrSID  `json:"sid"`
 	Kind ErrKind `json:"kind"`
@@ -23,7 +23,7 @@ func (errID *ErrID) String() string {
 	return fmt.Sprintf("%v-%v", errID.SID, errID.Kind)
 }
 
-// Err -- standart serializable API error
+// Err -- standard serializable API error
 // Message -- constant error message:
 //		+ "invalid username"
 //		+ "quota exceeded"
@@ -65,7 +65,7 @@ func BuildErr(SID ErrSID) func(string, int, ErrKind) *Err {
 // Returns text representation kinda
 // "unable to parse quota []"
 func (err *Err) Error() string {
-	buf := bytes.NewBufferString(" [" + err.ID.String() + "] " +
+	buf := bytes.NewBufferString("[" + err.ID.String() + "] " +
 		http.StatusText(err.StatusHTTP) + " " +
 		err.Message)
 	detailsLen := len(err.Details)

@@ -182,11 +182,13 @@ const (
 )
 
 type IngressEntry struct {
-	ID        string      `json:"id,omitempty" db:"id"`
-	Domain    string      `json:"domain" db:"custom_domain"`
-	Type      IngressType `json:"type" db:"type"`
-	ServiceID string      `json:"service_id" db:"service_id"`
-	CreatedAt time.Time   `json:"created_at" db:"created_at"`
+	ID          string      `json:"id,omitempty" db:"id"`
+	Domain      string      `json:"domain" db:"custom_domain"`
+	Type        IngressType `json:"type" db:"type"`
+	ServiceID   string      `json:"service_id" db:"service_id"`
+	CreatedAt   time.Time   `json:"created_at" db:"created_at"`
+	Path        string      `json:"path" db:"path"`
+	ServicePort int         `json:"service_port" db:"service_port"`
 }
 
 type ServiceType string

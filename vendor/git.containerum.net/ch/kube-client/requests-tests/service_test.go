@@ -12,7 +12,7 @@ const (
 )
 
 func TestService(test *testing.T) {
-	client := newCubeAPIClient(test)
+	client := newMockClient(test)
 	Convey("Test Kube API methods", test, func() {
 		Convey("get service", func() {
 			_, err := client.GetService(kubeAPItestNamespace, kubeAPItestService)

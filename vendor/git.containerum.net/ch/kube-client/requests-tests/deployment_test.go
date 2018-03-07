@@ -1,6 +1,7 @@
 package reqtests
 
 import (
+	"fmt"
 	"testing"
 
 	"git.containerum.net/ch/kube-client/pkg/model"
@@ -13,9 +14,9 @@ const (
 )
 
 func TestDeployment(test *testing.T) {
+	client := newMockClient(test)
 	Convey("Test deployment methods", test, func() {
 		Convey("resource service methods", func() {
-			client := newClient(test)
 			deployment := newFakeDeployment(test)
 			namespace := "pion"
 			deployment.Name = newRandomName(6)
@@ -23,10 +24,11 @@ func TestDeployment(test *testing.T) {
 				Container: deployment.Containers[0].Name,
 				Image:     "mongo",
 			}
-			err := client.CreateDeployment(namespace, deployment)
-			So(err, ShouldBeNil)
+			er := client.CreateDeployment(namespace, deployment)
+			fmt.Printf("%#v", er)
+			So(er, ShouldBeNil)
 
-			err = client.SetContainerImage(namespace,
+			err := client.SetContainerImage(namespace,
 				deployment.Name, updateImage)
 			So(err, ShouldBeNil)
 			deployment.Labels["color"] = "blue"
@@ -41,7 +43,6 @@ func TestDeployment(test *testing.T) {
 
 		})
 		Convey("KubeAPI methods", func() {
-			client := newCubeAPIClient(test)
 			Convey("get deployment test", func() {
 				_, err := client.GetDeployment(kubeAPItestNamespace, kubeAPItestDeployment)
 				So(err, ShouldBeNil)

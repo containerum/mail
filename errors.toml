@@ -112,3 +112,9 @@ SID = 7
     StatusHTTP = 500
     Message = "Unable to send email"
     Kind = 17
+
+[[error]]
+    Name = "ErrInternalError"
+    StatusHTTP = 500
+    Message = "Internal error"
+    Kind = 18

@@ -1,66 +1,44 @@
 package user
 
-import "time"
-
-type UserCreateRequest struct {
-	UserName  string `json:"username" binding:"required,email"`
-	Password  string `json:"password" binding:"required"`
-	Referral  string `json:"referral" binding:"omitempty,url"`
-	ReCaptcha string `json:"recaptcha" binding:"required"`
+type RegisterRequest struct {
+	Login     string `json:"login"`
+	Password  string `json:"password"`
+	ReCaptcha string `json:"recaptcha"`
+	Referral  string `json:"referral"`
 }
 
-type UserCreateResponse struct {
-	ID       string `json:"id"`
-	Login    string `json:"login"`
-	IsActive bool   `json:"is_active"`
+type UserList struct {
+	Users []User `json:"users,omitempty"`
 }
 
-type UserInfoByIDGetResponse struct {
-	Login string                 `json:"login"`
-	Role  string                 `json:"role"`
-	Data  map[string]interface{} `json:"data"`
+type User struct {
+	*UserLogin
+	*Accounts
+	*Profile
+	Role          string `json:"role,omitempty"`
+	IsActive      bool   `json:"is_active,omitempty"`
+	IsInBlacklist bool   `json:"is_in_blacklist,omitempty"`
+	IsDeleted     bool   `json:"is_deleted,omitempty"`
 }
 
-type UserInfoByLoginGetResponse struct {
-	ID string                 	 `json:"id"`
-	Role  string                 `json:"role"`
-	Data  map[string]interface{} `json:"data"`
+type UserLogin struct {
+	ID    string `json:"id,omitempty"`
+	Login string `json:"login,omitempty"`
 }
 
-type UserInfoGetResponse struct {
-	Login     string                 `json:"login"`
-	Data      map[string]interface{} `json:"data"`
-	ID        string                 `json:"id"`
-	Role      string                 `json:"role"`
-	IsActive  bool                   `json:"is_active"`
-	CreatedAt time.Time              `json:"created_at"`
+type Accounts struct {
+	Accounts map[string]string `json:"accounts,omitempty"`
 }
 
-type UserListEntry struct {
-	ID            string                 `json:"id"`
-	Login         string                 `json:"login"`
-	Referral      string                 `json:"referral"`
-	Role          string                 `json:"role"`
-	Access        string                 `json:"access"`
-	CreatedAt     string                 `json:"created_at"`
-	DeletedAt     string                 `json:"deleted_at"`
-	BlacklistedAt string                 `json:"blacklisted_at"`
-	Data          map[string]interface{} `json:"data"`
-	IsActive      bool                   `json:"is_active"`
-	IsInBlacklist bool                   `json:"is_in_blacklist"`
-	IsDeleted     bool                   `json:"is_deleted"`
-	Accounts      map[string]string      `json:"accounts"`
+type Profile struct {
+	Referral      string                 `json:"referral,omitempty"`
+	Access        string                 `json:"access,omitempty"`
+	CreatedAt     string                 `json:"created_at,omitempty"`
+	DeletedAt     string                 `json:"deleted_at,omitempty"`
+	BlacklistedAt string                 `json:"blacklisted_at,omitempty"`
+	Data          map[string]interface{} `json:"data,omitempty"`
 }
 
-type UserListGetResponse struct {
-	Users []UserListEntry `json:"users"`
-}
-
-type UserListQuery struct {
-	Page    int `form:"page" binding:"required,gt=0"`
-	PerPage int `form:"per_page" binding:"required,gt=0"`
-}
-
-type CompleteDeleteHandlerRequest struct {
-	UserID string `json:"user_id" binding:"required,uuid4"`
+type BoundAccountDeleteRequest struct {
+	Resource string `json:"resource"`
 }

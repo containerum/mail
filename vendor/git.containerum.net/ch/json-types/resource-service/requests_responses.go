@@ -135,18 +135,22 @@ type GetDomainResponse = Domain
 
 // Ingress is a basic type for ingress-related responses
 type Ingress struct {
-	Domain    string      `json:"domain" binding:"required"`
-	Type      IngressType `json:"type" binding:"eq=http|eq=https|eq=custom_https"`
-	Service   string      `json:"service" binding:"required,dns"`
-	CreatedAt *time.Time  `json:"created_at,omitempty" binding:"-"`
+	Domain      string      `json:"domain" binding:"required"`
+	Type        IngressType `json:"type" binding:"eq=http|eq=https|eq=custom_https"`
+	Service     string      `json:"service" binding:"required,dns"`
+	CreatedAt   *time.Time  `json:"created_at,omitempty" binding:"-"`
+	Path        string      `json:"path"`
+	ServicePort int         `json:"service_port" binding:"min=1,max=65535"`
+}
+
+type IngressTLS struct {
+	Cert string `json:"crt" binding:"base64"`
+	Key  string `json:"key" binding:"base64"`
 }
 
 type CreateIngressRequest struct {
 	Ingress
-	TLS *struct {
-		Cert string `json:"crt" binding:"base64"`
-		Key  string `json:"key" binding:"base64"`
-	} `json:"tls,omitempty" binding:"omitempty"`
+	TLS *IngressTLS `json:"tls,omitempty" binding:"omitempty"`
 }
 
 type GetIngressesResponse []Ingress

@@ -23,3 +23,7 @@ func ErrTokenNotFound() *cherry.Err {
 func ErrInternal() *cherry.Err {
 	return buildErr("internal error", http.StatusInternalServerError, 4)
 }
+
+func ErrValidation() *cherry.Err {
+	return buildErr("validation error", http.StatusBadRequest, 5)
+}

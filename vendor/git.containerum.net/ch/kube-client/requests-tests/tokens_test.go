@@ -7,14 +7,7 @@ import (
 )
 
 func TestTokenMethods(test *testing.T) {
-	client := newClient(test)
-	client.UserManagerURL = "http://192.168.88.200:8111"
-	client.AuthURL = "http://192.168.88.200:1111"
-	client.SetHeaders(map[string]string{
-		"X-User-Agent":  "kube-client",
-		"X-User-Client": "315d3143bab041b3656e4666355adb15",
-		"X-Client-IP":   "192.168.0.1",
-	})
+	client := newMockClient(test)
 	username := "helpik94@yandex.ru"
 	password := "12345678"
 	recaptcha := "03AHhf_52156hcrzZpAgJse24k1JVDN4nGjujmnlYW7KTjV-JuxmNE13SUfJNfxEC1Rj4"
