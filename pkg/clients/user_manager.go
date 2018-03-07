@@ -3,8 +3,8 @@ package clients
 import (
 	"context"
 
-	"git.containerum.net/ch/json-types/errors"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
+	"git.containerum.net/ch/kube-client/pkg/cherry"
 	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/resty.v1"
@@ -27,7 +27,7 @@ func NewHTTPUserManagerClient(serverURL string) UserManagerClient {
 		SetLogger(log.WriterLevel(logrus.DebugLevel)).
 		SetHostURL(serverURL).
 		SetDebug(true).
-		SetError(errors.Error{})
+		SetError(&cherry.Err{})
 	client.JSONMarshal = jsoniter.Marshal
 	client.JSONUnmarshal = jsoniter.Unmarshal
 	return &httpUserManagerClient{
@@ -45,14 +45,13 @@ func (u *httpUserManagerClient) UserInfoByID(ctx context.Context, userID string)
 	resp, err := u.client.R().
 		SetContext(ctx).
 		SetResult(&ret).
-		//	SetError(&cherry.Err{}).
 		Get("/user/info/id/" + userID)
 	if err != nil {
 		return nil, err
 	}
 
 	if resp.Error() != nil {
-		return nil, errors.New(resp.Error().(string))
+		return nil, resp.Error().(*cherry.Err)
 	}
 	return &ret, nil
 }

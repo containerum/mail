@@ -39,7 +39,12 @@ func SimpleSendHandler(ctx *gin.Context) {
 	info, err := svc.UserManagerClient.UserInfoByID(ctx, request.UserID)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrPermissionsError(), ctx)
+		cherr, ok := err.(*ch.Err)
+		if ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			gonic.Gonic(cherry.ErrMailSendFailed().AddDetailsErr(err), ctx)
+		}
 		return
 	}
 
