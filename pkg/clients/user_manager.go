@@ -12,7 +12,7 @@ import (
 
 // UserManagerClient is interface to user-manager service
 type UserManagerClient interface {
-	UserInfoByID(ctx context.Context, userID string) (*umtypes.UserInfoByIDGetResponse, error)
+	UserInfoByID(ctx context.Context, userID string) (*umtypes.User, error)
 }
 
 type httpUserManagerClient struct {
@@ -37,9 +37,9 @@ func NewHTTPUserManagerClient(serverURL string) UserManagerClient {
 }
 
 // NewHTTPUserManagerClient returns user info from user-manager
-func (u *httpUserManagerClient) UserInfoByID(ctx context.Context, userID string) (*umtypes.UserInfoByIDGetResponse, error) {
+func (u *httpUserManagerClient) UserInfoByID(ctx context.Context, userID string) (*umtypes.User, error) {
 	u.log.WithField("id", userID).Info("Get user info from")
-	ret := umtypes.UserInfoByIDGetResponse{}
+	ret := umtypes.User{}
 
 	//TODO Parse user manager errors
 	resp, err := u.client.R().
