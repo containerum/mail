@@ -1,0 +1,14 @@
+Name = "ermockerr"
+SID = 888
+
+[[error]]
+    Name = "InvalidDeployment"
+    Message = "invalid deployment"
+    StatusHTTP = 418
+    Kind = 1
+
+[[error]]
+    Name = "InvalidContainer"
+    Message = "invalid container"
+    StatusHTTP = 418
+    Kind = 2

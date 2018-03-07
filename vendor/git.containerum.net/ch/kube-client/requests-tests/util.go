@@ -7,40 +7,37 @@ import (
 	"io"
 	"io/ioutil"
 	"math/rand"
-	"net/http"
 	"testing"
 	"time"
 
 	kubeClient "git.containerum.net/ch/kube-client/pkg/client"
 	"git.containerum.net/ch/kube-client/pkg/model"
+	"git.containerum.net/ch/kube-client/pkg/rest/re"
+	"git.containerum.net/ch/kube-client/pkg/rest/remock"
 )
 
 const (
-	resourceAddr = "http://192.168.88.200:1213"
-	kubeAPIaddr  = "http://192.168.88.200:1214"
+	testAPIurl = "http://192.168.88.200"
 )
 
-func newClient(test *testing.T) *kubeClient.Client {
-	client, err := kubeClient.CreateCmdClient(
-		kubeClient.Config{
-			ResourceAddr: resourceAddr,
-			APIurl:       kubeAPIaddr,
-			User: kubeClient.User{
-				Role: "user",
-			},
-		})
+func newMockClient(test *testing.T) *kubeClient.Client {
+	client, err := kubeClient.NewClient(kubeClient.Config{
+		APIurl:  "http://192.168.88.200",
+		RestAPI: remock.NewMock(),
+		User: kubeClient.User{
+			Role: "user",
+		},
+	})
 	if err != nil {
-		test.Fatalf("error while creating client: %v", err)
+		test.Fatalf("error while client initialisation: %v", err)
 	}
-	client.SetHeader("X-User-ID", "20b616d8-1ea7-4842-b8ec-c6e8226fda5b")
 	return client
 }
-
-func newCubeAPIClient(test *testing.T) *kubeClient.Client {
-	client, err := kubeClient.CreateCmdClient(
+func newClient(test *testing.T) *kubeClient.Client {
+	client, err := kubeClient.NewClient(
 		kubeClient.Config{
-			ResourceAddr: resourceAddr,
-			APIurl:       kubeAPIaddr,
+			RestAPI: re.NewResty(),
+			APIurl:  "http://192.168.88.200",
 			User: kubeClient.User{
 				Role: "user",
 			},
@@ -56,15 +53,6 @@ func newFakeNamespaces(test *testing.T) []model.Namespace {
 		{
 			TariffID: "4563e8c1-fb41-416a-9798-e949a2616260",
 		},
-	}
-}
-
-func createNamespace(test *testing.T, client *kubeClient.Client, namespace model.Namespace) {
-	resp, err := client.Request.
-		SetBody(namespace).
-		Post(resourceAddr + "/namespace")
-	if err = kubeClient.MapErrors(resp, err, http.StatusOK, http.StatusAccepted); err != nil {
-		test.Fatalf("error while creating ")
 	}
 }
 

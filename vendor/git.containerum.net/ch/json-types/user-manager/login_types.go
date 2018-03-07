@@ -1,22 +1,17 @@
 package user
 
-type BasicLoginRequest struct {
-	Username  string `json:"username" binding:"required,email"`
-	Password  string `json:"password" binding:"required"`
+type LoginRequest struct {
+	Login    string `json:"login"`
+	Password string `json:"password"`
 }
 
 type OneTimeTokenLoginRequest struct {
-	Token string `json:"token" binding:"required"`
+	Token string `json:"token"`
 }
 
 type OAuthLoginRequest struct {
-	Resource    OAuthResource `json:"resource" binding:"required"`
-	AccessToken string        `json:"access_token" binding:"required"`
-}
-
-type WebAPILoginRequest struct {
-	Username string `json:"username" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
+	Resource    OAuthResource `json:"resource"`
+	AccessToken string        `json:"access_token"`
 }
 
 type WebAPILoginResponse struct {
@@ -34,17 +29,8 @@ type WebAPILoginResponse struct {
 	} `json:"user"`
 }
 
-type WebAPIVolumesResponse struct {
-	Name string `json:"name"`
-}
-
-type WebAPINamespaceResponse struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
 type WebAPIResource struct {
 	ID     string `json:"id"`
-	Label  string `json:"label"`
+	Name   string `json:"label"`
 	Access string `json:"access"`
 }

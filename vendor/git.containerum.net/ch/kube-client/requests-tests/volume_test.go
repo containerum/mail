@@ -12,7 +12,7 @@ const (
 )
 
 func TestVolume(test *testing.T) {
-	client := newClient(test)
+	client := newMockClient(test)
 	Convey("Test volume methods", test, func() {
 		Convey("resource api", func() {
 			var volumes []model.Volume

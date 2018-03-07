@@ -7,7 +7,7 @@ import (
 )
 
 func TestNamespace(test *testing.T) {
-	client := newClient(test)
+	client := newMockClient(test)
 	fakeNamespaces := newFakeNamespaces(test)
 	Convey("Test KubeAPI methods", test, func() {
 		Convey("get namespace", func() {
