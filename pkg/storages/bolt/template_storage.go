@@ -211,10 +211,12 @@ func (s *boltTemplateStorage) PutTemplate(templateName, templateVersion, templat
 			return cherry.ErrUnableSaveTemplate()
 		}
 
+		createdAt := time.Now().UTC()
+
 		loge.Debugln("Putting kv data")
 		value, _ := json.Marshal(&mttypes.Template{
 			Data:      templateData,
-			CreatedAt: time.Now().UTC(),
+			CreatedAt: &createdAt,
 			Subject:   templateSubject,
 		})
 
