@@ -18,10 +18,10 @@ type MessagesStorageValue struct {
 }
 
 type MessageListEntry struct {
-	ID           string    `json:"id"`
-	UserID       string    `json:"user_id"`
-	TemplateName string    `json:"template_name"`
-	CreatedAt    time.Time `json:"created_at"`
+	ID           string    `json:"id,omitempty"`
+	UserID       string    `json:"user_id,omitempty"`
+	TemplateName string    `json:"template_name,omitempty"`
+	CreatedAt    time.Time `json:"created_at,omitempty"`
 }
 
 type MessageListResponse struct {

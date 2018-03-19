@@ -16,7 +16,7 @@ func Gonic(err *cherry.Err, ctx *gin.Context) {
 
 // Recovery -- gin middleware to catch panics and wrap it to cherry error.
 // If panic caught it aborts HTTP request with defaultErr.
-func Recovery(defaultErr func() *cherry.Err, logger cherry.ErrorLogger) gin.HandlerFunc {
+func Recovery(defaultErr cherry.ErrConstruct, logger cherry.ErrorLogger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		defer func() {
 			var errToReturn *cherry.Err
