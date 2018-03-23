@@ -13,10 +13,8 @@ func ValidateSimpleSendRequest(snd mttypes.SimpleSendRequest) []error {
 	errs := []error{}
 	if snd.UserID == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "UserID"))
-	} else {
-		if !IsValidUUID(snd.UserID) {
-			errs = append(errs, errInvalidID)
-		}
+	} else if !IsValidUUID(snd.UserID) {
+		errs = append(errs, errInvalidID)
 	}
 	if snd.Template == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Template"))
@@ -43,17 +41,13 @@ func ValidateSendRequest(snd mttypes.SendRequest) []error {
 			}
 			if v.ID == "" {
 				errs = append(errs, fmt.Errorf(isRequired, "ID"))
-			} else {
-				if !IsValidUUID(v.ID) {
-					errs = append(errs, errInvalidID)
-				}
+			} else if !IsValidUUID(v.ID) {
+				errs = append(errs, errInvalidID)
 			}
 			if v.Email == "" {
 				errs = append(errs, fmt.Errorf(isRequired, "Email"))
-			} else {
-				if err := emailx.ValidateFast(v.Email); err != nil {
-					errs = append(errs, err)
-				}
+			} else if err := emailx.ValidateFast(v.Email); err != nil {
+				errs = append(errs, err)
 			}
 		}
 	}

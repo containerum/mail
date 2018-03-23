@@ -41,7 +41,6 @@ func (u *httpUserManagerClient) UserInfoByID(ctx context.Context, userID string)
 	u.log.WithField("id", userID).Info("Get user info from")
 	ret := umtypes.User{}
 
-	//TODO Parse user manager errors
 	resp, err := u.client.R().
 		SetContext(ctx).
 		SetResult(&ret).
