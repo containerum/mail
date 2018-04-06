@@ -3,6 +3,8 @@ package clients
 import (
 	"context"
 
+	"time"
+
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/kube-client/pkg/cherry"
 	"github.com/json-iterator/go"
@@ -27,6 +29,7 @@ func NewHTTPUserManagerClient(serverURL string) UserManagerClient {
 		SetLogger(log.WriterLevel(logrus.DebugLevel)).
 		SetHostURL(serverURL).
 		SetDebug(true).
+		SetTimeout(3 * time.Second).
 		SetError(&cherry.Err{})
 	client.JSONMarshal = jsoniter.Marshal
 	client.JSONUnmarshal = jsoniter.Unmarshal
@@ -41,7 +44,6 @@ func (u *httpUserManagerClient) UserInfoByID(ctx context.Context, userID string)
 	u.log.WithField("id", userID).Info("Get user info from")
 	ret := umtypes.User{}
 
-	//TODO Parse user manager errors
 	resp, err := u.client.R().
 		SetContext(ctx).
 		SetResult(&ret).
