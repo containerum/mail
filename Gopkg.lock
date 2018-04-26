@@ -2,24 +2,26 @@
 
 
 [[projects]]
-  branch = "master"
-  name = "git.containerum.net/ch/json-types"
-  packages = [
-    "mail-templater",
-    "user-manager"
-  ]
-  revision = "2b7a55bc8ebcc50ddcea49df46e9907c02955d18"
+  branch = "develop"
+  name = "git.containerum.net/ch/api-gateway"
+  packages = ["pkg/utils/headers"]
+  revision = "25814d45e36ce93606bac69f89a92c9f9f1eecf9"
 
 [[projects]]
-  name = "git.containerum.net/ch/kube-client"
+  name = "git.containerum.net/ch/cherry"
   packages = [
-    "pkg/cherry",
-    "pkg/cherry/adaptors/cherrylog",
-    "pkg/cherry/adaptors/gonic",
-    "pkg/cherry/mail-templater"
+    ".",
+    "adaptors/cherrylog",
+    "adaptors/gonic"
   ]
-  revision = "e5f14992144f5589f2a0d0082e1a863e7435b72e"
-  version = "v0.2.3"
+  revision = "82e4d22be24efe6d9e6925376119a24f789bddc7"
+  version = "v1.0.1-rc2"
+
+[[projects]]
+  branch = "develop"
+  name = "git.containerum.net/ch/user-manager"
+  packages = ["pkg/models"]
+  revision = "c149d613d59d65c13eb602b63d1096173380b215"
 
 [[projects]]
   name = "github.com/blang/semver"
@@ -49,7 +51,7 @@
   branch = "master"
   name = "github.com/gin-gonic/contrib"
   packages = ["ginrus"]
-  revision = "dccbb4a462e965297e21372a9ad3ea05e0df3e5f"
+  revision = "9b830a15f6abcf9e160f47ee01fc00691cc1981a"
 
 [[projects]]
   name = "github.com/gin-gonic/gin"
@@ -77,7 +79,7 @@
   branch = "master"
   name = "github.com/gopherjs/gopherjs"
   packages = ["js"]
-  revision = "82b322028c96512b15077093b16a5f1c7ea897ac"
+  revision = "8dffc02ea1cb8398bb73f30424697c60fcf8d4c5"
 
 [[projects]]
   branch = "master"
@@ -92,6 +94,7 @@
     ".",
     "hcl/ast",
     "hcl/parser",
+    "hcl/printer",
     "hcl/scanner",
     "hcl/strconv",
     "hcl/token",
@@ -99,7 +102,7 @@
     "json/scanner",
     "json/token"
   ]
-  revision = "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
+  revision = "ef8a98b0bbce4a65b5aa4c368430a80ddc533168"
 
 [[projects]]
   name = "github.com/json-iterator/go"
@@ -187,8 +190,8 @@
     ".",
     "mem"
   ]
-  revision = "bb8f1927f2a9d3ab41c9340aa034f6b803f4359c"
-  version = "v1.0.2"
+  revision = "63644898a8da0bc22138abf860edaf5277b6102e"
+  version = "v1.1.0"
 
 [[projects]]
   name = "github.com/spf13/cast"
@@ -205,26 +208,26 @@
 [[projects]]
   name = "github.com/spf13/pflag"
   packages = ["."]
-  revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
-  version = "v1.0.0"
+  revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
+  version = "v1.0.1"
 
 [[projects]]
   name = "github.com/spf13/viper"
   packages = ["."]
-  revision = "25b30aa063fc18e48662b86996252eabdcf2f0c7"
-  version = "v1.0.0"
+  revision = "b5e8006cbee93ec955a89ab31e0e3ce3204f3736"
+  version = "v1.0.2"
 
 [[projects]]
   name = "github.com/ugorji/go"
   packages = ["codec"]
-  revision = "9831f2c3ac1068a78f50999a30db84270f647af6"
-  version = "v1.1"
+  revision = "b4c50a2b199d93b13dc15e78929cfb23bfdf21ab"
+  version = "v1.1.1"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "c3a3ad6d03f7a915c0f7e194b7152974bb73d287"
+  revision = "719079de17cdc7d84bb2cd40301fc88f280eb809"
 
 [[projects]]
   branch = "master"
@@ -233,7 +236,7 @@
     "idna",
     "publicsuffix"
   ]
-  revision = "24dd3780ca4f75fed9f321890729414a4b5d3f13"
+  revision = "5f9ae10d9af5b1c89ae6904293b14b064d4ada23"
 
 [[projects]]
   branch = "master"
@@ -242,7 +245,7 @@
     "unix",
     "windows"
   ]
-  revision = "01acb38716e021ed1fc03a602bdb5838e1358c5e"
+  revision = "bb9c189858d91f42db229b04d45a4c3d23a7662a"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -280,18 +283,18 @@
 [[projects]]
   name = "gopkg.in/resty.v1"
   packages = ["."]
-  revision = "65798e030a35b911602b4d1d743d6f50ac93b665"
-  version = "v1.3"
+  revision = "f8815663de1e64d57cdd4ee9e2b2fa96977a030e"
+  version = "v1.4"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "7f97868eec74b32b0982dd158a51a446d1da7eb5"
-  version = "v2.1.1"
+  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
+  version = "v2.2.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6f4dd77488253c5017fd9599323d57acc1871a4706c1e6d850df1f8aa642f7af"
+  inputs-digest = "9981fe2bf9d787790231a3bf1e9cdf56c8d450d15a383bb4a3a9b0ab55a3a4e4"
   solver-name = "gps-cdcl"
   solver-version = 1

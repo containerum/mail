@@ -5,12 +5,12 @@ import (
 
 	"strconv"
 
-	mttypes "git.containerum.net/ch/json-types/mail-templater"
-	ch "git.containerum.net/ch/kube-client/pkg/cherry"
+	"git.containerum.net/ch/cherry"
 	"github.com/gin-gonic/gin"
 
-	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/mail-templater"
+	"git.containerum.net/ch/cherry/adaptors/gonic"
+	"git.containerum.net/ch/mail-templater/pkg/models"
+	"git.containerum.net/ch/mail-templater/pkg/mtErrors"
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
 )
 
@@ -22,15 +22,15 @@ func MessageGetHandler(ctx *gin.Context) {
 
 	v, err := svc.MessagesStorage.GetMessage(id)
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableGetMessage(), ctx)
+			gonic.Gonic(mtErrors.ErrUnableGetMessage(), ctx)
 		}
 		return
 	}
-	ctx.JSON(http.StatusOK, &mttypes.MessageGetResponse{
+	ctx.JSON(http.StatusOK, &models.MessageGetResponse{
 		Id:                   id,
 		MessagesStorageValue: v,
 	})
@@ -38,7 +38,6 @@ func MessageGetHandler(ctx *gin.Context) {
 
 //MessageListGetHandler returns messages list
 func MessageListGetHandler(ctx *gin.Context) {
-
 	page := int64(1)
 	pagestr, ok := ctx.GetQuery("page")
 	if ok {
@@ -63,11 +62,11 @@ func MessageListGetHandler(ctx *gin.Context) {
 
 	v, err := svc.MessagesStorage.GetMessageList(int(page), int(perPage))
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableGetMessagesList(), ctx)
+			gonic.Gonic(mtErrors.ErrUnableGetMessagesList(), ctx)
 		}
 		return
 	}

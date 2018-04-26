@@ -4,8 +4,8 @@ import (
 	"errors"
 	"os"
 
-	mttypes "git.containerum.net/ch/json-types/mail-templater"
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/mail-templater"
+	"git.containerum.net/ch/mail-templater/pkg/models"
+	"git.containerum.net/ch/mail-templater/pkg/mtErrors"
 	"git.containerum.net/ch/mail-templater/pkg/storages"
 	"github.com/boltdb/bolt"
 	"github.com/json-iterator/go"
@@ -58,13 +58,13 @@ func (s *boltMessagesStorage) Close() error {
 
 // GetMessageList
 // Gets messages list from db
-func (s *boltMessagesStorage) GetMessageList(page int, perPage int) (*mttypes.MessageListResponse, error) {
+func (s *boltMessagesStorage) GetMessageList(page int, perPage int) (*models.MessageListResponse, error) {
 	loge := s.log.WithField("name", "message list")
 	loge.Infoln("Trying to get list of all messages")
 
-	resp := mttypes.MessageListResponse{
-		Messages: []mttypes.MessageListEntry{},
-		MessageListQuery: &mttypes.MessageListQuery{
+	resp := models.MessageListResponse{
+		Messages: []models.MessageListEntry{},
+		MessageListQuery: &models.MessageListQuery{
 			Page:    page,
 			PerPage: perPage,
 		},
@@ -81,15 +81,15 @@ func (s *boltMessagesStorage) GetMessageList(page int, perPage int) (*mttypes.Me
 				return errors.New(iterationFinished)
 			}
 
-			var value mttypes.MessageListEntry
+			var value models.MessageListEntry
 
 			if err := json.Unmarshal(v, &value); err != nil {
 				loge.WithError(err).Errorln("Value unmarshal failed")
-				return cherry.ErrUnableGetMessagesList()
+				return mtErrors.ErrUnableGetMessagesList()
 			}
 
 			if messageNumber >= startMessage {
-				resp.Messages = append(resp.Messages, mttypes.MessageListEntry{
+				resp.Messages = append(resp.Messages, models.MessageListEntry{
 					ID:           string(k),
 					UserID:       value.UserID,
 					TemplateName: value.TemplateName,
@@ -119,10 +119,10 @@ func (s *boltMessagesStorage) GetMessageList(page int, perPage int) (*mttypes.Me
 
 // GetMessage
 // Gets message from db
-func (s *boltMessagesStorage) GetMessage(id string) (*mttypes.MessagesStorageValue, error) {
+func (s *boltMessagesStorage) GetMessage(id string) (*models.MessagesStorageValue, error) {
 	loge := s.log.WithField("id", id)
 	loge.Infof("Getting message")
-	var value mttypes.MessagesStorageValue
+	var value models.MessagesStorageValue
 	err := s.db.View(func(tx *bolt.Tx) error {
 		loge.Debugln("Get bucket")
 		b := tx.Bucket([]byte(boltMessagesStorageBucket))
@@ -131,12 +131,12 @@ func (s *boltMessagesStorage) GetMessage(id string) (*mttypes.MessagesStorageVal
 		valueB := b.Get([]byte(id))
 		if valueB == nil {
 			loge.Infoln("Cannot find value")
-			return cherry.ErrMessageNotExist() //mttypes.ErrMessageNotExists
+			return mtErrors.ErrMessageNotExist() //models.ErrMessageNotExists
 		}
 
 		if err := json.Unmarshal(valueB, &value); err != nil {
 			loge.WithError(err).Errorln("Value unmarshal failed")
-			return cherry.ErrUnableGetMessage()
+			return mtErrors.ErrUnableGetMessage()
 		}
 
 		return nil
@@ -149,7 +149,7 @@ func (s *boltMessagesStorage) GetMessage(id string) (*mttypes.MessagesStorageVal
 
 // PutMessage
 // Saves message to db
-func (s *boltMessagesStorage) PutMessage(id string, value *mttypes.MessagesStorageValue) error {
+func (s *boltMessagesStorage) PutMessage(id string, value *models.MessagesStorageValue) error {
 	loge := s.log.WithFields(logrus.Fields{
 		"id": id,
 	})
@@ -162,7 +162,7 @@ func (s *boltMessagesStorage) PutMessage(id string, value *mttypes.MessagesStora
 		valueB, err := json.Marshal(value)
 		if err != nil {
 			loge.WithError(err).Errorln("Error marshalling value")
-			return cherry.ErrUnableSaveMessage()
+			return mtErrors.ErrUnableSaveMessage()
 		}
 		return b.Put([]byte(id), valueB)
 	})

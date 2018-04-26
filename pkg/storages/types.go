@@ -3,7 +3,7 @@ package storages
 import (
 	"io"
 
-	mttypes "git.containerum.net/ch/json-types/mail-templater"
+	"git.containerum.net/ch/mail-templater/pkg/models"
 )
 
 // TemplateStorage used to store email templates.
@@ -13,13 +13,13 @@ type TemplateStorage interface {
 	PutTemplate(templateName, templateVersion, templateData, templateSubject string, new bool) error
 
 	// GetTemplate returns specified version of template.
-	GetTemplate(templateName, templateVersion string) (*mttypes.Template, error)
+	GetTemplate(templateName, templateVersion string) (*models.Template, error)
 
 	// GetLatestVersionTemplate returns latest version of template and it`s value using semver to compare versions.
-	GetLatestVersionTemplate(templateName string) (*string, *mttypes.Template, error)
+	GetLatestVersionTemplate(templateName string) (*string, *models.Template, error)
 
 	// GetTemplates returns all versions of templates in map (key is version, value is template).
-	GetTemplates(templateName string) (map[string]*mttypes.Template, error)
+	GetTemplates(templateName string) (map[string]*models.Template, error)
 
 	// DeleteTemplate deletes specified version of template. Returns nil on successful delete.
 	DeleteTemplate(templateName, templateVersion string) error
@@ -28,7 +28,7 @@ type TemplateStorage interface {
 	DeleteTemplates(templateName string) error
 
 	// GetTemplatesList returns list of all of templates.
-	GetTemplatesList() (*mttypes.TemplatesListResponse, error)
+	GetTemplatesList() (*models.TemplatesListResponse, error)
 
 	io.Closer
 }
@@ -37,13 +37,13 @@ type TemplateStorage interface {
 type MessagesStorage interface {
 	// PutMessage puts MessageStorageValue to storage.
 	// If message with specified id already exists in storage it will be overwritten.
-	PutMessage(id string, value *mttypes.MessagesStorageValue) error
+	PutMessage(id string, value *models.MessagesStorageValue) error
 
 	// GetMessage returns value by specified ID.
-	GetMessage(id string) (*mttypes.MessagesStorageValue, error)
+	GetMessage(id string) (*models.MessagesStorageValue, error)
 
 	// GetValue returns all messages.
-	GetMessageList(page int, perPage int) (*mttypes.MessageListResponse, error)
+	GetMessageList(page int, perPage int) (*models.MessageListResponse, error)
 
 	io.Closer
 }

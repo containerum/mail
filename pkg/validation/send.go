@@ -3,13 +3,13 @@ package validation
 import (
 	"fmt"
 
-	mttypes "git.containerum.net/ch/json-types/mail-templater"
+	"git.containerum.net/ch/mail-templater/pkg/models"
 	"github.com/goware/emailx"
 )
 
 //ValidateSimpleSendRequest validates simple send mail request
 //nolint: gocyclo
-func ValidateSimpleSendRequest(snd mttypes.SimpleSendRequest) []error {
+func ValidateSimpleSendRequest(snd models.SimpleSendRequest) []error {
 	errs := []error{}
 	if snd.UserID == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "UserID"))
@@ -27,7 +27,7 @@ func ValidateSimpleSendRequest(snd mttypes.SimpleSendRequest) []error {
 
 //ValidateSendRequest validates send mail request
 //nolint: gocyclo
-func ValidateSendRequest(snd mttypes.SendRequest) []error {
+func ValidateSendRequest(snd models.SendRequest) []error {
 	errs := []error{}
 	if snd.Delay < 0 {
 		errs = append(errs, fmt.Errorf(moreZero, "Delay"))

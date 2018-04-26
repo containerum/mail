@@ -5,8 +5,8 @@ import (
 
 	"time"
 
-	umtypes "git.containerum.net/ch/json-types/user-manager"
-	"git.containerum.net/ch/kube-client/pkg/cherry"
+	"git.containerum.net/ch/cherry"
+	"git.containerum.net/ch/user-manager/pkg/models"
 	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/resty.v1"
@@ -14,7 +14,7 @@ import (
 
 // UserManagerClient is interface to user-manager service
 type UserManagerClient interface {
-	UserInfoByID(ctx context.Context, userID string) (*umtypes.User, error)
+	UserInfoByID(ctx context.Context, userID string) (*models.User, error)
 }
 
 type httpUserManagerClient struct {
@@ -40,9 +40,9 @@ func NewHTTPUserManagerClient(serverURL string) UserManagerClient {
 }
 
 // NewHTTPUserManagerClient returns user info from user-manager
-func (u *httpUserManagerClient) UserInfoByID(ctx context.Context, userID string) (*umtypes.User, error) {
+func (u *httpUserManagerClient) UserInfoByID(ctx context.Context, userID string) (*models.User, error) {
 	u.log.WithField("id", userID).Info("Get user info from")
-	ret := umtypes.User{}
+	ret := models.User{}
 
 	resp, err := u.client.R().
 		SetContext(ctx).

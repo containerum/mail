@@ -3,7 +3,7 @@ package upstreams
 import (
 	"context"
 
-	"git.containerum.net/ch/json-types/mail-templater"
+	"git.containerum.net/ch/mail-templater/pkg/models"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,11 +21,11 @@ func NewDummyUpstream() Upstream {
 
 //Send
 //Sends dummy email
-func (du *dummyUpstream) Send(ctx context.Context, templateName string, tsv *mail.Template, request *mail.SendRequest) (resp *mail.SendResponse, err error) {
-	resp = &mail.SendResponse{}
+func (du *dummyUpstream) Send(ctx context.Context, templateName string, tsv *models.Template, request *models.SendRequest) (resp *models.SendResponse, err error) {
+	resp = &models.SendResponse{}
 	for _, recipient := range request.Message.Recipients {
 		du.log.WithField("template", templateName).WithFields(recipient.Variables).Infoln("Sending email to", recipient.Email)
-		resp.Statuses = append(resp.Statuses, mail.SendStatus{
+		resp.Statuses = append(resp.Statuses, models.SendStatus{
 			RecipientID:  recipient.ID,
 			TemplateName: templateName,
 			Status:       "OK",
@@ -36,9 +36,9 @@ func (du *dummyUpstream) Send(ctx context.Context, templateName string, tsv *mai
 
 //SimpleSend
 //Sends dummy email in simple way
-func (du *dummyUpstream) SimpleSend(ctx context.Context, templateName string, tsv *mail.Template, recipient *mail.Recipient) (status *mail.SendStatus, err error) {
+func (du *dummyUpstream) SimpleSend(ctx context.Context, templateName string, tsv *models.Template, recipient *models.Recipient) (status *models.SendStatus, err error) {
 	du.log.WithField("template", templateName).WithFields(recipient.Variables).Infoln("Sending email to", recipient.Email)
-	status = &mail.SendStatus{
+	status = &models.SendStatus{
 		RecipientID:  recipient.ID,
 		TemplateName: templateName,
 		Status:       "OK",
