@@ -1,4 +1,4 @@
-package user
+package models
 
 type RegisterRequest struct {
 	Login     string `json:"login"`
@@ -22,8 +22,9 @@ type User struct {
 }
 
 type UserLogin struct {
-	ID    string `json:"id,omitempty"`
-	Login string `json:"login,omitempty"`
+	ID       string `json:"id,omitempty"`
+	Login    string `json:"login,omitempty"`
+	Password string `json:"password,omitempty"`
 }
 
 type Accounts struct {

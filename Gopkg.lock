@@ -18,10 +18,10 @@
   version = "v1.0.1-rc2"
 
 [[projects]]
-  branch = "master"
-  name = "git.containerum.net/ch/json-types"
-  packages = ["user-manager"]
-  revision = "041a989c67953d829255c2fb10985b9bc1b25e51"
+  branch = "develop"
+  name = "git.containerum.net/ch/user-manager"
+  packages = ["pkg/models"]
+  revision = "c149d613d59d65c13eb602b63d1096173380b215"
 
 [[projects]]
   name = "github.com/blang/semver"
@@ -295,6 +295,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "66a5e74bbaa17bc97eb3e9dbe227e56c100559b5a887bb9d41c6b78ef1bd0bea"
+  inputs-digest = "9981fe2bf9d787790231a3bf1e9cdf56c8d450d15a383bb4a3a9b0ab55a3a4e4"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -1,4 +1,4 @@
-package user
+package models
 
 type PasswordRequest struct {
 	Link            string `json:"link"`
