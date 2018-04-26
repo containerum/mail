@@ -8,10 +8,6 @@
   version = "~0.2.3"
 
 [[constraint]]
-  branch = "master"
-  name = "git.containerum.net/ch/json-types"
-
-[[constraint]]
   name = "github.com/blang/semver"
   version = "3.5.1"
 
