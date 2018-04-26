@@ -3,7 +3,7 @@ package mtErrors
 
 import (
 	bytes "bytes"
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry"
+	cherry "git.containerum.net/ch/cherry"
 	template "text/template"
 )
 
@@ -12,7 +12,7 @@ const ()
 // ErrAdminRequired error
 // User is not admin and has no permissions
 func ErrAdminRequired(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Admin access required", StatusHTTP: 403, ID: cherry.ErrID{SID: 0x7, Kind: 0x1}, Details: []string(nil)}
+	err := &cherry.Err{Message: "Admin access required", StatusHTTP: 403, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0x1}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -26,7 +26,7 @@ func ErrAdminRequired(params ...func(*cherry.Err)) *cherry.Err {
 // ErrPermissionsError error
 // Unable to verify if user has required permissions, so don't give access
 func ErrPermissionsError(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable to verify permissions", StatusHTTP: 403, ID: cherry.ErrID{SID: 0x7, Kind: 0x2}, Details: []string(nil)}
+	err := &cherry.Err{Message: "Unable to verify permissions", StatusHTTP: 403, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0x2}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -40,7 +40,7 @@ func ErrPermissionsError(params ...func(*cherry.Err)) *cherry.Err {
 // ErrRequiredHeadersNotProvided error
 // Required headers is not found in context
 func ErrRequiredHeadersNotProvided(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Required headers not provided", StatusHTTP: 400, ID: cherry.ErrID{SID: 0x7, Kind: 0x3}, Details: []string(nil)}
+	err := &cherry.Err{Message: "Required headers not provided", StatusHTTP: 400, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0x3}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -54,7 +54,7 @@ func ErrRequiredHeadersNotProvided(params ...func(*cherry.Err)) *cherry.Err {
 // ErrRequestValidationFailed error
 // Validation error when parsing request
 func ErrRequestValidationFailed(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Request validation failed", StatusHTTP: 400, ID: cherry.ErrID{SID: 0x7, Kind: 0x4}, Details: []string(nil)}
+	err := &cherry.Err{Message: "Request validation failed", StatusHTTP: 400, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0x4}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -66,7 +66,7 @@ func ErrRequestValidationFailed(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableGetTemplatesList(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable to get templates list", StatusHTTP: 500, ID: cherry.ErrID{SID: 0x7, Kind: 0x5}, Details: []string(nil)}
+	err := &cherry.Err{Message: "Unable to get templates list", StatusHTTP: 500, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0x5}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -78,7 +78,7 @@ func ErrUnableGetTemplatesList(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableGetTemplate(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable to get template", StatusHTTP: 500, ID: cherry.ErrID{SID: 0x7, Kind: 0x6}, Details: []string(nil)}
+	err := &cherry.Err{Message: "Unable to get template", StatusHTTP: 500, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0x6}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -90,7 +90,7 @@ func ErrUnableGetTemplate(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableSaveTemplate(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable to save template", StatusHTTP: 500, ID: cherry.ErrID{SID: 0x7, Kind: 0x7}, Details: []string(nil)}
+	err := &cherry.Err{Message: "Unable to save template", StatusHTTP: 500, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0x7}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -102,7 +102,7 @@ func ErrUnableSaveTemplate(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableUpdateTemplate(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable to update template", StatusHTTP: 500, ID: cherry.ErrID{SID: 0x7, Kind: 0x8}, Details: []string(nil)}
+	err := &cherry.Err{Message: "Unable to update template", StatusHTTP: 500, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0x8}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -114,7 +114,7 @@ func ErrUnableUpdateTemplate(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableDeleteTemplate(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable to delete template", StatusHTTP: 500, ID: cherry.ErrID{SID: 0x7, Kind: 0x9}, Details: []string(nil)}
+	err := &cherry.Err{Message: "Unable to delete template", StatusHTTP: 500, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0x9}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -126,7 +126,7 @@ func ErrUnableDeleteTemplate(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrTemplateAlreadyExists(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Template with this name already exists", StatusHTTP: 409, ID: cherry.ErrID{SID: 0x7, Kind: 0xa}, Details: []string(nil)}
+	err := &cherry.Err{Message: "Template with this name already exists", StatusHTTP: 409, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0xa}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -138,7 +138,7 @@ func ErrTemplateAlreadyExists(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrTemplateNotExist(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Template with this name doesn't exist", StatusHTTP: 404, ID: cherry.ErrID{SID: 0x7, Kind: 0xb}, Details: []string(nil)}
+	err := &cherry.Err{Message: "Template with this name doesn't exist", StatusHTTP: 404, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0xb}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -150,7 +150,7 @@ func ErrTemplateNotExist(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrTemplateVersionNotExist(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Template with this name and version doesn't exist", StatusHTTP: 404, ID: cherry.ErrID{SID: 0x7, Kind: 0xc}, Details: []string(nil)}
+	err := &cherry.Err{Message: "Template with this name and version doesn't exist", StatusHTTP: 404, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0xc}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -162,7 +162,7 @@ func ErrTemplateVersionNotExist(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableGetMessagesList(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable to get messages list", StatusHTTP: 500, ID: cherry.ErrID{SID: 0x7, Kind: 0xd}, Details: []string(nil)}
+	err := &cherry.Err{Message: "Unable to get messages list", StatusHTTP: 500, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0xd}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -174,7 +174,7 @@ func ErrUnableGetMessagesList(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableGetMessage(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable to get message", StatusHTTP: 500, ID: cherry.ErrID{SID: 0x7, Kind: 0xe}, Details: []string(nil)}
+	err := &cherry.Err{Message: "Unable to get message", StatusHTTP: 500, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0xe}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -186,7 +186,7 @@ func ErrUnableGetMessage(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableSaveMessage(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable to save message", StatusHTTP: 500, ID: cherry.ErrID{SID: 0x7, Kind: 0xf}, Details: []string(nil)}
+	err := &cherry.Err{Message: "Unable to save message", StatusHTTP: 500, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0xf}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -198,7 +198,7 @@ func ErrUnableSaveMessage(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrMessageNotExist(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Message with this name doesn't exist", StatusHTTP: 404, ID: cherry.ErrID{SID: 0x7, Kind: 0x10}, Details: []string(nil)}
+	err := &cherry.Err{Message: "Message with this name doesn't exist", StatusHTTP: 404, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0x10}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -210,7 +210,7 @@ func ErrMessageNotExist(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrMailSendFailed(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable to send email", StatusHTTP: 500, ID: cherry.ErrID{SID: 0x7, Kind: 0x11}, Details: []string(nil)}
+	err := &cherry.Err{Message: "Unable to send email", StatusHTTP: 500, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0x11}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -222,7 +222,7 @@ func ErrMailSendFailed(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrInternalError(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Internal error", StatusHTTP: 500, ID: cherry.ErrID{SID: 0x7, Kind: 0x12}, Details: []string(nil)}
+	err := &cherry.Err{Message: "Internal error", StatusHTTP: 500, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0x12}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}

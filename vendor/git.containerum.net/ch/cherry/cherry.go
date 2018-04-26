@@ -4,11 +4,15 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"runtime"
+	"strconv"
+	"strings"
 )
 
+//go:generate swagger generate spec -o swagger.json -m
+
 // ErrSID -- represents service ID of error
-//go:generate stringer -type=ErrSID
-type ErrSID uint64
+type ErrSID string
 
 // ErrKind -- represents kind of error
 type ErrKind uint64
@@ -23,6 +27,9 @@ func (errID *ErrID) String() string {
 	return fmt.Sprintf("%v-%v", errID.SID, errID.Kind)
 }
 
+// Fields -- represents additional key-value fields of error
+type Fields map[string]string
+
 // Err -- standard serializable API error
 // Message -- constant error message:
 //		+ "invalid username"
@@ -34,11 +41,14 @@ func (errID *ErrID) String() string {
 // 		+ "field 'Replicas' must be non-zero value"
 //		+ "not enough tights to feed gopher"
 //		+ "resource 'God' does't exist"
+// Fields -- optional set of key-value pairs
+// swagger:model
 type Err struct {
 	Message    string   `json:"message"`
 	StatusHTTP int      `json:"status_http"`
 	ID         ErrID    `json:"id"`
 	Details    []string `json:"details,omitempty"`
+	Fields     Fields   `json:"fields,omitempty"`
 }
 
 // NewErr -- constructs Err struct with provided message and ID
@@ -48,6 +58,24 @@ func NewErr(msg string, status int, ID ErrID) *Err {
 		StatusHTTP: status,
 		ID:         ID,
 	}
+}
+
+// Emit -- if err is nil, the return initialized error
+func (err *Err) Emit() *Err {
+	if err == nil {
+		_, file, line, _ := runtime.Caller(1)
+		err = NewErr("undefined error", 0, ErrID{}).
+			WithField("file", file).
+			WithField("line", strconv.Itoa(line))
+	}
+	return err
+}
+
+func (err *Err) EmitDefault(defaulterr Err) *Err {
+	if err == nil {
+		return &defaulterr
+	}
+	return err
 }
 
 // BuildErr -- produces Err constructor with custom
@@ -68,16 +96,17 @@ func (err *Err) Error() string {
 	buf := bytes.NewBufferString("[" + err.ID.String() + "] " +
 		http.StatusText(err.StatusHTTP) + " " +
 		err.Message)
-	detailsLen := len(err.Details)
-	if detailsLen > 0 {
+	if len(err.Details) > 0 {
 		buf.WriteString(": ")
+		buf.WriteString(strings.Join(err.Details, "; "))
 	}
-	for i, msg := range err.Details {
-		if i+1 == detailsLen {
-			buf.WriteString(msg)
-		} else {
-			buf.WriteString(msg + "; ")
+	if len(err.Fields) > 0 {
+		buf.WriteString(": ")
+		var fields []string
+		for name, value := range err.Fields {
+			fields = append(fields, name+"="+strconv.QuoteToASCII(value))
 		}
+		buf.WriteString(strings.Join(fields, ", "))
 	}
 	return buf.String()
 }
@@ -101,6 +130,29 @@ func (err *Err) AddDetailsErr(details ...error) *Err {
 	return err
 }
 
+// WithField -- adds field to Err, chainable
+func (err *Err) WithField(name, value string) *Err {
+	if err.Fields == nil {
+		err.Fields = make(Fields)
+	}
+
+	err.Fields[name] = value
+	return err
+}
+
+// WithFields -- adds fields to Err, chainable
+func (err *Err) WithFields(fields Fields) *Err {
+	if err.Fields == nil {
+		err.Fields = make(Fields)
+	}
+
+	for name, value := range fields {
+		err.Fields[name] = value
+	}
+
+	return err
+}
+
 // Equals -- compares with other cherry error.
 // Two cherry errors equal if IDs are deep equal (Kind and SID are equal).
 func (err *Err) Equals(other *Err) bool {
@@ -121,10 +173,14 @@ func Equals(err error, other *Err) bool {
 	if err == nil {
 		return false
 	}
-	if cherryErr, ok := err.(*Err); ok {
-		return cherryErr.Equals(other)
+	switch otherErr := err.(type) {
+	case *Err:
+		return other.Equals(otherErr)
+	case ErrConstruct:
+		return otherErr().Equals(other)
+	default:
+		return false
 	}
-	return false
 }
 
 // WhichOne -- searches err in list of cherry errs.
@@ -134,12 +190,8 @@ func WhichOne(err error, list ...*Err) *Err {
 	if err == nil {
 		return nil
 	}
-	cherryErr, ok := err.(*Err)
-	if !ok {
-		return nil
-	}
 	for _, v := range list {
-		if cherryErr.Equals(v) {
+		if Equals(err, v) {
 			return v
 		}
 	}

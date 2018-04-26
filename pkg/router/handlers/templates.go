@@ -5,10 +5,10 @@ import (
 
 	"fmt"
 
-	mttypes "git.containerum.net/ch/json-types/mail-templater"
-	ch "git.containerum.net/ch/kube-client/pkg/cherry"
-	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/mail-templater"
+	"git.containerum.net/ch/cherry"
+	"git.containerum.net/ch/cherry/adaptors/gonic"
+	"git.containerum.net/ch/mail-templater/pkg/models"
+	"git.containerum.net/ch/mail-templater/pkg/mtErrors"
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
 	"git.containerum.net/ch/mail-templater/pkg/validation"
 	"github.com/gin-gonic/gin"
@@ -21,11 +21,11 @@ func TemplateListGetHandler(ctx *gin.Context) {
 
 	respObj, err := svc.TemplateStorage.GetTemplatesList()
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableGetMessagesList(), ctx)
+			gonic.Gonic(mtErrors.ErrUnableGetMessagesList(), ctx)
 		}
 		return
 	}
@@ -47,11 +47,11 @@ func TemplateGetHandler(ctx *gin.Context) {
 		respObj, err = svc.TemplateStorage.GetTemplate(name, version)
 	}
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableGetTemplate(), ctx)
+			gonic.Gonic(mtErrors.ErrUnableGetTemplate(), ctx)
 		}
 		return
 	}
@@ -60,15 +60,15 @@ func TemplateGetHandler(ctx *gin.Context) {
 
 //TemplateCreateHandler creates template
 func TemplateCreateHandler(ctx *gin.Context) {
-	var request mttypes.Template
+	var request models.Template
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(mtErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateCreateTemplate(request)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(mtErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -76,15 +76,15 @@ func TemplateCreateHandler(ctx *gin.Context) {
 
 	err := svc.TemplateStorage.PutTemplate(request.Name, request.Version, request.Data, request.Subject, true)
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableSaveTemplate(), ctx)
+			gonic.Gonic(mtErrors.ErrUnableSaveTemplate(), ctx)
 		}
 		return
 	}
-	ctx.JSON(http.StatusCreated, &mttypes.Template{
+	ctx.JSON(http.StatusCreated, &models.Template{
 		Name:    request.Name,
 		Version: request.Version,
 	})
@@ -92,22 +92,22 @@ func TemplateCreateHandler(ctx *gin.Context) {
 
 //TemplateUpdateHandler updates template
 func TemplateUpdateHandler(ctx *gin.Context) {
-	var request mttypes.Template
+	var request models.Template
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(mtErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateUpdateTemplate(request)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(mtErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	name := ctx.Param("name")
 	version := ctx.Query("version")
 	if version == "" {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(fmt.Errorf(isRequiredQuery, "Version")), ctx)
+		gonic.Gonic(mtErrors.ErrRequestValidationFailed().AddDetailsErr(fmt.Errorf(isRequiredQuery, "Version")), ctx)
 		return
 	}
 
@@ -115,11 +115,11 @@ func TemplateUpdateHandler(ctx *gin.Context) {
 
 	oldTemplate, err := svc.TemplateStorage.GetTemplate(name, version)
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableUpdateTemplate(), ctx)
+			gonic.Gonic(mtErrors.ErrUnableUpdateTemplate(), ctx)
 		}
 		return
 	}
@@ -136,15 +136,15 @@ func TemplateUpdateHandler(ctx *gin.Context) {
 
 	err = svc.TemplateStorage.PutTemplate(name, version, data, subject, false)
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableUpdateTemplate(), ctx)
+			gonic.Gonic(mtErrors.ErrUnableUpdateTemplate(), ctx)
 		}
 		return
 	}
-	ctx.JSON(http.StatusAccepted, &mttypes.Template{
+	ctx.JSON(http.StatusAccepted, &models.Template{
 		Name:    name,
 		Version: version,
 	})
@@ -161,22 +161,22 @@ func TemplateDeleteHandler(ctx *gin.Context) {
 	var respObj interface{}
 	if !hasVersion { // if no "version" parameter specified, delete all versions
 		err = svc.TemplateStorage.DeleteTemplates(name)
-		respObj = &mttypes.Template{
+		respObj = &models.Template{
 			Name: name,
 		}
 	} else {
 		err = svc.TemplateStorage.DeleteTemplate(name, version)
-		respObj = &mttypes.Template{
+		respObj = &models.Template{
 			Name:    name,
 			Version: version,
 		}
 	}
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableDeleteTemplate(), ctx)
+			gonic.Gonic(mtErrors.ErrUnableDeleteTemplate(), ctx)
 		}
 		return
 	}

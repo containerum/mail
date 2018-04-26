@@ -7,8 +7,8 @@ import (
 
 	"time"
 
-	mttypes "git.containerum.net/ch/json-types/mail-templater"
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/mail-templater"
+	"git.containerum.net/ch/mail-templater/pkg/models"
+	"git.containerum.net/ch/mail-templater/pkg/mtErrors"
 	"github.com/sirupsen/logrus"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -21,7 +21,7 @@ func TestMessagesStorage(t *testing.T) {
 		storage, err := NewBoltMessagesStorage(testMessagesDB, nil)
 		So(err, ShouldBeNil)
 
-		testValue := &mttypes.MessagesStorageValue{
+		testValue := &models.MessagesStorageValue{
 			UserId:       "user",
 			TemplateName: "template",
 			Variables:    map[string]interface{}{"a": "1", "b": "2"},
@@ -35,7 +35,7 @@ func TestMessagesStorage(t *testing.T) {
 		So(v, ShouldResemble, testValue)
 
 		_, err = storage.GetMessage("blah")
-		So(err.Error(), ShouldEqual, cherry.ErrMessageNotExist().Error())
+		So(err.Error(), ShouldEqual, mtErrors.ErrMessageNotExist().Error())
 
 		// cleanup
 		So(storage.Close(), ShouldBeNil)

@@ -3,7 +3,7 @@ package gonic
 import (
 	"fmt"
 
-	"git.containerum.net/ch/kube-client/pkg/cherry"
+	"git.containerum.net/ch/cherry"
 	"github.com/gin-gonic/gin"
 )
 

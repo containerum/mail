@@ -3,10 +3,10 @@ package handlers
 import (
 	"net/http"
 
-	mttypes "git.containerum.net/ch/json-types/mail-templater"
-	ch "git.containerum.net/ch/kube-client/pkg/cherry"
-	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/mail-templater"
+	"git.containerum.net/ch/cherry"
+	"git.containerum.net/ch/cherry/adaptors/gonic"
+	"git.containerum.net/ch/mail-templater/pkg/models"
+	"git.containerum.net/ch/mail-templater/pkg/mtErrors"
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
 	"git.containerum.net/ch/mail-templater/pkg/validation"
 	"github.com/gin-gonic/gin"
@@ -15,15 +15,15 @@ import (
 
 //SimpleSendHandler sends email in simple way
 func SimpleSendHandler(ctx *gin.Context) {
-	var request mttypes.SimpleSendRequest
+	var request models.SimpleSendRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(mtErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateSimpleSendRequest(request)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(mtErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -32,23 +32,23 @@ func SimpleSendHandler(ctx *gin.Context) {
 	_, tv, err := svc.TemplateStorage.GetLatestVersionTemplate(request.Template)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrTemplateNotExist(), ctx)
+		gonic.Gonic(mtErrors.ErrTemplateNotExist(), ctx)
 		return
 	}
 
 	info, err := svc.UserManagerClient.UserInfoByID(ctx, request.UserID)
 	if err != nil {
 		ctx.Error(err)
-		cherr, ok := err.(*ch.Err)
+		cherr, ok := err.(*cherry.Err)
 		if ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
-			gonic.Gonic(cherry.ErrMailSendFailed().AddDetailsErr(err), ctx)
+			gonic.Gonic(mtErrors.ErrMailSendFailed().AddDetailsErr(err), ctx)
 		}
 		return
 	}
 
-	recipient := &mttypes.Recipient{
+	recipient := &models.Recipient{
 		ID:        request.UserID,
 		Name:      info.Login,
 		Email:     info.Login,
@@ -58,10 +58,10 @@ func SimpleSendHandler(ctx *gin.Context) {
 	status, err := svc.UpstreamSimple.SimpleSend(ctx, request.Template, tv, recipient)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrMailSendFailed(), ctx)
+		gonic.Gonic(mtErrors.ErrMailSendFailed(), ctx)
 		return
 	}
-	ctx.JSON(http.StatusOK, mttypes.SimpleSendResponse{
+	ctx.JSON(http.StatusOK, models.SimpleSendResponse{
 		UserID: status.RecipientID,
 	})
 }
@@ -70,21 +70,21 @@ func SimpleSendHandler(ctx *gin.Context) {
 func SendHandler(ctx *gin.Context) {
 	name := ctx.Param("name")
 	version, hasVersion := ctx.GetQuery("version")
-	var request mttypes.SendRequest
+	var request models.SendRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(mtErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateSendRequest(request)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(mtErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	svc := ctx.MustGet(m.MTServices).(*m.Services)
 
-	var tv *mttypes.Template
+	var tv *models.Template
 	var err error
 	if !hasVersion {
 		_, tv, err = svc.TemplateStorage.GetLatestVersionTemplate(name)
@@ -92,18 +92,18 @@ func SendHandler(ctx *gin.Context) {
 		tv, err = svc.TemplateStorage.GetTemplate(name, version)
 	}
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrMailSendFailed(), ctx)
+			gonic.Gonic(mtErrors.ErrMailSendFailed(), ctx)
 		}
 		return
 	}
 	status, err := svc.Upstream.Send(ctx, name, tv, &request)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(cherry.ErrMailSendFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(mtErrors.ErrMailSendFailed().AddDetailsErr(err), ctx)
 		return
 	}
 	ctx.JSON(http.StatusOK, status)

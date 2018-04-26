@@ -5,12 +5,12 @@ import (
 
 	"encoding/base64"
 
-	mttypes "git.containerum.net/ch/json-types/mail-templater"
+	"git.containerum.net/ch/mail-templater/pkg/models"
 )
 
 //ValidateCreateTemplate validates template creation request
 //nolint: gocyclo
-func ValidateCreateTemplate(tmpl mttypes.Template) []error {
+func ValidateCreateTemplate(tmpl models.Template) []error {
 	errs := []error{}
 	if tmpl.Name == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Name"))
@@ -37,7 +37,7 @@ func ValidateCreateTemplate(tmpl mttypes.Template) []error {
 
 //ValidateUpdateTemplate validates template update request
 //nolint: gocyclo
-func ValidateUpdateTemplate(tmpl mttypes.Template) []error {
+func ValidateUpdateTemplate(tmpl models.Template) []error {
 	errs := []error{}
 	if tmpl.Subject == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Subject"))

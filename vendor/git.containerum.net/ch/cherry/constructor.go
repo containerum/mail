@@ -35,3 +35,26 @@ func (constr ErrConstruct) AddDetailF(f string, vals ...interface{}) ErrConstruc
 		return err
 	}
 }
+
+func(constr ErrConstruct) WithField(key, value string) ErrConstruct {
+	return func(options ...func(*Err)) *Err {
+		err := constr().WithField(key, value)
+		for _, option := range options {
+			option(err)
+		}
+		return err
+	}
+}
+
+
+
+func(constr ErrConstruct) WithFields(fields Fields) ErrConstruct {
+	return func(options ...func(*Err)) *Err {
+		err := constr().WithFields(fields)
+		for _, option := range options {
+			option(err)
+		}
+		return err
+	}
+}
+

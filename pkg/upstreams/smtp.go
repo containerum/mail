@@ -21,7 +21,7 @@ import (
 
 	"io"
 
-	mttypes "git.containerum.net/ch/json-types/mail-templater"
+	"git.containerum.net/ch/mail-templater/pkg/models"
 	"git.containerum.net/ch/mail-templater/pkg/storages"
 	"github.com/sirupsen/logrus"
 )
@@ -68,7 +68,7 @@ Content-Type: text/html; charset="UTF-8";
 
 {{.Body}}`
 
-func (smtpu *smtpUpstream) executeTemplate(tmpl *template.Template, recipient *mttypes.Recipient, commonVars map[string]string) (string, error) {
+func (smtpu *smtpUpstream) executeTemplate(tmpl *template.Template, recipient *models.Recipient, commonVars map[string]string) (string, error) {
 	var buf bytes.Buffer
 	tmplData := make(map[string]interface{})
 	for k, v := range commonVars {
@@ -86,7 +86,7 @@ func (smtpu *smtpUpstream) executeTemplate(tmpl *template.Template, recipient *m
 	return buf.String(), nil
 }
 
-func (smtpu *smtpUpstream) constructMessage(template *texttemplate.Template, recipient mttypes.Recipient, msgID string, subject string, text string) (*string, error) {
+func (smtpu *smtpUpstream) constructMessage(template *texttemplate.Template, recipient models.Recipient, msgID string, subject string, text string) (*string, error) {
 	newmail := mailData{SenderName: smtpu.senderName,
 		SenderMail:    smtpu.senderMail,
 		RecipientName: recipient.Name,
@@ -115,7 +115,7 @@ func (smtpu *smtpUpstream) errCollector(ch chan error, errs *[]string, wg *sync.
 	wg.Done()
 }
 
-func (smtpu *smtpUpstream) statusCollector(ch chan mttypes.SendStatus, statuses *[]mttypes.SendStatus, wg *sync.WaitGroup) {
+func (smtpu *smtpUpstream) statusCollector(ch chan models.SendStatus, statuses *[]models.SendStatus, wg *sync.WaitGroup) {
 	for s := range ch {
 		smtpu.log.Debugf("caught status: %#v", s)
 		*statuses = append(*statuses, s)
@@ -123,7 +123,7 @@ func (smtpu *smtpUpstream) statusCollector(ch chan mttypes.SendStatus, statuses 
 	wg.Done()
 }
 
-func (smtpu *smtpUpstream) parseTemplate(templateName string, tsv *mttypes.Template) (tmpl *template.Template, err error) {
+func (smtpu *smtpUpstream) parseTemplate(templateName string, tsv *models.Template) (tmpl *template.Template, err error) {
 	smtpu.log.Debugln("Parsing template ", templateName)
 	templateText, err := base64.StdEncoding.DecodeString(tsv.Data)
 	if err != nil {
@@ -197,7 +197,7 @@ func (smtpu *smtpUpstream) newSMTPClient(recipientEmail string, text string) err
 
 //Send
 //Sends email using smtp
-func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *mttypes.Template, request *mttypes.SendRequest) (resp *mttypes.SendResponse, err error) {
+func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *models.Template, request *models.SendRequest) (resp *models.SendResponse, err error) {
 	tmpl, err := smtpu.parseTemplate(templateName, tsv)
 	if err != nil {
 		return nil, err
@@ -208,7 +208,7 @@ func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *m
 		return nil, err
 	}
 
-	resp = &mttypes.SendResponse{}
+	resp = &models.SendResponse{}
 
 	mgDoneCh := make(chan struct{}) // for cancelling with context support. Mailgun api has no methods with context
 
@@ -223,7 +223,7 @@ func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *m
 		errChan := make(chan error)
 		go smtpu.errCollector(errChan, &errs, &wg)
 
-		statusChan := make(chan mttypes.SendStatus)
+		statusChan := make(chan models.SendStatus)
 		go smtpu.statusCollector(statusChan, &resp.Statuses, &wg)
 
 		msgWG := sync.WaitGroup{}
@@ -247,7 +247,7 @@ func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *m
 				continue
 			}
 
-			go func(recipient mttypes.Recipient, mailtext string, messageID string) {
+			go func(recipient models.Recipient, mailtext string, messageID string) {
 				defer msgWG.Done()
 
 				smtpu.log.WithField("id", messageID).Infoln("Message sent")
@@ -259,13 +259,13 @@ func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *m
 					return
 				}
 
-				statusChan <- mttypes.SendStatus{
+				statusChan <- models.SendStatus{
 					RecipientID:  recipient.ID,
 					TemplateName: templateName,
 					Status:       "Sent",
 				}
 
-				errChan <- smtpu.msgStorage.PutMessage(messageID, &mttypes.MessagesStorageValue{
+				errChan <- smtpu.msgStorage.PutMessage(messageID, &models.MessagesStorageValue{
 					UserId:       recipient.ID,
 					TemplateName: templateName,
 					Variables:    recipient.Variables,
@@ -296,7 +296,7 @@ func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *m
 
 //SimpleSend
 //Sends email using smtp in simple way
-func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, tsv *mttypes.Template, recipient *mttypes.Recipient) (status *mttypes.SendStatus, err error) {
+func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, tsv *models.Template, recipient *models.Recipient) (status *models.SendStatus, err error) {
 	tmpl, err := smtpu.parseTemplate(templateName, tsv)
 	if err != nil {
 		return nil, err
@@ -319,7 +319,7 @@ func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, 
 	}
 
 	mgDoneCh := make(chan struct{})
-	go func(recipient mttypes.Recipient, mailtext string, messageID string) {
+	go func(recipient models.Recipient, mailtext string, messageID string) {
 		defer close(mgDoneCh)
 
 		err = smtpu.newSMTPClient(recipient.Email, mailtext)
@@ -327,13 +327,13 @@ func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, 
 			return
 		}
 
-		status = &mttypes.SendStatus{
+		status = &models.SendStatus{
 			RecipientID:  recipient.ID,
 			TemplateName: templateName,
 			Status:       "Sent",
 		}
 
-		err = smtpu.msgStorage.PutMessage(messageID, &mttypes.MessagesStorageValue{
+		err = smtpu.msgStorage.PutMessage(messageID, &models.MessagesStorageValue{
 			UserId:       recipient.ID,
 			TemplateName: templateName,
 			Variables:    recipient.Variables,
