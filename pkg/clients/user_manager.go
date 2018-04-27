@@ -5,8 +5,8 @@ import (
 
 	"time"
 
-	"git.containerum.net/ch/cherry"
 	"git.containerum.net/ch/user-manager/pkg/models"
+	"github.com/containerum/cherry"
 	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/resty.v1"

@@ -38,7 +38,7 @@ var flags = []cli.Flag{
 	cli.StringFlag{
 		EnvVar: "CH_MAIL_PORT",
 		Name:   portFlag,
-		Value:  "6666",
+		Value:  "7070",
 		Usage:  "port for solutions server",
 	},
 	cli.BoolFlag{
@@ -78,7 +78,7 @@ var flags = []cli.Flag{
 	cli.StringFlag{
 		EnvVar: "CH_MAIL_USER_MANAGER",
 		Name:   userManagerFlag,
-		Value:  "bolt",
+		Value:  "http",
 		Usage:  "User manager kind",
 	},
 	cli.StringFlag{
@@ -121,17 +121,17 @@ var flags = []cli.Flag{
 	},
 	cli.StringFlag{
 		EnvVar: "CH_MAIL_SMTP_ADDR",
-		Name:   senderMailSimpleFlag,
+		Name:   smtpAddrFlag,
 		Usage:  "Sender email for simple send method",
 	},
 	cli.StringFlag{
 		EnvVar: "CH_MAIL_SMTP_LOGIN",
-		Name:   senderMailSimpleFlag,
+		Name:   smtpLoginFlag,
 		Usage:  "SMTP login",
 	},
 	cli.StringFlag{
-		EnvVar: "CH_MAIL_SENDER_SMTP_PASSWORD",
-		Name:   senderMailSimpleFlag,
+		EnvVar: "CH_MAIL_SMTP_PASSWORD",
+		Name:   smtpPasswordFlag,
 		Usage:  "SMTP password",
 	},
 }

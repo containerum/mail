@@ -1,0 +1,727 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "swagger": "3.0",
+  "info": {
+    "description": "Mail-Templater service is service for sending emails.",
+    "title": "Mail-Templater"
+  },
+  "paths": {
+    "/messages": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#get-messages",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Get messages list.",
+        "operationId": "MessageListGetHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "type": "string",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "name": "per_page",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "message list get response",
+            "schema": {
+              "$ref": "#/definitions/MessageListResponse"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/messages/{message_id}": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#get-message-copy",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Get single message.",
+        "operationId": "MessageGetHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "type": "string",
+            "name": "message_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "message get response",
+            "schema": {
+              "$ref": "#/definitions/MessageGetResponse"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/send": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#send-message-for-resource-manager",
+        "tags": [
+          "Send"
+        ],
+        "summary": "Send message from internal service.",
+        "operationId": "SimpleSendHandler",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/SimpleSendRequest"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "message simple send response",
+            "schema": {
+              "$ref": "#/definitions/SimpleSendResponse"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/templates": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#get-all-templates",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "Get templates list.",
+        "operationId": "TemplateListGetHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "templates list get response",
+            "schema": {
+              "$ref": "#/definitions/TemplatesListResponse"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      },
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#create-template",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "Create new template.",
+        "operationId": "TemplateCreateHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Template"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "created template",
+            "schema": {
+              "$ref": "#/definitions/Template"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/templates/{name}": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#get-all-versions-of-template\nhttps://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#get-template-of-specific-version",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "Get single template.",
+        "operationId": "TemplateGetHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "type": "string",
+            "name": "version",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "name": "name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "templates list get response",
+            "schema": {
+              "$ref": "#/definitions/TemplatesListResponse"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      },
+      "put": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#update-template-of-specific-version",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "Update template.",
+        "operationId": "TemplateCreateHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "type": "string",
+            "name": "name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Template"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "updated template",
+            "schema": {
+              "$ref": "#/definitions/Template"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      },
+      "delete": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#update-template-of-specific-version",
+        "tags": [
+          "Templates"
+        ],
+        "summary": "Delete template.",
+        "operationId": "TemplateDeleteHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "type": "string",
+            "name": "name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "version",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "template deleted"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/templates/{template}": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#send-message-extended",
+        "tags": [
+          "Send"
+        ],
+        "summary": "Send message to any email.",
+        "operationId": "SendHandler",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "template",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/SendRequest"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "message send response",
+            "schema": {
+              "$ref": "#/definitions/SendResponse"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    }
+  },
+  "definitions": {
+    "Err": {
+      "description": "Err -- standard serializable API error\nMessage -- constant error message:\n+ \"invalid username\"\n+ \"quota exceeded\"\n+ \"validation error\"\n...etc...\nID -- unique error identification code\nDetails -- optional context error messages kinda\n+ \"field 'Replicas' must be non-zero value\"\n+ \"not enough tights to feed gopher\"\n+ \"resource 'God' does't exist\"\nFields -- optional set of key-value pairs",
+      "type": "object",
+      "properties": {
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Details"
+        },
+        "fields": {
+          "$ref": "#/definitions/Fields"
+        },
+        "id": {
+          "$ref": "#/definitions/ErrID"
+        },
+        "message": {
+          "type": "string",
+          "x-go-name": "Message"
+        },
+        "status_http": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "StatusHTTP"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/github.com/containerum/cherry"
+    },
+    "ErrID": {
+      "description": "ErrID -- represents unique error ID",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/ErrKind"
+        },
+        "sid": {
+          "$ref": "#/definitions/ErrSID"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/github.com/containerum/cherry"
+    },
+    "ErrKind": {
+      "description": "ErrKind -- represents kind of error",
+      "type": "integer",
+      "format": "uint64",
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/github.com/containerum/cherry"
+    },
+    "ErrSID": {
+      "description": "ErrSID -- represents service ID of error",
+      "type": "string",
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/github.com/containerum/cherry"
+    },
+    "Fields": {
+      "description": "Fields -- represents additional key-value fields of error",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/github.com/containerum/cherry"
+    },
+    "MessageGetResponse": {
+      "description": "MessageGetResponse -- response to get message request",
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "CreatedAt"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "Id"
+        },
+        "message": {
+          "type": "string",
+          "x-go-name": "Message"
+        },
+        "template_name": {
+          "type": "string",
+          "x-go-name": "TemplateName"
+        },
+        "user_id": {
+          "type": "string",
+          "x-go-name": "UserId"
+        },
+        "variables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          },
+          "x-go-name": "Variables"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "MessageListEntry": {
+      "description": "MessageListEntry -- model for messages list",
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "CreatedAt"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "template_name": {
+          "type": "string",
+          "x-go-name": "TemplateName"
+        },
+        "user_id": {
+          "type": "string",
+          "x-go-name": "UserID"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "MessageListQuery": {
+      "description": "MessageListQuery -- query for message list",
+      "type": "object",
+      "properties": {
+        "Page": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "PerPage": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "MessageListResponse": {
+      "description": "MessageListEntry -- model for messages list with query",
+      "type": "object",
+      "properties": {
+        "Page": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "PerPage": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "message_list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MessageListEntry"
+          },
+          "x-go-name": "Messages"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "MessagesStorageValue": {
+      "description": "MessagesStorageValue -- model for message in storage",
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "CreatedAt"
+        },
+        "message": {
+          "type": "string",
+          "x-go-name": "Message"
+        },
+        "template_name": {
+          "type": "string",
+          "x-go-name": "TemplateName"
+        },
+        "user_id": {
+          "type": "string",
+          "x-go-name": "UserId"
+        },
+        "variables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          },
+          "x-go-name": "Variables"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "Recipient": {
+      "description": "Recipient -- recipient info for send mail method",
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "email"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "x-go-name": "Email"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "variables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          },
+          "x-go-name": "Variables"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "SendRequest": {
+      "description": "SimpleSendResponse -- responce to send mail using send method",
+      "type": "object",
+      "properties": {
+        "delay": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Delay"
+        },
+        "message": {
+          "type": "object",
+          "required": [
+            "recipient_data"
+          ],
+          "properties": {
+            "common_variables": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "x-go-name": "CommonVariables"
+            },
+            "recipient_data": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Recipient"
+              },
+              "x-go-name": "Recipients"
+            }
+          },
+          "x-go-name": "Message"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "SendResponse": {
+      "description": "SendResponse -- responce to send mail using send method",
+      "type": "object",
+      "properties": {
+        "email_list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SendStatus"
+          },
+          "x-go-name": "Statuses"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "SendStatus": {
+      "description": "SendStatus -- status of sent emails",
+      "type": "object",
+      "properties": {
+        "recipient_id": {
+          "type": "string",
+          "x-go-name": "RecipientID"
+        },
+        "status": {
+          "type": "string",
+          "x-go-name": "Status"
+        },
+        "template_name": {
+          "type": "string",
+          "x-go-name": "TemplateName"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "SimpleSendRequest": {
+      "description": "SimpleSendRequest -- request to send mail using simple send method",
+      "type": "object",
+      "required": [
+        "template",
+        "user_id",
+        "variables"
+      ],
+      "properties": {
+        "template": {
+          "type": "string",
+          "x-go-name": "Template"
+        },
+        "user_id": {
+          "type": "string",
+          "x-go-name": "UserID"
+        },
+        "variables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          },
+          "x-go-name": "Variables"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "SimpleSendResponse": {
+      "description": "SimpleSendResponse -- responce to send mail using simple send method",
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "x-go-name": "UserID"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "Template": {
+      "description": "Template -- template model",
+      "type": "object",
+      "required": [
+        "name",
+        "version",
+        "data",
+        "subject"
+      ],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "CreatedAt"
+        },
+        "data": {
+          "type": "string",
+          "x-go-name": "Data"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "subject": {
+          "type": "string",
+          "x-go-name": "Subject"
+        },
+        "version": {
+          "type": "string",
+          "x-go-name": "Version"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "TemplatesListEntry": {
+      "description": "TemplatesListEntry -- model for template list",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "versions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Versions"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "TemplatesListResponse": {
+      "description": "TemplatesListResponse -- templates list response",
+      "type": "object",
+      "properties": {
+        "templates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TemplatesListEntry"
+          },
+          "x-go-name": "Templates"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
+    }
+  },
+  "parameters": {
+    "UserRoleHeader": {
+      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserRoleHeader"
+    }
+  },
+  "responses": {
+    "error": {
+      "description": "cherry error",
+      "schema": {
+        "$ref": "vendor/github.com/containerum/cherry/swagger.json#/definitions/Err"
+      }
+    }
+  }
+}

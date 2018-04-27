@@ -5,17 +5,31 @@ import (
 
 	"fmt"
 
-	"git.containerum.net/ch/cherry"
-	"git.containerum.net/ch/cherry/adaptors/gonic"
 	"git.containerum.net/ch/mail-templater/pkg/models"
 	"git.containerum.net/ch/mail-templater/pkg/mtErrors"
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
 	"git.containerum.net/ch/mail-templater/pkg/validation"
+	"github.com/containerum/cherry"
+	"github.com/containerum/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
 
-//TemplateListGetHandler returns templates list
+// swagger:operation GET /templates Templates TemplateListGetHandler
+// Get templates list.
+// https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#get-all-templates
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+// responses:
+//  '200':
+//    description: templates list get response
+//    schema:
+//      $ref: '#/definitions/TemplatesListResponse'
+//  default:
+//    $ref: '#/responses/error'
 func TemplateListGetHandler(ctx *gin.Context) {
 	svc := ctx.MustGet(m.MTServices).(*m.Services)
 
@@ -32,7 +46,30 @@ func TemplateListGetHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, respObj)
 }
 
-//TemplateGetHandler returns one template
+// swagger:operation GET /templates/{name} Templates TemplateGetHandler
+// Get single template.
+// https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#get-all-versions-of-template
+// https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#get-template-of-specific-version
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - name: version
+//    in: query
+//    type: string
+//    required: false
+//  - name: name
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '200':
+//    description: templates list get response
+//    schema:
+//      $ref: '#/definitions/TemplatesListResponse'
+//  default:
+//    $ref: '#/responses/error'
 func TemplateGetHandler(ctx *gin.Context) {
 	name := ctx.Param("name")
 	version, hasVersion := ctx.GetQuery("version")
@@ -58,7 +95,25 @@ func TemplateGetHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, respObj)
 }
 
-//TemplateCreateHandler creates template
+// swagger:operation POST /templates Templates TemplateCreateHandler
+// Create new template.
+// https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#create-template
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/Template'
+// responses:
+//  '201':
+//    description: created template
+//    schema:
+//      $ref: '#/definitions/Template'
+//  default:
+//    $ref: '#/responses/error'
 func TemplateCreateHandler(ctx *gin.Context) {
 	var request models.Template
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -90,7 +145,29 @@ func TemplateCreateHandler(ctx *gin.Context) {
 	})
 }
 
-//TemplateUpdateHandler updates template
+// swagger:operation PUT /templates/{name} Templates TemplateCreateHandler
+// Update template.
+// https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#update-template-of-specific-version
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - name: name
+//    in: path
+//    type: string
+//    required: true
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/Template'
+// responses:
+//  '202':
+//    description: updated template
+//    schema:
+//      $ref: '#/definitions/Template'
+//  default:
+//    $ref: '#/responses/error'
 func TemplateUpdateHandler(ctx *gin.Context) {
 	var request models.Template
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -150,7 +227,27 @@ func TemplateUpdateHandler(ctx *gin.Context) {
 	})
 }
 
-//TemplateDeleteHandler deletes template
+// swagger:operation DELETE /templates/{name} Templates TemplateDeleteHandler
+// Delete template.
+// https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#update-template-of-specific-version
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - name: name
+//    in: path
+//    type: string
+//    required: true
+//  - name: version
+//    in: query
+//    type: string
+//    required: false
+// responses:
+//  '202':
+//    description: template deleted
+//  default:
+//    $ref: '#/responses/error'
 func TemplateDeleteHandler(ctx *gin.Context) {
 	name := ctx.Param("name")
 	version, hasVersion := ctx.GetQuery("version")
@@ -180,5 +277,5 @@ func TemplateDeleteHandler(ctx *gin.Context) {
 		}
 		return
 	}
-	ctx.JSON(http.StatusOK, respObj)
+	ctx.JSON(http.StatusAccepted, respObj)
 }

@@ -3,22 +3,6 @@
 
 [[projects]]
   branch = "develop"
-  name = "git.containerum.net/ch/api-gateway"
-  packages = ["pkg/utils/headers"]
-  revision = "6957a18c0bd821baedc75d403a65dcee01f7c18f"
-
-[[projects]]
-  name = "git.containerum.net/ch/cherry"
-  packages = [
-    ".",
-    "adaptors/cherrylog",
-    "adaptors/gonic"
-  ]
-  revision = "82e4d22be24efe6d9e6925376119a24f789bddc7"
-  version = "v1.0.1-rc2"
-
-[[projects]]
-  branch = "develop"
   name = "git.containerum.net/ch/user-manager"
   packages = ["pkg/models"]
   revision = "c149d613d59d65c13eb602b63d1096173380b215"
@@ -34,6 +18,22 @@
   packages = ["."]
   revision = "2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8"
   version = "v1.3.1"
+
+[[projects]]
+  name = "github.com/containerum/cherry"
+  packages = [
+    ".",
+    "adaptors/cherrylog",
+    "adaptors/gonic"
+  ]
+  revision = "3076e36aee79538b125d060e5b671649cbb2db4e"
+  version = "v1.0.1-rc2"
+
+[[projects]]
+  name = "github.com/containerum/utils"
+  packages = ["httputil"]
+  revision = "5e922affb542eaeb55ab395ff3c7161179df54b3"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -56,6 +56,21 @@
   ]
   revision = "d459835d2b077e44f7c9b453505ee29881d5d12d"
   version = "v1.2"
+
+[[projects]]
+  name = "github.com/go-playground/locales"
+  packages = [
+    ".",
+    "currency"
+  ]
+  revision = "f63010822830b6fe52288ee52d5a1151088ce039"
+  version = "v0.12.1"
+
+[[projects]]
+  name = "github.com/go-playground/universal-translator"
+  packages = ["."]
+  revision = "b32fa301c9fe55953584134cb6853a13c87ec0a1"
+  version = "v0.16.0"
 
 [[projects]]
   name = "github.com/golang/protobuf"
@@ -165,8 +180,11 @@
   branch = "master"
   name = "golang.org/x/net"
   packages = [
+    "context",
     "idna",
-    "publicsuffix"
+    "publicsuffix",
+    "webdav",
+    "webdav/internal/xml"
   ]
   revision = "5f9ae10d9af5b1c89ae6904293b14b064d4ada23"
 
@@ -201,10 +219,22 @@
   version = "v0.3.0"
 
 [[projects]]
+  name = "gopkg.in/gin-contrib/cors.v1"
+  packages = ["."]
+  revision = "cf4846e6a636a76237a28d9286f163c132e841bc"
+  version = "v1.2"
+
+[[projects]]
   name = "gopkg.in/go-playground/validator.v8"
   packages = ["."]
   revision = "5f1438d3fca68893a817e4a66806cea46a9e4ebf"
   version = "v8.18.2"
+
+[[projects]]
+  name = "gopkg.in/go-playground/validator.v9"
+  packages = ["."]
+  revision = "14984d91328f9612b58443cbdf4a077d4fd71091"
+  version = "v9.15.0"
 
 [[projects]]
   name = "gopkg.in/mailgun/mailgun-go.v1"
@@ -227,6 +257,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fdde323aea9aa1b5874990063255de319e1486742ca8863c2b1de65ef1f6a5be"
+  inputs-digest = "374ecf9d13519dd835792c73ed307f4ebb6d5b1c41d1bc828dc188821cef01e7"
   solver-name = "gps-cdcl"
   solver-version = 1
