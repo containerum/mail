@@ -9,58 +9,177 @@ import (
 	"git.containerum.net/ch/mail-templater/pkg/upstreams"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
+	"github.com/urfave/cli"
 	"gopkg.in/mailgun/mailgun-go.v1"
 )
 
-func setupLogger() error {
-	switch gin.Mode() {
-	case gin.TestMode, gin.DebugMode:
-	case gin.ReleaseMode:
-		logrus.SetFormatter(&logrus.JSONFormatter{})
-	}
-	viper.SetDefault("log_level", logrus.InfoLevel)
-	level := logrus.Level(viper.GetInt("log_level"))
-	if level > logrus.DebugLevel || level < logrus.PanicLevel {
-		return errors.New("invalid log level")
-	}
-	logrus.SetLevel(level)
-	return nil
+const (
+	portFlag             = "port"
+	debugFlag            = "debug"
+	textlogFlag          = "textlog"
+	templatesStorageFlag = "template_storage"
+	templatesDBFlag      = "template_db"
+	messagesStorageFlag  = "messages_storage"
+	messagesDBFlag       = "messages_db"
+	userManagerFlag      = "um"
+	userManagerURLFlag   = "um_url"
+	upstreamFlag         = "upstream"
+	senderNameFlag       = "sender_name"
+	senderMailFlag       = "sender_mail"
+	upstreamSimpleFlag   = "upstream_simple"
+	senderNameSimpleFlag = "sender_name_simple"
+	senderMailSimpleFlag = "sender_mail_simple"
+	smtpAddrFlag         = "smtp_addr"
+	smtpLoginFlag        = "smtp_login"
+	smtpPasswordFlag     = "smtp_password"
+)
+
+var flags = []cli.Flag{
+	cli.StringFlag{
+		EnvVar: "CH_MAIL_PORT",
+		Name:   portFlag,
+		Value:  "6666",
+		Usage:  "port for solutions server",
+	},
+	cli.BoolFlag{
+		EnvVar: "CH_MAIL_DEBUG",
+		Name:   debugFlag,
+		Usage:  "start the server in debug mode",
+	},
+	cli.BoolFlag{
+		EnvVar: "CH_MAIL_TEXTLOG",
+		Name:   textlogFlag,
+		Usage:  "output log in text format",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_MAIL_TEMPLATE_STORAGE",
+		Name:   templatesStorageFlag,
+		Value:  "bolt",
+		Usage:  "Templates storage",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_MAIL_TEMPLATE_DB",
+		Name:   templatesDBFlag,
+		Value:  "templates.db",
+		Usage:  "Templates db",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_MAIL_MESSAGES_STORAGE",
+		Name:   messagesStorageFlag,
+		Value:  "bolt",
+		Usage:  "Messages storage",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_MAIL_MESSAGES_DB",
+		Name:   messagesDBFlag,
+		Value:  "messages.db",
+		Usage:  "Messages db",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_MAIL_USER_MANAGER",
+		Name:   userManagerFlag,
+		Value:  "bolt",
+		Usage:  "User manager kind",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_MAIL_USER_MANAGER_URL",
+		Name:   userManagerURLFlag,
+		Value:  "http://user-manager:8111",
+		Usage:  "User manager",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_MAIL_UPSTREAM",
+		Name:   upstreamFlag,
+		Value:  "mailgun",
+		Usage:  "Upstream (SMTP, Mailgun)",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_MAIL_SENDER_NAME",
+		Name:   senderMailFlag,
+		Usage:  "Sender name",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_MAIL_SENDER_MAIL",
+		Name:   senderMailFlag,
+		Usage:  "Sender email",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_MAIL_UPSTREAM_SIMPLE",
+		Name:   upstreamSimpleFlag,
+		Value:  "mailgun",
+		Usage:  "Upstream for simple send method (SMTP, Mailgun)",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_MAIL_SENDER_NAME_SIMPLE",
+		Name:   senderMailSimpleFlag,
+		Usage:  "Sender name for simple send method",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_MAIL_SENDER_MAIL_SIMPLE",
+		Name:   senderMailSimpleFlag,
+		Usage:  "Sender email for simple send method",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_MAIL_SMTP_ADDR",
+		Name:   senderMailSimpleFlag,
+		Usage:  "Sender email for simple send method",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_MAIL_SMTP_LOGIN",
+		Name:   senderMailSimpleFlag,
+		Usage:  "SMTP login",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_MAIL_SENDER_SMTP_PASSWORD",
+		Name:   senderMailSimpleFlag,
+		Usage:  "SMTP password",
+	},
 }
 
-func getTemplatesStorage() (storages.TemplateStorage, error) {
-	viper.SetDefault("template_storage", "bolt")
-	switch viper.GetString("template_storage") {
+func setupLogs(c *cli.Context) {
+	if c.Bool("debug") {
+		gin.SetMode(gin.DebugMode)
+		logrus.SetLevel(logrus.DebugLevel)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+		logrus.SetLevel(logrus.InfoLevel)
+	}
+
+	if c.Bool("textlog") {
+		logrus.SetFormatter(&logrus.TextFormatter{})
+	} else {
+		logrus.SetFormatter(&logrus.JSONFormatter{})
+	}
+}
+
+func getTemplatesStorage(c *cli.Context) (storages.TemplateStorage, error) {
+	switch c.String(templatesStorageFlag) {
 	case "bolt":
-		viper.SetDefault("template_db", "templates.db")
-		return bolt.NewBoltTemplateStorage(viper.GetString("template_db"), nil)
+		return bolt.NewBoltTemplateStorage(c.String(templatesDBFlag), nil)
 	default:
 		return nil, errors.New("invalid template storage")
 	}
 }
 
-func getMessagesStorage() (storages.MessagesStorage, error) {
-	viper.SetDefault("messages_storage", "bolt")
-	switch viper.GetString("messages_storage") {
+func getMessagesStorage(c *cli.Context) (storages.MessagesStorage, error) {
+	switch c.String(messagesStorageFlag) {
 	case "bolt":
-		viper.SetDefault("messages_db", "messages.db")
-		return bolt.NewBoltMessagesStorage(viper.GetString("messages_db"), nil)
+		return bolt.NewBoltMessagesStorage(c.String(messagesDBFlag), nil)
 	default:
 		return nil, errors.New("invalid messages storage")
 	}
 }
 
-func getUpstream(msgStorage storages.MessagesStorage) (upstreams.Upstream, error) {
-	viper.SetDefault("upstream", "mailgun")
-	switch viper.GetString("upstream") {
+func getUpstream(c *cli.Context, msgStorage storages.MessagesStorage) (upstreams.Upstream, error) {
+	switch c.String(upstreamFlag) {
 	case "mailgun":
 		mg, err := mailgun.NewMailgunFromEnv()
 		if err != nil {
 			return nil, err
 		}
-		return upstreams.NewMailgun(mg, msgStorage, viper.GetString("sender_name"), viper.GetString("sender_mail")), nil
+		return upstreams.NewMailgun(mg, msgStorage, c.String(senderNameFlag), c.String(senderMailFlag)), nil
 	case "smtp":
-		return upstreams.NewSMTPUpstream(msgStorage, viper.GetString("sender_name"), viper.GetString("sender_mail"), viper.GetString("smtp_addr"), viper.GetString("smtp_login"), viper.GetString("smtp_password")), nil
+		return upstreams.NewSMTPUpstream(msgStorage, c.String(senderNameFlag), c.String(senderMailFlag), c.String(smtpAddrFlag), c.String(smtpLoginFlag), c.String(smtpPasswordFlag)), nil
 	case "dummy":
 		return upstreams.NewDummyUpstream(), nil
 	default:
@@ -68,17 +187,16 @@ func getUpstream(msgStorage storages.MessagesStorage) (upstreams.Upstream, error
 	}
 }
 
-func getUpstreamSimple(msgStorage storages.MessagesStorage) (upstreams.Upstream, error) {
-	viper.SetDefault("upstream_simple", "mailgun")
-	switch viper.GetString("upstream_simple") {
+func getUpstreamSimple(c *cli.Context, msgStorage storages.MessagesStorage) (upstreams.Upstream, error) {
+	switch c.String(upstreamSimpleFlag) {
 	case "mailgun":
 		mg, err := mailgun.NewMailgunFromEnv()
 		if err != nil {
 			return nil, err
 		}
-		return upstreams.NewMailgun(mg, msgStorage, viper.GetString("sender_name"), viper.GetString("sender_mail")), nil
+		return upstreams.NewMailgun(mg, msgStorage, c.String(senderNameSimpleFlag), c.String(senderMailSimpleFlag)), nil
 	case "smtp":
-		return upstreams.NewSMTPUpstream(msgStorage, viper.GetString("sender_name"), viper.GetString("sender_mail"), viper.GetString("smtp_addr"), viper.GetString("smtp_login"), viper.GetString("smtp_password")), nil
+		return upstreams.NewSMTPUpstream(msgStorage, c.String(senderNameSimpleFlag), c.String(senderMailSimpleFlag), c.String(smtpAddrFlag), c.String(smtpLoginFlag), c.String(smtpPasswordFlag)), nil
 	case "dummy":
 		return upstreams.NewDummyUpstream(), nil
 	default:
@@ -86,17 +204,10 @@ func getUpstreamSimple(msgStorage storages.MessagesStorage) (upstreams.Upstream,
 	}
 }
 
-func getListenAddr() string {
-	viper.SetDefault("listen_addr", ":7070")
-	return viper.GetString("listen_addr")
-}
-
-func getUserManagerClient() (clients.UserManagerClient, error) {
-	viper.SetDefault("user_manager", "http")
-	switch viper.GetString("user_manager") {
+func getUserManagerClient(c *cli.Context) (clients.UserManagerClient, error) {
+	switch c.String(userManagerFlag) {
 	case "http":
-		viper.SetDefault("user_manager_url", "http://user-manager:8111")
-		return clients.NewHTTPUserManagerClient(viper.GetString("user_manager_url")), nil
+		return clients.NewHTTPUserManagerClient(c.String(userManagerURLFlag)), nil
 	default:
 		return nil, errors.New("invalid user manager client")
 	}
