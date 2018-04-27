@@ -3,17 +3,34 @@ package handlers
 import (
 	"net/http"
 
-	"git.containerum.net/ch/cherry"
-	"git.containerum.net/ch/cherry/adaptors/gonic"
 	"git.containerum.net/ch/mail-templater/pkg/models"
 	"git.containerum.net/ch/mail-templater/pkg/mtErrors"
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
 	"git.containerum.net/ch/mail-templater/pkg/validation"
+	"github.com/containerum/cherry"
+	"github.com/containerum/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
 
-//SimpleSendHandler sends email in simple way
+// swagger:operation POST /send Send SimpleSendHandler
+// Send message from internal service.
+// https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#send-message-for-resource-manager
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/SimpleSendRequest'
+// responses:
+//  '202':
+//    description: message simple send response
+//    schema:
+//      $ref: '#/definitions/SimpleSendResponse'
+//  default:
+//    $ref: '#/responses/error'
 func SimpleSendHandler(ctx *gin.Context) {
 	var request models.SimpleSendRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -61,12 +78,38 @@ func SimpleSendHandler(ctx *gin.Context) {
 		gonic.Gonic(mtErrors.ErrMailSendFailed(), ctx)
 		return
 	}
-	ctx.JSON(http.StatusOK, models.SimpleSendResponse{
+	ctx.JSON(http.StatusAccepted, models.SimpleSendResponse{
 		UserID: status.RecipientID,
 	})
 }
 
-//SendHandler sends email in not so simple way
+// swagger:operation POST /templates/{template} Send SendHandler
+// Send message to any email.
+// https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#send-message-extended
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - name: template
+//    in: path
+//    type: string
+//    required: true
+// parameters:
+//  - name: template
+//    in: path
+//    type: string
+//    required: true
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/SendRequest'
+// responses:
+//  '202':
+//    description: message send response
+//    schema:
+//      $ref: '#/definitions/SendResponse'
+//  default:
+//    $ref: '#/responses/error'
 func SendHandler(ctx *gin.Context) {
 	name := ctx.Param("name")
 	version, hasVersion := ctx.GetQuery("version")
@@ -106,5 +149,5 @@ func SendHandler(ctx *gin.Context) {
 		gonic.Gonic(mtErrors.ErrMailSendFailed().AddDetailsErr(err), ctx)
 		return
 	}
-	ctx.JSON(http.StatusOK, status)
+	ctx.JSON(http.StatusAccepted, status)
 }

@@ -1,0 +1,32 @@
+[prune]
+  go-tests = true
+  unused-packages = true
+
+[[constraint]]
+  name = "github.com/BurntSushi/toml"
+  version = "~0.3.0"
+
+[[constraint]]
+  name = "github.com/blang/semver"
+  version = "^3.5.1"
+
+[[constraint]]
+  name = "github.com/dave/jennifer"
+  # don't change!
+  version = "=0.17.0"
+
+[[constraint]]
+  name = "github.com/gin-gonic/gin"
+  version = "^1.2.0"
+
+[[constraint]]
+  name = "github.com/sirupsen/logrus"
+  version = "^1.0.5"
+
+[[constraint]]
+  name = "google.golang.org/grpc"
+  version = "~1.11.3"
+
+[[constraint]]
+  branch = "v2"
+  name = "gopkg.in/urfave/cli.v2"

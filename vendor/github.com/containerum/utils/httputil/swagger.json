@@ -1,0 +1,87 @@
+{
+  "swagger": "3.0",
+  "parameters": {
+    "SubstitutedUserID": {
+      "name": "user-id",
+      "in": "query",
+      "required": false,
+      "type": "string",
+      "format": "uuid",
+      "description": "The ID of the of the user on behalf of which the administrator can perform the action"
+    },
+    "RequestIDHeader": {
+      "name": "X-Request-ID",
+      "type": "string",
+      "format": "uuid",
+      "in": "header",
+      "required": true
+    },
+    "UserIDHeader": {
+      "name": "X-User-ID",
+      "type": "string",
+      "format": "uuid",
+      "in": "header",
+      "required": true
+    },
+    "RequestNameHeader": {
+      "name": "X-Request-Name",
+      "type": "string",
+      "in": "header",
+      "required": true
+    },
+    "UserClientHeader": {
+      "name": "X-User-Client",
+      "type": "string",
+      "in": "header",
+      "required": true
+    },
+    "UserAgentHeader": {
+      "name": "X-User-Agent",
+      "type": "string",
+      "in": "header",
+      "required": true
+    },
+    "ClientIPHeader": {
+      "name": "X-Client-IP",
+      "type": "string",
+      "in": "header",
+      "format": "ip",
+      "required": true
+    },
+    "TokenIDHeader": {
+      "name": "X-Token-ID",
+      "type": "string",
+      "in": "header",
+      "format": "uuid",
+      "required": true
+    },
+    "UserRoleHeader": {
+      "name": "X-User-Role",
+      "type": "string",
+      "enum": [
+        "user",
+        "admin"
+      ],
+      "in": "header",
+      "required": true
+    },
+    "UserNamespacesHeader": {
+      "name": "X-User-Namespace",
+      "type": "string",
+      "in": "header",
+      "required": true
+    },
+    "UserVolumesHeader": {
+      "name": "X-User-Volume",
+      "type": "string",
+      "in": "header",
+      "required": true
+    },
+    "UserHideDataHeader": {
+      "name": "X-User-Hide-Data",
+      "type": "boolean",
+      "in": "header",
+      "required": false
+    }
+  }
+}
