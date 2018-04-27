@@ -95,7 +95,7 @@ var flags = []cli.Flag{
 	},
 	cli.StringFlag{
 		EnvVar: "CH_MAIL_SENDER_NAME",
-		Name:   senderMailFlag,
+		Name:   senderNameFlag,
 		Usage:  "Sender name",
 	},
 	cli.StringFlag{
@@ -111,7 +111,7 @@ var flags = []cli.Flag{
 	},
 	cli.StringFlag{
 		EnvVar: "CH_MAIL_SENDER_NAME_SIMPLE",
-		Name:   senderMailSimpleFlag,
+		Name:   senderNameSimpleFlag,
 		Usage:  "Sender name for simple send method",
 	},
 	cli.StringFlag{
