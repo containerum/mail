@@ -145,7 +145,7 @@ func setupLogs(c *cli.Context) {
 		logrus.SetLevel(logrus.InfoLevel)
 	}
 
-	if c.Bool("textlog") {
+	if c.Bool(textlogFlag) {
 		logrus.SetFormatter(&logrus.TextFormatter{})
 	} else {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
