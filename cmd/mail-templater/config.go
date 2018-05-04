@@ -32,6 +32,7 @@ const (
 	smtpAddrFlag         = "smtp_addr"
 	smtpLoginFlag        = "smtp_login"
 	smtpPasswordFlag     = "smtp_password"
+	corsFlag             = "cors"
 )
 
 var flags = []cli.Flag{
@@ -133,6 +134,11 @@ var flags = []cli.Flag{
 		EnvVar: "CH_MAIL_SMTP_PASSWORD",
 		Name:   smtpPasswordFlag,
 		Usage:  "SMTP password",
+	},
+	cli.BoolFlag{
+		EnvVar: "CH_MAIL_CORS",
+		Name:   corsFlag,
+		Usage:  "enable CORS",
 	},
 }
 

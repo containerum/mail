@@ -20,20 +20,22 @@ import (
 )
 
 //CreateRouter initialises router and middlewares
-func CreateRouter(svc *m.Services) http.Handler {
+func CreateRouter(svc *m.Services, enableCORS bool) http.Handler {
 	e := gin.New()
-	initMiddlewares(e, svc)
+	initMiddlewares(e, svc, enableCORS)
 	initRoutes(e)
 	return e
 }
 
-func initMiddlewares(e *gin.Engine, svc *m.Services) {
+func initMiddlewares(e *gin.Engine, svc *m.Services, enableCORS bool) {
 	/* CORS */
-	cfg := cors.DefaultConfig()
-	cfg.AllowAllOrigins = true
-	cfg.AddAllowMethods(http.MethodDelete)
-	cfg.AddAllowHeaders(headers.UserRoleXHeader)
-	e.Use(cors.New(cfg))
+	if enableCORS {
+		cfg := cors.DefaultConfig()
+		cfg.AllowAllOrigins = true
+		cfg.AddAllowMethods(http.MethodDelete)
+		cfg.AddAllowHeaders(headers.UserRoleXHeader)
+		e.Use(cors.New(cfg))
+	}
 	e.Group("/static").
 		StaticFS("/", static.HTTP)
 	/* System */
