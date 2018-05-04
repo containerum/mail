@@ -32,6 +32,7 @@ const (
 	smtpAddrFlag         = "smtp_addr"
 	smtpLoginFlag        = "smtp_login"
 	smtpPasswordFlag     = "smtp_password"
+	corsFlag             = "cors"
 )
 
 var flags = []cli.Flag{
@@ -134,6 +135,11 @@ var flags = []cli.Flag{
 		Name:   smtpPasswordFlag,
 		Usage:  "SMTP password",
 	},
+	cli.BoolFlag{
+		EnvVar: "CH_MAIL_CORS",
+		Name:   corsFlag,
+		Usage:  "enable CORS",
+	},
 }
 
 func setupLogs(c *cli.Context) {
@@ -145,7 +151,7 @@ func setupLogs(c *cli.Context) {
 		logrus.SetLevel(logrus.InfoLevel)
 	}
 
-	if c.Bool("textlog") {
+	if c.Bool(textlogFlag) {
 		logrus.SetFormatter(&logrus.TextFormatter{})
 	} else {
 		logrus.SetFormatter(&logrus.JSONFormatter{})

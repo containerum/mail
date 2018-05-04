@@ -44,7 +44,7 @@ func initServer(c *cli.Context) error {
 		Upstream:          us,
 		UpstreamSimple:    uss,
 		UserManagerClient: um,
-	})
+	}, c.Bool(corsFlag))
 
 	// graceful shutdown support
 

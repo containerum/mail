@@ -15,28 +15,28 @@ import (
 )
 
 // swagger:operation GET /messages Messages MessageListGetHandler
-// Get messages list.
-// https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#get-messages
-//
-// ---
-// x-method-visibility: private
-// parameters:
-//  - $ref: '#/parameters/UserRoleHeader'
-//  - name: page
-//    in: query
-//    type: string
-//    required: false
-//  - name: per_page
-//    in: query
-//    type: string
-//    required: false
-// responses:
-//  '200':
-//    description: message list get response
-//    schema:
-//      $ref: '#/definitions/MessageListResponse'
-//  default:
-//    $ref: '#/responses/error'
+//// Get messages list.
+//// https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#get-messages
+////
+//// ---
+//// x-method-visibility: private
+//// parameters:
+////  - $ref: '#/parameters/UserRoleHeader'
+////  - name: page
+////    in: query
+////    type: string
+////    required: false
+////  - name: per_page
+////    in: query
+////    type: string
+////    required: false
+//// responses:
+////  '200':
+////    description: message list get response
+////    schema:
+////      $ref: '#/definitions/MessageListResponse'
+////  default:
+////    $ref: '#/responses/error'
 func MessageListGetHandler(ctx *gin.Context) {
 	page := int64(1)
 	pagestr, ok := ctx.GetQuery("page")
