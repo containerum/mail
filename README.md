@@ -1,7 +1,5 @@
 # Mail service for Containerum Platform
 
-
-
 ## Installation
 
 ### Using Helm
@@ -16,5 +14,4 @@ By default it uses **emptyDir** storage!
 To use GlusterFS run:
 ```
   helm install helm containerum/mail --set volume.empty="" --set volume.gluster.glusterfs.endpoints=$GLUSTER_ENDPOINT --set volume.gluster.glusterfs.path=$GLUSTER_PATH
-
 ```
