@@ -15,10 +15,6 @@ ENV GIN_MODE=debug \
     CH_MAIL_MESSAGES_DB="../../storage/messages.db" \
     CH_MAIL_UPSTREAM=mailgun \
     CH_MAIL_UPSTREAM_SIMPLE=smtp \
-    MG_API_KEY=apikey \
-    MG_DOMAIN=domain \
-    MG_PUBLIC_API_KEY=pubkey \
-    MG_URL=url \
     CH_MAIL_SENDER_NAME_SIMPLE=containerum \
     CH_MAIL_SENDER_MAIL_SIMPLE=noreply-test@containerum.io \
     CH_MAIL_SENDER_NAME=containerum \
@@ -27,6 +23,6 @@ ENV GIN_MODE=debug \
     CH_MAIL_LISTEN_ADDR=:7070 \
     CH_MAIL_SMTP_ADDR=mail.containerum.io:465 \
     CH_MAIL_SMTP_LOGIN=noreply-test@containerum.io \
-    CH_MAIL_SMTP_PASSWORD=PuRrAtZzMzEATlYQ
+    CH_MAIL_SMTP_PASSWORD=verystrongpassword
 VOLUME ["/storage"]
 ENTRYPOINT ["/mail-templater"]
