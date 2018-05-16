@@ -6,29 +6,29 @@ RUN CGO_ENABLED=0 go build -v -tags "jsoniter" -ldflags="-w -s -extldflags '-sta
 
 FROM alpine:3.7
 RUN apk --no-cache add ca-certificates
+
 # app
 COPY --from=builder /bin/mail-templater /
+
 # timezone data
 ENV GIN_MODE=debug \
-    CH_MAIL_LOG_LEVEL=5 \
+    CH_MAIL_LOG_LEVEL=4 \
     CH_MAIL_TEMPLATE_DB="../../storage/template.db" \
     CH_MAIL_MESSAGES_DB="../../storage/messages.db" \
-    CH_MAIL_UPSTREAM=mailgun \
-    CH_MAIL_UPSTREAM_SIMPLE=smtp \
-    MG_API_KEY=apikey \
-    MG_DOMAIN=domain \
-    MG_PUBLIC_API_KEY=pubkey \
-    MG_URL=url \
-    CH_MAIL_SENDER_NAME_SIMPLE=containerum \
-    CH_MAIL_SENDER_MAIL_SIMPLE=noreply-test@containerum.io \
-    CH_MAIL_SENDER_NAME=containerum \
-    CH_MAIL_SENDER_MAIL=noreply-test@containerum.io \
-    CH_MAIL_USER_MANAGER_URL=http://user-manager:8111 \
-    CH_MAIL_LISTEN_ADDR=:7070 \
-    CH_MAIL_SMTP_ADDR=mail:465 \
-    CH_MAIL_SMTP_LOGIN=noreply-test@containerum.io \
-    CH_MAIL_SMTP_PASSWORD=pass
+    CH_MAIL_UPSTREAM="mailgun" \
+    CH_MAIL_UPSTREAM_SIMPLE="smtp" \
+    CH_MAIL_SENDER_NAME_SIMPLE="containerum" \
+    CH_MAIL_SENDER_MAIL_SIMPLE="noreply-test@containerum.io" \
+    CH_MAIL_SENDER_NAME="containerum" \
+    CH_MAIL_SENDER_MAIL="noreply-test@containerum.io" \
+    CH_MAIL_USER_MANAGER_URL="http://user-manager:8111" \
+    CH_MAIL_LISTEN_ADDR=":7070" \
+    CH_MAIL_SMTP_ADDR="mail:465" \
+    CH_MAIL_SMTP_LOGIN="noreply-test@containerum.io" \
+    CH_MAIL_SMTP_PASSWORD="pass"
 
 VOLUME ["/storage"]
+
+EXPOSE 7070
 
 ENTRYPOINT ["/mail-templater"]
