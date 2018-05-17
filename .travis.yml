@@ -23,7 +23,7 @@ before_deploy:
   - docker login -u="$DOCKER_LOGIN" -p="$DOCKER_PASSWORD"
   - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:latest"
   - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:${TRAVIS_TAG}"
-  - helm package $NAME --app-version="${TRAVIS_TAG}"
+  - helm package $NAME --version="${TRAVIS_TAG}"
   - helm repo index --url $HELM_URL --merge index.yaml .
 
 deploy:
