@@ -1,43 +1,85 @@
 stages:
   - test
   - build
+  - release
   - deploy
 
-.create_tag: &create_tag
-  before_script:
-    - export DATE=$(date +"%Y-%m-%d")
-    - export TAG="${DATE}-${CI_COMMIT_SHA:0:8}"
+variables:
+  CONTAINER_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
+  NAMESPACE: hosting
+  SECRET: gitlab-registry
+  REPOSITORY: ${CI_REGISTRY}/${CI_PROJECT_PATH}
 
-build-and-push-develop:
-  <<: *create_tag
+.docker-login: &docker-login
+  before_script:
+    - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
+
+test-build:
   services:
-    - docker:dind
   image: docker:latest
-  stage: build
+  stage: test
   tags:
     - build
   script:
-    - docker login ${DOCKER_REGISTRY} -u "$DOCKER_REGISTRY_USER" -p "$DOCKER_REGISTRY_PASSWORD"
-    - docker build --pull -t ${DOCKER_REGISTRY_IMAGE}:${TAG} .
-    - docker push "${DOCKER_REGISTRY_IMAGE}:${TAG}"
+    - docker build -t ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8} .
+    - docker rmi --force ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
+  except:
+    - develop
+    - master
+    - staging
+    - tags
+
+unit-tests:
+  image: golang:1.9-alpine
+  stage: test
+  tags:
+    - test
+  before_script:
+    - mkdir -p /go/src/git.containerum.net/${CI_PROJECT_PATH%/*}
+    - ln -sf ${CI_PROJECT_DIR} /go/src/git.containerum.net/${CI_PROJECT_PATH}
+    - cd /go/src/git.containerum.net/${CI_PROJECT_PATH}
+  script:
+    - go test -v -cover ./...
+  except:
+    - develop
+    - master
+    - staging
+    - tags
+
+
+dev-release:
+  image: docker:latest
+  stage: release
+  tags:
+    - build
+  <<: *docker-login
+  script:
+    - docker build -t ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8} .
+    - docker push ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
+    - docker rmi --force ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
   only:
     - develop
 
-deploy-to-kubernetes-develop:
-  <<: *create_tag
-  image: mastanggt/kubectl:latest
+dev-deploy:
+  image: exon/helm
   stage: deploy
   tags:
-    - deploy
+    - develop
+  before_script:
+    - mkdir -p /etc/deploy/
+    - echo ${SANDBOX_KUBE_CONFIG} | base64 -d > ${KUBECONFIG}
+    - helm init --client-only
+    - helm repo update
+  environment:
+    name: develop
   script:
-    - export IMAGE="$DOCKER_REGISTRY_IMAGE:${TAG}"
-    - echo $SANDBOX_KUBE_CONFIG | base64 -d > admin.conf
-    - cat deploy-template.yaml | envsubst > deploy.yaml
-    - kubectl --kubeconfig=admin.conf replace -f deploy.yaml
+    - cd charts/mail
+    - helm upgrade --install --debug --namespace=${NAMESPACE} ${CI_PROJECT_NAME} --set image.tag=${CI_COMMIT_SHA:0:8} --set image.secret=${SECRET} --set image.repository=${REPOSITORY} --set service.externalIP=192.168.88.210 --values values.yaml .
   only:
     - develop
 
-github publish:
+
+pub-github:
   image: alpine
   stage: deploy
   tags:
@@ -71,32 +113,52 @@ github publish:
     - develop
 
 
-docker-build-test:
-  <<: *create_tag
-  services:
-    - docker:dind
+stage-release:
   image: docker:latest
-  stage: test
+  stage: release
   tags:
-    - test
+    - build
+  <<: *docker-login
   script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
-    - docker build --pull -t ${CI_REGISTRY_IMAGE}:${TAG} .
-    - docker rmi -f ${CI_REGISTRY_IMAGE}:${TAG}
-  except:
-    - develop
+    - docker build -t ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8} .
+    - docker push ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
+    - docker rmi --force ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
+  only:
+    - master
 
-.correct_workdir: &correct_workdir
+
+prod-release:
+  image: docker:latest
+  stage: release
+  tags:
+    - build
+  <<: *docker-login
+  script:
+    - docker pull ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
+    - docker tag ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8} ${CONTAINER_IMAGE}:latest
+    - docker tag ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8} ${CONTAINER_IMAGE}:${CI_COMMIT_TAG}
+    - docker push ${CONTAINER_IMAGE}:latest
+    - docker push ${CONTAINER_IMAGE}:${CI_COMMIT_TAG}
+    - docker rmi --force ${CONTAINER_IMAGE}:${CI_COMMIT_SHA:0:8}
+  only:
+    - tags
+
+prod-deploy:
+  image: exon/helm
+  stage: deploy
+  tags:
+    - production
   before_script:
-    - mkdir -p /go/src/git.containerum.net/${CI_PROJECT_PATH%/*}
-    - ln -sf ${CI_PROJECT_DIR} /go/src/git.containerum.net/${CI_PROJECT_PATH}
-    - cd /go/src/git.containerum.net/${CI_PROJECT_PATH}
-
-unit-tests:
-  <<: *correct_workdir
-  image: golang:1.9-alpine
-  stage: test
-  tags:
-    - test
+    - mkdir -p /etc/deploy/
+    - echo ${PRODUCTION_KUBE_CONFIG_2} | base64 -d > ${KUBECONFIG}
+    - helm init --client-only
+    - helm repo update
+  environment:
+    name: production
+    url: https://web.containerum.io
   script:
-    - go test -v -cover ./...
+    - cd charts/api-gateway
+    - helm upgrade --install --namespace=${NAMESPACE} ${CI_PROJECT_NAME} --set image.tag=${CI_COMMIT_TAG} --set image.secret=${SECRET} --set image.repository=${REPOSITORY} --set service.externalIP=${PRODUCTION_IP} --values values.yaml .
+  only:
+    - tags
+  when: manual
