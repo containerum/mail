@@ -61,7 +61,9 @@ dev-release:
     - develop
 
 dev-deploy:
-  image: lachlanevenson/k8s-helm:v2.9.1
+  image:
+    name: lachlanevenson/k8s-helm:v2.9.1
+    entrypoint: ["/bin/sh", "-c"]
   stage: deploy
   tags:
     - develop
@@ -74,7 +76,7 @@ dev-deploy:
     name: develop
   script:
     - cd charts/mail
-    - helm upgrade --install --debug --namespace=${NAMESPACE} ${CI_PROJECT_NAME} --set image.tag=${CI_COMMIT_SHA:0:8} --set image.secret=${SECRET} --set image.repository=${REPOSITORY} --set service.externalIP=192.168.88.210 --set persistence.annotations="{volume.beta.kubernetes.io/storage-class:gluster-heketi}" --values values.yaml .
+    - helm upgrade --install --debug --namespace=${NAMESPACE} ${CI_PROJECT_NAME} --set image.tag=${CI_COMMIT_SHA:0:8} --set image.secret=${SECRET} --set image.repository=${REPOSITORY} --set service.externalIP=192.168.88.210 --set persistence.annotations="volume.beta.kubernetes.io/storage-class:gluster-heketi" --values values.yaml .
   only:
     - develop
 
