@@ -3,39 +3,48 @@ replicaCount: 1
 image:
   repository: containerum/mail
   tag: v1.0.0
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 service:
   port: 7070
   targetPort: 7070
   externalIP:
 
-volumeMounts:
-  name: mail-volume
-  mountPath: "/storage"
+persistence:
+  enabled: true
+  ## A manually managed Persistent Volume and Claim
+  ## Requires persistence.enabled: true
+  ## If defined, PVC must be created manually before volume will be bound
+  # existingClaim:
 
-volume:
-  name: mail-volume
-  empty:
-    emptyDir: {}
-  gluster:
-    glusterfs:
-      endpoints: glusterfs
-      path: sys_gv_hosting_mail_templater_data
+  ## mongodb data Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  # storageClass: "-"
+  accessMode: ReadWriteOnce
+  mountPath: "/storage"
+  size: 5Gi
+
 
 env:
-  GIN_MODE: debug
-  CH_MAIL_LOG_LEVEL: 4
-  CH_MAIL_TEMPLATE_DB: "../../storage/template.db"
-  CH_MAIL_MESSAGES_DB: "../../storage/messages.db"
-  CH_MAIL_UPSTREAM: "mailgun"
-  CH_MAIL_UPSTREAM_SIMPLE: "smtp"
-  CH_MAIL_SENDER_NAME_SIMPLE: "containerum"
-  CH_MAIL_SENDER_MAIL_SIMPLE: "noreply-test@containerum.io"
-  CH_MAIL_SENDER_NAME: "containerum"
-  CH_MAIL_SENDER_MAIL: "noreply-test@containerum.io"
-  CH_MAIL_USER_MANAGER_URL: "http://user-manager:8111"
-  CH_MAIL_LISTEN_ADDR: ":7070"
-  CH_MAIL_SMTP_ADDR: "mail:465"
-  CH_MAIL_SMTP_LOGIN: "noreply-test@containerum.io"
-  CH_MAIL_SMTP_PASSWORD: "pass"
+  global:
+    GIN_MODE: debug
+    CH_MAIL_LOG_LEVEL: 4
+    CH_MAIL_TEMPLATE_DB: "/storage/template.db"
+    CH_MAIL_MESSAGES_DB: "/storage/messages.db"
+    CH_MAIL_UPSTREAM: "mailgun"
+    CH_MAIL_UPSTREAM_SIMPLE: "smtp"
+    CH_MAIL_SENDER_NAME_SIMPLE: "containerum"
+    CH_MAIL_SENDER_MAIL_SIMPLE: "noreply-test@containerum.io"
+    CH_MAIL_SENDER_NAME: "containerum"
+    CH_MAIL_SENDER_MAIL: "noreply-test@containerum.io"
+    CH_MAIL_LISTEN_ADDR: ":7070"
+    CH_MAIL_SMTP_ADDR: "mail:465"
+    CH_MAIL_SMTP_LOGIN: "noreply-test@containerum.io"
+    CH_MAIL_SMTP_PASSWORD: "pass"
+  local:
+    CH_MAIL_USER_MANAGER_URL: http://user-manager:8111
