@@ -3,6 +3,11 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: {{ template "fullname" . }}
+  labels:
+    app: {{ template "name" . }}
+    chart: {{ template "chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 {{- if .Values.persistence.annotations }}
   annotations:
 {{ toYaml .Values.persistence.annotations | indent 4 }}
