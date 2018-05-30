@@ -38,6 +38,10 @@ spec:
           volumeMounts:
           - name: {{ template "fullname" . }}
             mountPath: {{ .Values.persistence.mountPath }}
+      {{- with .Values.image.secret }}
+      imagePullSecrets:
+      - name: {{ . }}
+      {{- end }}
       volumes:
       - name: {{ template "fullname" . }}
       {{- if .Values.persistence.enabled }}
