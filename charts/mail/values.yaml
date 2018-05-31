@@ -31,14 +31,13 @@ persistence:
   mountPath: "/storage"
   size: 5Gi
 
-
 env:
   global:
     GIN_MODE: debug
     CH_MAIL_LOG_LEVEL: 4
     CH_MAIL_TEMPLATE_DB: "/storage/template.db"
     CH_MAIL_MESSAGES_DB: "/storage/messages.db"
-    CH_MAIL_UPSTREAM: "mailgun"
+    CH_MAIL_UPSTREAM: "smtp"
     CH_MAIL_UPSTREAM_SIMPLE: "smtp"
     CH_MAIL_SENDER_NAME_SIMPLE: "containerum"
     CH_MAIL_SENDER_MAIL_SIMPLE: "noreply-test@containerum.io"
@@ -47,6 +46,7 @@ env:
     CH_MAIL_LISTEN_ADDR: ":7070"
     CH_MAIL_SMTP_ADDR: "mail:465"
     CH_MAIL_SMTP_LOGIN: "noreply-test@containerum.io"
-    CH_MAIL_SMTP_PASSWORD: "pass"
   local:
     CH_MAIL_USER_MANAGER_URL: http://user-manager:8111
+    CH_MAIL_SMTP_PASSWORD: verystrongpassword
+    CH_MAIL_MG_PASSWORD:

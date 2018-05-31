@@ -26,6 +26,7 @@ ENV GIN_MODE=debug \
     CH_MAIL_SMTP_ADDR=mail:465 \
     CH_MAIL_SMTP_LOGIN=noreply-test@containerum.io \
     CH_MAIL_SMTP_PASSWORD=verystrongpassword
+
 VOLUME ["/storage"]
 
 EXPOSE 7070

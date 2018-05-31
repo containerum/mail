@@ -35,6 +35,13 @@ spec:
             - name: CH_MAIL_USER_MANAGER_URL
               value: "http://{{ .Release.Name }}-user-manager:8111"
             {{- end }}
+            {{- if .Values.env.local.CH_MAIL_SMTP_PASSWORD }}
+            - name: CH_MAIL_SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "fullname" . }}
+                  key: smtp-password
+            {{- end }}
           volumeMounts:
           - name: {{ template "fullname" . }}
             mountPath: {{ .Values.persistence.mountPath }}
