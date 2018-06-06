@@ -1,12 +1,15 @@
 # Mail
 
-Mail is a mail client and newsletter template manager for [Containerum](https://github.com/containerum/containerum) that 
+Mail is a mail client and template manager for [Containerum](https://github.com/containerum/containerum).
 
 ## Features
 * Direct mailing and newsletters
 * Instant or scheduled mailing
 * Storing templates
 * Template management (creating, upgrading and deleting)
+
+## Prerequisites
+* Kubernetes
 
 ## Installation
 
