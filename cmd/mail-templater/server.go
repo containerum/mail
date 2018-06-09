@@ -26,11 +26,11 @@ func initServer(c *cli.Context) error {
 	setupLogs(c)
 
 	ts, err := getTemplatesStorage(c)
+	exitOnErr(err)
 	defer ts.Close()
-	exitOnErr(err)
 	ms, err := getMessagesStorage(c)
-	defer ms.Close()
 	exitOnErr(err)
+	defer ms.Close()
 	us, err := getUpstream(c, ms)
 	exitOnErr(err)
 	uss, err := getUpstreamSimple(c, ms)
