@@ -1,6 +1,6 @@
 # Mail
 
-Mail is a mail client and template manager for [Containerum](https://github.com/containerum/containerum).
+Mail is a mail server and template manager for [Containerum](https://github.com/containerum/containerum).
 
 ## Features
 * Direct mailing and newsletters
