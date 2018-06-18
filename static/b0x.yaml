@@ -87,10 +87,8 @@ debug: false
 custom:
   # type: array of strings
   - files:
-    - "../vendor/github.com/containerum/utils/httputil/swagger.json"
-    - "../vendor/github.com/containerum/cherry/swagger.json"
     - "../swagger.json"
     # base is the path that will be removed from all files' path
     # type: string
     base: "../"
-# end: files
+# end:go files

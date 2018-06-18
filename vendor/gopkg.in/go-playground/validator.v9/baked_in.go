@@ -1,7 +1,9 @@
 package validator
 
 import (
+	"bytes"
 	"context"
+	"crypto/sha256"
 	"fmt"
 	"net"
 	"net/url"
@@ -11,8 +13,6 @@ import (
 	"sync"
 	"time"
 	"unicode/utf8"
-	"crypto/sha256"
-	"bytes"
 )
 
 // Func accepts a FieldLevel interface for all validation needs. The return
@@ -187,7 +187,7 @@ func isOneOf(fl FieldLevel) bool {
 	return false
 }
 
-// isUnique is the validation function for validating if each array|slice element is unique
+// isUnique is the validation function for validating if each array|slice|map value is unique
 func isUnique(fl FieldLevel) bool {
 
 	field := fl.Field()
@@ -195,10 +195,17 @@ func isUnique(fl FieldLevel) bool {
 
 	switch field.Kind() {
 	case reflect.Slice, reflect.Array:
-		m := reflect.MakeMap(reflect.MapOf(fl.Field().Type().Elem(), v.Type()))
+		m := reflect.MakeMap(reflect.MapOf(field.Type().Elem(), v.Type()))
 
 		for i := 0; i < field.Len(); i++ {
 			m.SetMapIndex(field.Index(i), v)
+		}
+		return field.Len() == m.Len()
+	case reflect.Map:
+		m := reflect.MakeMap(reflect.MapOf(field.Type().Elem(), v.Type()))
+
+		for _, k := range field.MapKeys() {
+			m.SetMapIndex(field.MapIndex(k), v)
 		}
 		return field.Len() == m.Len()
 	default:
@@ -433,10 +440,10 @@ func isBitcoinAddress(fl FieldLevel) bool {
 	}
 
 	h := sha256.New()
-	h.Write(decode[:21])
+	_, _ = h.Write(decode[:21])
 	d := h.Sum([]byte{})
 	h = sha256.New()
-	h.Write(d)
+	_, _ = h.Write(d)
 
 	validchecksum := [4]byte{}
 	computedchecksum := [4]byte{}
@@ -451,13 +458,13 @@ func isBitcoinAddress(fl FieldLevel) bool {
 func isBitcoinBech32Address(fl FieldLevel) bool {
 	address := fl.Field().String()
 
-	if !btcLowerAddressRegexBech32.MatchString(address) && !btcUpperAddressRegexBech32.MatchString(address){
+	if !btcLowerAddressRegexBech32.MatchString(address) && !btcUpperAddressRegexBech32.MatchString(address) {
 		return false
 	}
 
 	am := len(address) % 8
 
-	if am == 0 || am == 3 || am == 5{
+	if am == 0 || am == 3 || am == 5 {
 		return false
 	}
 
@@ -466,15 +473,16 @@ func isBitcoinBech32Address(fl FieldLevel) bool {
 	alphabet := "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
 
 	hr := []int{3, 3, 0, 2, 3} // the human readable part will always be bc
-	dp := []int{}
+	addr := address[3:]
+	dp := make([]int, 0, len(addr))
 
-	for _, c := range []rune(address[3:]) {
+	for _, c := range addr {
 		dp = append(dp, strings.IndexRune(alphabet, c))
 	}
 
 	ver := dp[0]
 
-	if ver < 0 || ver > 16{
+	if ver < 0 || ver > 16 {
 		return false
 	}
 
@@ -486,16 +494,16 @@ func isBitcoinBech32Address(fl FieldLevel) bool {
 
 	values := append(hr, dp...)
 
-	GEN := []int{ 0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3 }
+	GEN := []int{0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3}
 
 	p := 1
 
 	for _, v := range values {
 		b := p >> 25
-		p = (p & 0x1ffffff) << 5 ^ v
+		p = (p&0x1ffffff)<<5 ^ v
 
 		for i := 0; i < 5; i++ {
-			if (b >> uint(i)) & 1 == 1 {
+			if (b>>uint(i))&1 == 1 {
 				p ^= GEN[i]
 			}
 		}
@@ -508,18 +516,18 @@ func isBitcoinBech32Address(fl FieldLevel) bool {
 	b := uint(0)
 	acc := 0
 	mv := (1 << 5) - 1
-	sw := []int{}
+	var sw []int
 
-	for _, v := range dp[1:len(dp) - 6]{
+	for _, v := range dp[1 : len(dp)-6] {
 		acc = (acc << 5) | v
 		b += 5
-		for b >= 8{
+		for b >= 8 {
 			b -= 8
 			sw = append(sw, (acc>>b)&mv)
 		}
 	}
 
-	if len(sw) < 2 || len(sw) > 40{
+	if len(sw) < 2 || len(sw) > 40 {
 		return false
 	}
 
@@ -1089,12 +1097,22 @@ func isHexadecimal(fl FieldLevel) bool {
 
 // IsNumber is the validation function for validating if the current field's value is a valid number.
 func isNumber(fl FieldLevel) bool {
-	return numberRegex.MatchString(fl.Field().String())
+	switch fl.Field().Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr, reflect.Float32, reflect.Float64:
+		return true
+	default:
+		return numberRegex.MatchString(fl.Field().String())
+	}
 }
 
 // IsNumeric is the validation function for validating if the current field's value is a valid numeric value.
 func isNumeric(fl FieldLevel) bool {
-	return numericRegex.MatchString(fl.Field().String())
+	switch fl.Field().Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr, reflect.Float32, reflect.Float64:
+		return true
+	default:
+		return numericRegex.MatchString(fl.Field().String())
+	}
 }
 
 // IsAlphanum is the validation function for validating if the current field's value is a valid alphanumeric value.

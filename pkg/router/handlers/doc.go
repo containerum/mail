@@ -2,6 +2,7 @@
 //
 // Mail-Templater service is service for sending emails.
 //
+//  Version: 0.0.1
 //	Consumes:
 //	- application/json
 //
