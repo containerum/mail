@@ -8,7 +8,8 @@
   "swagger": "2.0",
   "info": {
     "description": "Mail-Templater service is service for sending emails.",
-    "title": "Mail-Templater"
+    "title": "Mail-Templater",
+    "version": "0.0.1"
   },
   "paths": {
     "/messages": {
@@ -21,7 +22,14 @@
         "operationId": "MessageListGetHandler",
         "parameters": [
           {
-            "$ref": "#/parameters/UserRoleHeader"
+            "enum": [
+              "user",
+              "admin"
+            ],
+            "type": "string",
+            "name": "X-User-Role",
+            "in": "header",
+            "required": true
           },
           {
             "type": "string",
@@ -42,7 +50,10 @@
             }
           },
           "default": {
-            "$ref": "#/responses/error"
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
           }
         },
         "x-method-visibility": "private"
@@ -58,7 +69,14 @@
         "operationId": "MessageGetHandler",
         "parameters": [
           {
-            "$ref": "#/parameters/UserRoleHeader"
+            "enum": [
+              "user",
+              "admin"
+            ],
+            "type": "string",
+            "name": "X-User-Role",
+            "in": "header",
+            "required": true
           },
           {
             "type": "string",
@@ -75,7 +93,10 @@
             }
           },
           "default": {
-            "$ref": "#/responses/error"
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
           }
         },
         "x-method-visibility": "private"
@@ -106,7 +127,10 @@
             }
           },
           "default": {
-            "$ref": "#/responses/error"
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
           }
         },
         "x-method-visibility": "public"
@@ -122,7 +146,14 @@
         "operationId": "TemplateListGetHandler",
         "parameters": [
           {
-            "$ref": "#/parameters/UserRoleHeader"
+            "enum": [
+              "user",
+              "admin"
+            ],
+            "type": "string",
+            "name": "X-User-Role",
+            "in": "header",
+            "required": true
           }
         ],
         "responses": {
@@ -133,7 +164,10 @@
             }
           },
           "default": {
-            "$ref": "#/responses/error"
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
           }
         },
         "x-method-visibility": "private"
@@ -147,7 +181,14 @@
         "operationId": "TemplateCreateHandler",
         "parameters": [
           {
-            "$ref": "#/parameters/UserRoleHeader"
+            "enum": [
+              "user",
+              "admin"
+            ],
+            "type": "string",
+            "name": "X-User-Role",
+            "in": "header",
+            "required": true
           },
           {
             "name": "body",
@@ -165,7 +206,10 @@
             }
           },
           "default": {
-            "$ref": "#/responses/error"
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
           }
         },
         "x-method-visibility": "private"
@@ -181,7 +225,14 @@
         "operationId": "TemplateGetHandler",
         "parameters": [
           {
-            "$ref": "#/parameters/UserRoleHeader"
+            "enum": [
+              "user",
+              "admin"
+            ],
+            "type": "string",
+            "name": "X-User-Role",
+            "in": "header",
+            "required": true
           },
           {
             "type": "string",
@@ -203,7 +254,10 @@
             }
           },
           "default": {
-            "$ref": "#/responses/error"
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
           }
         },
         "x-method-visibility": "private"
@@ -214,10 +268,17 @@
           "Templates"
         ],
         "summary": "Update template.",
-        "operationId": "TemplateCreateHandler",
+        "operationId": "TemplateUpdateHandler",
         "parameters": [
           {
-            "$ref": "#/parameters/UserRoleHeader"
+            "enum": [
+              "user",
+              "admin"
+            ],
+            "type": "string",
+            "name": "X-User-Role",
+            "in": "header",
+            "required": true
           },
           {
             "type": "string",
@@ -241,7 +302,10 @@
             }
           },
           "default": {
-            "$ref": "#/responses/error"
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
           }
         },
         "x-method-visibility": "private"
@@ -255,7 +319,14 @@
         "operationId": "TemplateDeleteHandler",
         "parameters": [
           {
-            "$ref": "#/parameters/UserRoleHeader"
+            "enum": [
+              "user",
+              "admin"
+            ],
+            "type": "string",
+            "name": "X-User-Role",
+            "in": "header",
+            "required": true
           },
           {
             "type": "string",
@@ -274,7 +345,10 @@
             "description": "template deleted"
           },
           "default": {
-            "$ref": "#/responses/error"
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
           }
         },
         "x-method-visibility": "private"
@@ -311,7 +385,10 @@
             }
           },
           "default": {
-            "$ref": "#/responses/error"
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
           }
         },
         "x-method-visibility": "public"
@@ -319,6 +396,79 @@
     }
   },
   "definitions": {
+    "Accounts": {
+      "description": "Accounts -- list of bound accounts",
+      "type": "object",
+      "properties": {
+        "accounts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "Accounts"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "BoundAccountDeleteRequest": {
+      "description": "BoundAccountDeleteRequest -- request to remove bound account",
+      "type": "object",
+      "required": [
+        "resource"
+      ],
+      "properties": {
+        "resource": {
+          "type": "string",
+          "x-go-name": "Resource"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "BoundAccounts": {
+      "description": "BoundAccounts -- bound accounts list for user",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "Domain": {
+      "description": "DomainListResponse -- domains list",
+      "type": "object",
+      "required": [
+        "domain"
+      ],
+      "properties": {
+        "added_by": {
+          "type": "string",
+          "x-go-name": "AddedBy"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "CreatedAt"
+        },
+        "domain": {
+          "type": "string",
+          "x-go-name": "Domain"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "DomainListResponse": {
+      "description": "DomainListResponse -- domains list",
+      "type": "object",
+      "properties": {
+        "domain_list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Domain"
+          },
+          "x-go-name": "DomainList"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
     "Err": {
       "description": "Err -- standard serializable API error\nMessage -- constant error message:\n+ \"invalid username\"\n+ \"quota exceeded\"\n+ \"validation error\"\n...etc...\nID -- unique error identification code\nDetails -- optional context error messages kinda\n+ \"field 'Replicas' must be non-zero value\"\n+ \"not enough tights to feed gopher\"\n+ \"resource 'God' does't exist\"\nFields -- optional set of key-value pairs",
       "type": "object",
@@ -379,6 +529,96 @@
         "type": "string"
       },
       "x-go-package": "git.containerum.net/ch/mail-templater/vendor/github.com/containerum/cherry"
+    },
+    "IDList": {
+      "description": "IDList -- ids list",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "Link": {
+      "description": "Link -- link (for registration/activation/etc)",
+      "type": "object",
+      "required": [
+        "link"
+      ],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "CreatedAt"
+        },
+        "expired_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "ExpiredAt"
+        },
+        "is_active": {
+          "type": "boolean",
+          "x-go-name": "IsActive"
+        },
+        "link": {
+          "type": "string",
+          "x-go-name": "Link"
+        },
+        "sent_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "SentAt"
+        },
+        "type": {
+          "$ref": "#/definitions/LinkType"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "LinkType": {
+      "description": "LinkType -- link type",
+      "type": "string",
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "Links": {
+      "description": "Links -- links list",
+      "type": "object",
+      "properties": {
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Link"
+          },
+          "x-go-name": "Links"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "LoginID": {
+      "description": "LoginID -- logins and user ID",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "LoginRequest": {
+      "description": "LoginRequest -- login request (for basic login)",
+      "type": "object",
+      "required": [
+        "login",
+        "password"
+      ],
+      "properties": {
+        "login": {
+          "type": "string",
+          "x-go-name": "Login"
+        },
+        "password": {
+          "type": "string",
+          "x-go-name": "Password"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
     },
     "MessageGetResponse": {
       "description": "MessageGetResponse -- response to get message request",
@@ -507,6 +747,114 @@
       },
       "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
     },
+    "OAuthLoginRequest": {
+      "description": "LoginRequest -- login request (for oauth login)",
+      "type": "object",
+      "required": [
+        "resource",
+        "access_token"
+      ],
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "x-go-name": "AccessToken"
+        },
+        "resource": {
+          "$ref": "#/definitions/OAuthResource"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "OAuthResource": {
+      "type": "string",
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "OneTimeTokenLoginRequest": {
+      "description": "LoginRequest -- login request (for token login)",
+      "type": "object",
+      "required": [
+        "token"
+      ],
+      "properties": {
+        "token": {
+          "type": "string",
+          "x-go-name": "Token"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "PasswordChangeRequest": {
+      "description": "PasswordChangeRequest -- password change request",
+      "type": "object",
+      "required": [
+        "current_password",
+        "new_password"
+      ],
+      "properties": {
+        "current_password": {
+          "type": "string",
+          "x-go-name": "CurrentPassword"
+        },
+        "new_password": {
+          "type": "string",
+          "x-go-name": "NewPassword"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "PasswordRestoreRequest": {
+      "description": "PasswordRestoreRequest -- password restore request",
+      "type": "object",
+      "required": [
+        "link",
+        "new_password"
+      ],
+      "properties": {
+        "link": {
+          "type": "string",
+          "x-go-name": "Link"
+        },
+        "new_password": {
+          "type": "string",
+          "x-go-name": "NewPassword"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "Profile": {
+      "description": "Profile -- additional user information",
+      "type": "object",
+      "properties": {
+        "access": {
+          "type": "string",
+          "x-go-name": "Access"
+        },
+        "blacklisted_at": {
+          "type": "string",
+          "x-go-name": "BlacklistedAt"
+        },
+        "created_at": {
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "data": {
+          "$ref": "#/definitions/UserData"
+        },
+        "deleted_at": {
+          "type": "string",
+          "x-go-name": "DeletedAt"
+        },
+        "last_login": {
+          "type": "string",
+          "x-go-name": "LastLogin"
+        },
+        "referral": {
+          "type": "string",
+          "x-go-name": "Referral"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
     "Recipient": {
       "description": "Recipient -- recipient info for send mail method",
       "type": "object",
@@ -538,6 +886,34 @@
       },
       "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
     },
+    "RegisterRequest": {
+      "description": "RegisterRequest -- request to create new user",
+      "type": "object",
+      "required": [
+        "login",
+        "password",
+        "recaptcha"
+      ],
+      "properties": {
+        "login": {
+          "type": "string",
+          "x-go-name": "Login"
+        },
+        "password": {
+          "type": "string",
+          "x-go-name": "Password"
+        },
+        "recaptcha": {
+          "type": "string",
+          "x-go-name": "ReCaptcha"
+        },
+        "referral": {
+          "type": "string",
+          "x-go-name": "Referral"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
     "SendRequest": {
       "description": "SimpleSendResponse -- responce to send mail using send method",
       "type": "object",
@@ -548,27 +924,7 @@
           "x-go-name": "Delay"
         },
         "message": {
-          "type": "object",
-          "required": [
-            "recipient_data"
-          ],
-          "properties": {
-            "common_variables": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "string"
-              },
-              "x-go-name": "CommonVariables"
-            },
-            "recipient_data": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Recipient"
-              },
-              "x-go-name": "Recipients"
-            }
-          },
-          "x-go-name": "Message"
+          "$ref": "#/definitions/sendRequestMessage"
         }
       },
       "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
@@ -709,18 +1065,212 @@
         }
       },
       "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "User": {
+      "description": "User -- user model",
+      "type": "object",
+      "properties": {
+        "access": {
+          "type": "string",
+          "x-go-name": "Access"
+        },
+        "accounts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "Accounts"
+        },
+        "blacklisted_at": {
+          "type": "string",
+          "x-go-name": "BlacklistedAt"
+        },
+        "created_at": {
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "data": {
+          "$ref": "#/definitions/UserData"
+        },
+        "deleted_at": {
+          "type": "string",
+          "x-go-name": "DeletedAt"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "is_active": {
+          "type": "boolean",
+          "x-go-name": "IsActive"
+        },
+        "is_deleted": {
+          "type": "boolean",
+          "x-go-name": "IsDeleted"
+        },
+        "is_in_blacklist": {
+          "type": "boolean",
+          "x-go-name": "IsInBlacklist"
+        },
+        "last_login": {
+          "type": "string",
+          "x-go-name": "LastLogin"
+        },
+        "login": {
+          "type": "string",
+          "x-go-name": "Login"
+        },
+        "password": {
+          "type": "string",
+          "x-go-name": "Password"
+        },
+        "referral": {
+          "type": "string",
+          "x-go-name": "Referral"
+        },
+        "role": {
+          "type": "string",
+          "x-go-name": "Role"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "UserData": {
+      "description": "UserData -- user profile data",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object"
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "UserList": {
+      "description": "UserList -- users list",
+      "type": "object",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/User"
+          },
+          "x-go-name": "Users"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "UserLogin": {
+      "description": "UserList -- model for user login, password and id",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "login": {
+          "type": "string",
+          "x-go-name": "Login"
+        },
+        "password": {
+          "type": "string",
+          "x-go-name": "Password"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "errOAIGen": {
+      "description": "Err -- standard serializable API error\nMessage -- constant error message:\n+ \"invalid username\"\n+ \"quota exceeded\"\n+ \"validation error\"\n...etc...\nID -- unique error identification code\nDetails -- optional context error messages kinda\n+ \"field 'Replicas' must be non-zero value\"\n+ \"not enough tights to feed gopher\"\n+ \"resource 'God' does't exist\"\nFields -- optional set of key-value pairs",
+      "type": "object",
+      "properties": {
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Details"
+        },
+        "fields": {
+          "description": "Fields -- represents additional key-value fields of error",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-package": "github.com/containerum/cherry"
+        },
+        "id": {
+          "$ref": "#/definitions/errOaiGenId"
+        },
+        "message": {
+          "type": "string",
+          "x-go-name": "Message"
+        },
+        "status_http": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "StatusHTTP"
+        }
+      },
+      "x-go-package": "github.com/containerum/cherry"
+    },
+    "errOaiGenId": {
+      "description": "ErrID -- represents unique error ID",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "description": "ErrKind -- represents kind of error",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-package": "github.com/containerum/cherry"
+        },
+        "sid": {
+          "description": "ErrSID -- represents service ID of error",
+          "type": "string",
+          "x-go-package": "github.com/containerum/cherry"
+        }
+      },
+      "x-go-gen-location": "models",
+      "x-go-package": "github.com/containerum/cherry"
+    },
+    "sendRequestMessage": {
+      "type": "object",
+      "required": [
+        "recipient_data"
+      ],
+      "properties": {
+        "common_variables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "CommonVariables"
+        },
+        "recipient_data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Recipient"
+          },
+          "x-go-name": "Recipients"
+        }
+      },
+      "x-go-gen-location": "models",
+      "x-go-name": "Message"
     }
   },
   "parameters": {
     "UserRoleHeader": {
-      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserRoleHeader"
+      "enum": [
+        "user",
+        "admin"
+      ],
+      "type": "string",
+      "name": "X-User-Role",
+      "in": "header",
+      "required": true
     }
   },
   "responses": {
     "error": {
       "description": "cherry error",
       "schema": {
-        "$ref": "vendor/github.com/containerum/cherry/swagger.json#/definitions/Err"
+        "$ref": "#/definitions/errOAIGen"
       }
     }
   }

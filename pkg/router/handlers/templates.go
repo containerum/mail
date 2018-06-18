@@ -145,7 +145,7 @@ func TemplateCreateHandler(ctx *gin.Context) {
 	})
 }
 
-// swagger:operation PUT /templates/{name} Templates TemplateCreateHandler
+// swagger:operation PUT /templates/{name} Templates TemplateUpdateHandler
 // Update template.
 // https://ch.pages.containerum.net/api-docs/modules/ch-mail-template/index.html#update-template-of-specific-version
 //

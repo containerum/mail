@@ -5,7 +5,7 @@
   branch = "develop"
   name = "git.containerum.net/ch/user-manager"
   packages = ["pkg/models"]
-  revision = "c149d613d59d65c13eb602b63d1096173380b215"
+  revision = "262539eb1492b3535e669706287cbe19a6687680"
 
 [[projects]]
   name = "github.com/blang/semver"
@@ -26,14 +26,14 @@
     "adaptors/cherrylog",
     "adaptors/gonic"
   ]
-  revision = "3076e36aee79538b125d060e5b671649cbb2db4e"
-  version = "v1.0.1-rc2"
+  revision = "34f7a2a139b36c20a34b93738dda33476efad47d"
+  version = "v1.0.1"
 
 [[projects]]
   name = "github.com/containerum/utils"
   packages = ["httputil"]
-  revision = "5e922affb542eaeb55ab395ff3c7161179df54b3"
-  version = "v1.0.0"
+  revision = "0d81250fc88af062d5836ecd83db9867eb6ee34c"
+  version = "v1.0.3"
 
 [[projects]]
   branch = "master"
@@ -45,7 +45,7 @@
   branch = "master"
   name = "github.com/gin-gonic/contrib"
   packages = ["ginrus"]
-  revision = "9b830a15f6abcf9e160f47ee01fc00691cc1981a"
+  revision = "39cfb9727134fef3120d2458fce5fab14265a46c"
 
 [[projects]]
   name = "github.com/gin-gonic/gin"
@@ -75,8 +75,8 @@
 [[projects]]
   name = "github.com/golang/protobuf"
   packages = ["proto"]
-  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
-  version = "v1.0.0"
+  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "master"
@@ -174,7 +174,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "b49d69b5da943f7ef3c9cf91c8777c1f78a0cc3c"
+  revision = "027cca12c2d63e3d62b670d901e8a2c95854feec"
 
 [[projects]]
   branch = "master"
@@ -186,7 +186,7 @@
     "webdav",
     "webdav/internal/xml"
   ]
-  revision = "5f9ae10d9af5b1c89ae6904293b14b064d4ada23"
+  revision = "db08ff08e8622530d9ed3a0e8ac279f6d4c02196"
 
 [[projects]]
   branch = "master"
@@ -195,7 +195,7 @@
     "unix",
     "windows"
   ]
-  revision = "bb9c189858d91f42db229b04d45a4c3d23a7662a"
+  revision = "6c888cc515d3ed83fc103cf1d84468aad274b0a7"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -233,8 +233,8 @@
 [[projects]]
   name = "gopkg.in/go-playground/validator.v9"
   packages = ["."]
-  revision = "14984d91328f9612b58443cbdf4a077d4fd71091"
-  version = "v9.15.0"
+  revision = "f28cb45dc0f0f406ba2015cdb59a5203ad220bc2"
+  version = "v9.17.1"
 
 [[projects]]
   name = "gopkg.in/mailgun/mailgun-go.v1"
@@ -245,8 +245,8 @@
 [[projects]]
   name = "gopkg.in/resty.v1"
   packages = ["."]
-  revision = "f8815663de1e64d57cdd4ee9e2b2fa96977a030e"
-  version = "v1.4"
+  revision = "fc3ad735b5565cada42d34bc298573fd3fe5adc6"
+  version = "v1.6"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"
@@ -257,6 +257,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "24adb61bb06eca607fd66d66eb5b877794dafb28d068ca60a978626946c85bcb"
+  inputs-digest = "cd206157c6f8328d5f0eb4555ca4b11d66ac6c8ee9573845e14941e3dda2235b"
   solver-name = "gps-cdcl"
   solver-version = 1
