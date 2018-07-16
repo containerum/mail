@@ -55,7 +55,7 @@ func initServer(c *cli.Context) error {
 
 	go exitOnErr(srv.ListenAndServe())
 
-	quit := make(chan os.Signal)
+	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
 	logrus.Infoln("shutting down server...")
