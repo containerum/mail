@@ -9,7 +9,6 @@ import (
 	"strings"
 	texttemplate "text/template"
 
-	"sync"
 	"time"
 
 	"crypto/tls"
@@ -17,8 +16,6 @@ import (
 	"strconv"
 
 	"net"
-
-	"io"
 
 	"git.containerum.net/ch/mail-templater/pkg/models"
 	"git.containerum.net/ch/mail-templater/pkg/storages"
@@ -104,24 +101,6 @@ func (smtpu *smtpUpstream) constructMessage(template *texttemplate.Template, rec
 	return &msg, nil
 }
 
-func (smtpu *smtpUpstream) errCollector(ch chan error, errs *[]string, wg *sync.WaitGroup) {
-	for err := range ch {
-		if err != nil {
-			smtpu.log.WithError(err).Debug("caught error")
-			*errs = append(*errs, err.Error())
-		}
-	}
-	wg.Done()
-}
-
-func (smtpu *smtpUpstream) statusCollector(ch chan models.SendStatus, statuses *[]models.SendStatus, wg *sync.WaitGroup) {
-	for s := range ch {
-		smtpu.log.Debugf("caught status: %#v", s)
-		*statuses = append(*statuses, s)
-	}
-	wg.Done()
-}
-
 func (smtpu *smtpUpstream) parseTemplate(templateName string, tsv *models.Template) (tmpl *template.Template, err error) {
 	smtpu.log.Debugln("Parsing template ", templateName)
 	templateText, err := base64.StdEncoding.DecodeString(tsv.Data)
@@ -139,56 +118,38 @@ func (smtpu *smtpUpstream) parseTemplate(templateName string, tsv *models.Templa
 func (smtpu *smtpUpstream) newSMTPClient(recipientEmail string, text string) error {
 	host, _, _ := net.SplitHostPort(smtpu.smtpAddress)
 
-	auth := smtp.PlainAuth("", smtpu.smtpLogin, smtpu.smtpPassword, host)
-
-	tlsconfig := &tls.Config{
+	conn, err := tls.Dial("tcp", smtpu.smtpAddress, &tls.Config{
 		InsecureSkipVerify: false,
 		ServerName:         host,
-	}
-
-	conn, err := tls.Dial("tcp", smtpu.smtpAddress, tlsconfig)
+	})
 	if err != nil {
-		smtpu.log.WithError(err).Errorln("Message send failed")
 		return err
 	}
 
 	client, err := smtp.NewClient(conn, host)
 	if err != nil {
-		smtpu.log.WithError(err).Errorln("Message send failed")
 		return err
 	}
 	defer client.Quit()
 
-	if err = client.Auth(auth); err != nil {
-		smtpu.log.WithError(err).Errorln("Message send failed")
+	if err = client.Auth(smtp.PlainAuth("", smtpu.smtpLogin, smtpu.smtpPassword, host)); err != nil {
 		return err
 	}
 	if err = client.Mail(smtpu.senderMail); err != nil {
-		smtpu.log.WithError(err).Errorln("Message send failed")
 		return err
 	}
 
 	if err = client.Rcpt(recipientEmail); err != nil {
-		smtpu.log.WithError(err).Errorln("Message send failed")
 		return err
 	}
 
-	var w io.WriteCloser
-	w, err = client.Data()
+	w, err := client.Data()
 	if err != nil {
-		smtpu.log.WithError(err).Errorln("Message send failed")
 		return err
 	}
 	defer w.Close()
 
-	_, err = w.Write([]byte(text))
-	if err != nil {
-		smtpu.log.WithError(err).Errorln("Message send failed")
-		return err
-	}
-
-	if err != nil {
-		smtpu.log.WithError(err).Errorln("Message send failed")
+	if _, err := w.Write([]byte(text)); err != nil {
 		return err
 	}
 	return nil
@@ -233,6 +194,7 @@ func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *m
 
 		g.Go(func() error {
 			if err := smtpu.newSMTPClient(recipient.Email, *mailtext); err != nil {
+				smtpu.log.WithError(err).Errorln("Message send failed")
 				return err
 			}
 
@@ -290,6 +252,7 @@ func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, 
 	}
 
 	if err = smtpu.newSMTPClient(recipient.Email, *mailtext); err != nil {
+		smtpu.log.WithError(err).Errorln("Message send failed")
 		return nil, err
 	}
 
