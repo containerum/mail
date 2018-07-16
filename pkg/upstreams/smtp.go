@@ -125,6 +125,7 @@ func (smtpu *smtpUpstream) newSMTPClient(recipientEmail string, text string) err
 	if err != nil {
 		return err
 	}
+	defer conn.Close()
 
 	client, err := smtp.NewClient(conn, host)
 	if err != nil {
