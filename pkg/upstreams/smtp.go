@@ -2,16 +2,15 @@ package upstreams
 
 import (
 	"bytes"
+	"context"
+	"encoding/base64"
 	"errors"
 	"html/template"
 	"strings"
-	"sync"
 	texttemplate "text/template"
+
+	"sync"
 	"time"
-
-	"encoding/base64"
-
-	"context"
 
 	"crypto/tls"
 	"net/smtp"
@@ -24,6 +23,7 @@ import (
 	"git.containerum.net/ch/mail-templater/pkg/models"
 	"git.containerum.net/ch/mail-templater/pkg/storages"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 )
 
 type smtpUpstream struct {
@@ -96,8 +96,7 @@ func (smtpu *smtpUpstream) constructMessage(template *texttemplate.Template, rec
 		Body:          text}
 
 	var mailtext bytes.Buffer
-	err := template.Execute(&mailtext, newmail)
-	if err != nil {
+	if err := template.Execute(&mailtext, newmail); err != nil {
 		return nil, err
 	}
 
@@ -197,7 +196,12 @@ func (smtpu *smtpUpstream) newSMTPClient(recipientEmail string, text string) err
 
 //Send
 //Sends email using smtp
-func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *models.Template, request *models.SendRequest) (resp *models.SendResponse, err error) {
+func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *models.Template, request *models.SendRequest) (*models.SendResponse, error) {
+	var errs []string
+	var msgNumber = 0
+
+	resp := &models.SendResponse{Statuses: make([]models.SendStatus, 0)}
+
 	tmpl, err := smtpu.parseTemplate(templateName, tsv)
 	if err != nil {
 		return nil, err
@@ -208,95 +212,62 @@ func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *m
 		return nil, err
 	}
 
-	resp = &models.SendResponse{}
+	var g errgroup.Group
+	for _, r := range request.Message.Recipients {
+		msgNumber++
 
-	mgDoneCh := make(chan struct{}) // for cancelling with context support. Mailgun api has no methods with context
-
-	go func() {
-		defer close(mgDoneCh)
-		wg := sync.WaitGroup{}
-		wg.Add(2) // error and status collectors
-
-		msgNumber := 1
-
-		var errs []string
-		errChan := make(chan error)
-		go smtpu.errCollector(errChan, &errs, &wg)
-
-		statusChan := make(chan models.SendStatus)
-		go smtpu.statusCollector(statusChan, &resp.Statuses, &wg)
-
-		msgWG := sync.WaitGroup{}
-		msgWG.Add(len(request.Message.Recipients))
-		for _, recipient := range request.Message.Recipients {
-			var text string
-			text, err = smtpu.executeTemplate(tmpl, &recipient, request.Message.CommonVariables)
-			if err != nil {
-				errChan <- err
-				msgWG.Done()
-				continue
-			}
-
-			messageID := time.Now().UTC().Format("20060102150405.123456.") + strconv.Itoa(msgNumber)
-			msgNumber++
-			var mailtext *string
-			mailtext, err = smtpu.constructMessage(tmplemail, recipient, messageID, tsv.Subject, text)
-			if err != nil {
-				errChan <- err
-				msgWG.Done()
-				continue
-			}
-
-			go func(recipient models.Recipient, mailtext string, messageID string) {
-				defer msgWG.Done()
-
-				smtpu.log.WithField("id", messageID).Infoln("Message sent")
-				smtpu.log.Infoln("Message sent")
-
-				err = smtpu.newSMTPClient(recipient.Email, mailtext)
-				if err != nil {
-					errChan <- err
-					return
-				}
-
-				statusChan <- models.SendStatus{
-					RecipientID:  recipient.ID,
-					TemplateName: templateName,
-					Status:       "Sent",
-				}
-
-				errChan <- smtpu.msgStorage.PutMessage(messageID, &models.MessagesStorageValue{
-					UserId:       recipient.ID,
-					TemplateName: templateName,
-					Variables:    recipient.Variables,
-					CreatedAt:    time.Now().UTC(),
-					Message:      base64.StdEncoding.EncodeToString([]byte(text)),
-				})
-			}(recipient, *mailtext, messageID)
+		recipient := r
+		var text string
+		text, err = smtpu.executeTemplate(tmpl, &recipient, request.Message.CommonVariables)
+		if err != nil {
+			errs = append(errs, err.Error())
+			continue
 		}
 
-		msgWG.Wait()
-		close(errChan)
-		close(statusChan)
-		wg.Wait()
-		if len(errs) > 0 {
-			err = errors.New(strings.Join(errs, "; "))
+		messageID := time.Now().UTC().Format("20060102150405.123456.") + strconv.Itoa(msgNumber)
+		mailtext, err := smtpu.constructMessage(tmplemail, recipient, messageID, tsv.Subject, text)
+		if err != nil {
+			errs = append(errs, err.Error())
+			continue
 		}
-	}()
 
-	select {
-	case <-ctx.Done():
-		smtpu.log.Info("Operation cancelled")
-		err = ctx.Err()
-	case <-mgDoneCh:
+		g.Go(func() error {
+			if err := smtpu.newSMTPClient(recipient.Email, *mailtext); err != nil {
+				return err
+			}
+
+			resp.Statuses = append(resp.Statuses, models.SendStatus{
+				RecipientID:  recipient.ID,
+				TemplateName: templateName,
+				Status:       "Sent",
+			})
+			smtpu.log.WithField("id", messageID).Infoln("Message sent")
+
+			if err := smtpu.msgStorage.PutMessage(messageID, &models.MessagesStorageValue{
+				UserId:       recipient.ID,
+				TemplateName: templateName,
+				Variables:    recipient.Variables,
+				CreatedAt:    time.Now().UTC(),
+				Message:      base64.StdEncoding.EncodeToString([]byte(text)),
+			}); err != nil {
+				return err
+			}
+			return nil
+		})
+	}
+	if err := g.Wait(); err != nil {
+		return nil, err
 	}
 
+	if len(errs) > 0 {
+		err = errors.New(strings.Join(errs, "; "))
+	}
 	return resp, err
 }
 
 //SimpleSend
 //Sends email using smtp in simple way
-func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, tsv *models.Template, recipient *models.Recipient) (status *models.SendStatus, err error) {
+func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, tsv *models.Template, recipient *models.Recipient) (*models.SendStatus, error) {
 	tmpl, err := smtpu.parseTemplate(templateName, tsv)
 	if err != nil {
 		return nil, err
@@ -318,40 +289,23 @@ func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, 
 		return nil, err
 	}
 
-	mgDoneCh := make(chan struct{})
-	go func(recipient models.Recipient, mailtext string, messageID string) {
-		defer close(mgDoneCh)
-
-		err = smtpu.newSMTPClient(recipient.Email, mailtext)
-		if err != nil {
-			return
-		}
-
-		status = &models.SendStatus{
-			RecipientID:  recipient.ID,
-			TemplateName: templateName,
-			Status:       "Sent",
-		}
-
-		err = smtpu.msgStorage.PutMessage(messageID, &models.MessagesStorageValue{
-			UserId:       recipient.ID,
-			TemplateName: templateName,
-			Variables:    recipient.Variables,
-			CreatedAt:    time.Now().UTC(),
-			Message:      base64.StdEncoding.EncodeToString([]byte(text)),
-		})
-		if err != nil {
-			smtpu.log.WithError(err).Errorln("Message save failed")
-			return
-		}
-	}(*recipient, *mailtext, messageID)
-
-	select {
-	case <-ctx.Done():
-		smtpu.log.Info("Operation cancelled")
-		err = ctx.Err()
-	case <-mgDoneCh:
+	if err = smtpu.newSMTPClient(recipient.Email, *mailtext); err != nil {
+		return nil, err
 	}
 
-	return status, err
+	if err := smtpu.msgStorage.PutMessage(messageID, &models.MessagesStorageValue{
+		UserId:       recipient.ID,
+		TemplateName: templateName,
+		Variables:    recipient.Variables,
+		CreatedAt:    time.Now().UTC(),
+		Message:      base64.StdEncoding.EncodeToString([]byte(text)),
+	}); err != nil {
+		return nil, err
+	}
+
+	return &models.SendStatus{
+		RecipientID:  recipient.ID,
+		TemplateName: templateName,
+		Status:       "Sent",
+	}, err
 }
