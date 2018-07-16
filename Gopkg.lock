@@ -5,7 +5,7 @@
   branch = "develop"
   name = "git.containerum.net/ch/user-manager"
   packages = ["pkg/models"]
-  revision = "262539eb1492b3535e669706287cbe19a6687680"
+  revision = "d77cbe39a0dda44cde643961dcf2b9e7f8e0edd3"
 
 [[projects]]
   name = "github.com/blang/semver"
@@ -30,10 +30,25 @@
   version = "v1.0.1"
 
 [[projects]]
+  name = "github.com/containerum/kube-client"
+  packages = ["pkg/model"]
+  revision = "75fe3ace05f46e266810a284a81b78a323da6bff"
+  version = "v0.26.4"
+
+[[projects]]
   name = "github.com/containerum/utils"
   packages = ["httputil"]
-  revision = "0d81250fc88af062d5836ecd83db9867eb6ee34c"
-  version = "v1.0.3"
+  revision = "f396ca4039012a63f7025cba99a5d514d2824421"
+  version = "v1.0.6"
+
+[[projects]]
+  name = "github.com/docker/distribution"
+  packages = [
+    "digest",
+    "reference"
+  ]
+  revision = "48294d928ced5dd9b378f7fd7c6f5da3ff3f2c89"
+  version = "v2.6.2"
 
 [[projects]]
   branch = "master"
@@ -88,7 +103,7 @@
   branch = "master"
   name = "github.com/gopherjs/gopherjs"
   packages = ["js"]
-  revision = "8dffc02ea1cb8398bb73f30424697c60fcf8d4c5"
+  revision = "0892b62f0d9fb5857760c3cfca837207185117ee"
 
 [[projects]]
   branch = "master"
@@ -99,8 +114,8 @@
 [[projects]]
   name = "github.com/json-iterator/go"
   packages = ["."]
-  revision = "ca39e5af3ece67bbcda3d0f4f56a8e24d9f2dad4"
-  version = "1.1.3"
+  revision = "ab8a2e0c74be9d3be70b3184d9acc634935ded82"
+  version = "1.1.4"
 
 [[projects]]
   name = "github.com/jtolds/gls"
@@ -123,8 +138,8 @@
 [[projects]]
   name = "github.com/modern-go/reflect2"
   packages = ["."]
-  revision = "1df9eeb2bb81f327b96228865c5687bc2194af3f"
-  version = "1.0.0"
+  revision = "4b7aa43c6742a2c18fdef89dd197aaae7dac7ccd"
+  version = "1.0.1"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -174,7 +189,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "027cca12c2d63e3d62b670d901e8a2c95854feec"
+  revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
 
 [[projects]]
   branch = "master"
@@ -186,7 +201,13 @@
     "webdav",
     "webdav/internal/xml"
   ]
-  revision = "db08ff08e8622530d9ed3a0e8ac279f6d4c02196"
+  revision = "d0887baf81f4598189d4e12a37c6da86f0bba4d0"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sync"
+  packages = ["errgroup"]
+  revision = "1d60e4601c6fd243af51cc01ddf169918a5407ca"
 
 [[projects]]
   branch = "master"
@@ -195,7 +216,7 @@
     "unix",
     "windows"
   ]
-  revision = "6c888cc515d3ed83fc103cf1d84468aad274b0a7"
+  revision = "ac767d655b305d4e9612f5f6e33120b9176c4ad4"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -233,8 +254,8 @@
 [[projects]]
   name = "gopkg.in/go-playground/validator.v9"
   packages = ["."]
-  revision = "f28cb45dc0f0f406ba2015cdb59a5203ad220bc2"
-  version = "v9.17.1"
+  revision = "ab2a8a99087e827c9af87ed6777ba897348fb178"
+  version = "v9.20.2"
 
 [[projects]]
   name = "gopkg.in/mailgun/mailgun-go.v1"
@@ -245,8 +266,8 @@
 [[projects]]
   name = "gopkg.in/resty.v1"
   packages = ["."]
-  revision = "fc3ad735b5565cada42d34bc298573fd3fe5adc6"
-  version = "v1.6"
+  revision = "fccc498aed22c31ff3768bcac00795f94149a21d"
+  version = "v1.7.0"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"
@@ -257,6 +278,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "cd206157c6f8328d5f0eb4555ca4b11d66ac6c8ee9573845e14941e3dda2235b"
+  inputs-digest = "d87ef92608e335d3eac97e3e32549b972389291b99af794184055721284d2f76"
   solver-name = "gps-cdcl"
   solver-version = 1
