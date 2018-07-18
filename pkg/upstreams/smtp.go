@@ -19,6 +19,7 @@ import (
 
 	"git.containerum.net/ch/mail-templater/pkg/models"
 	"git.containerum.net/ch/mail-templater/pkg/storages"
+	"git.containerum.net/ch/mail-templater/pkg/utils"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 )
@@ -272,4 +273,36 @@ func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, 
 		TemplateName: templateName,
 		Status:       "Sent",
 	}, err
+}
+
+func (smtpu *smtpUpstream) CheckStatus() error {
+	return utils.Retry(3, 15*time.Second, func() error {
+		host, _, _ := net.SplitHostPort(smtpu.smtpAddress)
+
+		conn, err := tls.Dial("tcp", smtpu.smtpAddress, &tls.Config{
+			InsecureSkipVerify: false,
+			ServerName:         host,
+		})
+		if err != nil {
+			operr, ok := err.(*net.OpError)
+			if ok {
+				if operr.Temporary() || operr.Timeout() {
+					return err
+				}
+			}
+			return &utils.StopRetry{err}
+		}
+		defer conn.Close()
+
+		client, err := smtp.NewClient(conn, host)
+		if err != nil {
+			return &utils.StopRetry{err}
+		}
+		defer client.Quit()
+
+		if err = client.Auth(smtp.PlainAuth("", smtpu.smtpLogin, smtpu.smtpPassword, host)); err != nil {
+			return &utils.StopRetry{err}
+		}
+		return nil
+	})
 }

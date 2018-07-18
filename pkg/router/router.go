@@ -48,7 +48,7 @@ func initMiddlewares(e *gin.Engine, svc *m.Services, enableCORS bool) {
 // Setup sets up routes
 func initRoutes(e *gin.Engine) {
 
-	e.POST("/send", h.SimpleSendHandler)
+	e.POST("/send", m.CheckActive(), h.SimpleSendHandler)
 
 	messages := e.Group("/messages")
 	{

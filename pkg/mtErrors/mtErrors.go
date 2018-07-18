@@ -232,6 +232,18 @@ func ErrInternalError(params ...func(*cherry.Err)) *cherry.Err {
 	}
 	return err
 }
+
+func ErrServiceNotAvailable(params ...func(*cherry.Err)) *cherry.Err {
+	err := &cherry.Err{Message: "Service not available", StatusHTTP: 503, ID: cherry.ErrID{SID: "Mail-Templater", Kind: 0x13}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	for _, param := range params {
+		param(err)
+	}
+	for i, detail := range err.Details {
+		det := renderTemplate(detail)
+		err.Details[i] = det
+	}
+	return err
+}
 func renderTemplate(templText string) string {
 	buf := &bytes.Buffer{}
 	templ, err := template.New("").Parse(templText)

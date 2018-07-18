@@ -31,9 +31,9 @@ func initServer(c *cli.Context) error {
 	ms, err := getMessagesStorage(c)
 	exitOnErr(err)
 	defer ms.Close()
-	us, err := getUpstream(c, ms)
+	us, _, err := getUpstream(c, ms)
 	exitOnErr(err)
-	uss, err := getUpstreamSimple(c, ms)
+	uss, usActive, err := getUpstreamSimple(c, ms)
 	exitOnErr(err)
 	um, err := getUserManagerClient(c)
 	exitOnErr(err)
@@ -44,6 +44,7 @@ func initServer(c *cli.Context) error {
 		Upstream:          us,
 		UpstreamSimple:    uss,
 		UserManagerClient: um,
+		Active:            usActive,
 	}, c.Bool(corsFlag))
 
 	// graceful shutdown support
