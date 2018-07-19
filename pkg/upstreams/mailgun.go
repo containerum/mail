@@ -233,3 +233,7 @@ func (mg *mgUpstream) SimpleSend(ctx context.Context, templateName string, tsv *
 
 	return status, err
 }
+
+func (mg *mgUpstream) CheckStatus() (err error) {
+	return nil
+}

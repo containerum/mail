@@ -2,8 +2,10 @@ package middleware
 
 import (
 	"git.containerum.net/ch/mail-templater/pkg/clients"
+	"git.containerum.net/ch/mail-templater/pkg/mtErrors"
 	"git.containerum.net/ch/mail-templater/pkg/storages"
 	"git.containerum.net/ch/mail-templater/pkg/upstreams"
+	"github.com/containerum/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,11 +21,21 @@ type Services struct {
 	Upstream          upstreams.Upstream
 	UpstreamSimple    upstreams.Upstream
 	UserManagerClient clients.UserManagerClient
+	Active            bool
 }
 
 // RegisterServices adds services to context
 func RegisterServices(svc *Services) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set(MTServices, svc)
+	}
+}
+
+func CheckActive() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		svc := c.MustGet(MTServices).(*Services)
+		if !svc.Active {
+			gonic.Gonic(mtErrors.ErrServiceNotAvailable(), c)
+		}
 	}
 }

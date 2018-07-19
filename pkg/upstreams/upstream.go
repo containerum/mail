@@ -13,4 +13,6 @@ type Upstream interface {
 
 	// SimpleSend sends email to one client
 	SimpleSend(ctx context.Context, templateName string, tsv *models.Template, recipient *models.Recipient) (status *models.SendStatus, err error)
+
+	CheckStatus() (err error)
 }
