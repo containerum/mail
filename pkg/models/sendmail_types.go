@@ -12,7 +12,7 @@ type SimpleSendRequest struct {
 	Variables map[string]interface{} `json:"variables"`
 }
 
-// SimpleSendResponse -- responce to send mail using simple send method
+// SimpleSendResponse -- response to send mail using simple send method
 //
 // swagger:model
 type SimpleSendResponse struct {
@@ -32,7 +32,7 @@ type Recipient struct {
 	Variables map[string]interface{} `json:"variables"`
 }
 
-// SimpleSendResponse -- responce to send mail using send method
+// SimpleSendResponse -- response to send mail using send method
 //
 // swagger:model
 type SendRequest struct {
@@ -44,7 +44,7 @@ type SendRequest struct {
 	} `json:"message"`
 }
 
-// SendResponse -- responce to send mail using send method
+// SendResponse -- response to send mail using send method
 //
 // swagger:model
 type SendResponse struct {

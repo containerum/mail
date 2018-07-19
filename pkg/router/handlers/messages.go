@@ -108,7 +108,7 @@ func MessageGetHandler(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, &models.MessageGetResponse{
-		Id:                   id,
+		ID:                   id,
 		MessagesStorageValue: v,
 	})
 }

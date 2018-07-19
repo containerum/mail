@@ -22,7 +22,7 @@ func TestMessagesStorage(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		testValue := &models.MessagesStorageValue{
-			UserId:       "user",
+			UserID:       "user",
 			TemplateName: "template",
 			Variables:    map[string]interface{}{"a": "1", "b": "2"},
 			CreatedAt:    time.Now().UTC(),
