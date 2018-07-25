@@ -22,7 +22,7 @@ Mail is a mail server and template manager for [Containerum](https://github.com/
 ```
 
 ## Contributions
-Please submit all contributions concerning Mail component to this repository. Contributing guidelines are available [here](https://github.com/containerum/mail/blob/master/CONTRIBUTING.md).
+Please submit all contributions concerning Mail component to this repository. Contributing guidelines are available [here](https://github.com/containerum/containerum/blob/master/CONTRIBUTING.md).
 
 ## License
 Mail project is licensed under the terms of the Apache License Version 2.0. Please see LICENSE in this repository for more details.
