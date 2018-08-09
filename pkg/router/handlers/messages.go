@@ -66,7 +66,7 @@ func MessageListGetHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(mtErrors.ErrUnableGetMessagesList(), ctx)
+			gonic.Gonic(mterrors.ErrUnableGetMessagesList(), ctx)
 		}
 		return
 	}
@@ -103,7 +103,7 @@ func MessageGetHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(mtErrors.ErrUnableGetMessage(), ctx)
+			gonic.Gonic(mterrors.ErrUnableGetMessage(), ctx)
 		}
 		return
 	}

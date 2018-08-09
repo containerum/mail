@@ -39,7 +39,7 @@ func TemplateListGetHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(mtErrors.ErrUnableGetMessagesList(), ctx)
+			gonic.Gonic(mterrors.ErrUnableGetMessagesList(), ctx)
 		}
 		return
 	}
@@ -88,7 +88,7 @@ func TemplateGetHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(mtErrors.ErrUnableGetTemplate(), ctx)
+			gonic.Gonic(mterrors.ErrUnableGetTemplate(), ctx)
 		}
 		return
 	}
@@ -117,13 +117,13 @@ func TemplateGetHandler(ctx *gin.Context) {
 func TemplateCreateHandler(ctx *gin.Context) {
 	var request models.Template
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(mtErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(mterrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateCreateTemplate(request)
 	if errs != nil {
-		gonic.Gonic(mtErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(mterrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -135,7 +135,7 @@ func TemplateCreateHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(mtErrors.ErrUnableSaveTemplate(), ctx)
+			gonic.Gonic(mterrors.ErrUnableSaveTemplate(), ctx)
 		}
 		return
 	}
@@ -171,20 +171,20 @@ func TemplateCreateHandler(ctx *gin.Context) {
 func TemplateUpdateHandler(ctx *gin.Context) {
 	var request models.Template
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(mtErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(mterrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateUpdateTemplate(request)
 	if errs != nil {
-		gonic.Gonic(mtErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(mterrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	name := ctx.Param("name")
 	version := ctx.Query("version")
 	if version == "" {
-		gonic.Gonic(mtErrors.ErrRequestValidationFailed().AddDetailsErr(fmt.Errorf(isRequiredQuery, "Version")), ctx)
+		gonic.Gonic(mterrors.ErrRequestValidationFailed().AddDetailsErr(fmt.Errorf(isRequiredQuery, "Version")), ctx)
 		return
 	}
 
@@ -196,7 +196,7 @@ func TemplateUpdateHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(mtErrors.ErrUnableUpdateTemplate(), ctx)
+			gonic.Gonic(mterrors.ErrUnableUpdateTemplate(), ctx)
 		}
 		return
 	}
@@ -217,7 +217,7 @@ func TemplateUpdateHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(mtErrors.ErrUnableUpdateTemplate(), ctx)
+			gonic.Gonic(mterrors.ErrUnableUpdateTemplate(), ctx)
 		}
 		return
 	}
@@ -273,7 +273,7 @@ func TemplateDeleteHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(mtErrors.ErrUnableDeleteTemplate(), ctx)
+			gonic.Gonic(mterrors.ErrUnableDeleteTemplate(), ctx)
 		}
 		return
 	}

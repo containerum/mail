@@ -34,13 +34,13 @@ import (
 func SimpleSendHandler(ctx *gin.Context) {
 	var request models.SimpleSendRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(mtErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(mterrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateSimpleSendRequest(request)
 	if errs != nil {
-		gonic.Gonic(mtErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(mterrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -49,7 +49,7 @@ func SimpleSendHandler(ctx *gin.Context) {
 	_, tv, err := svc.TemplateStorage.GetLatestVersionTemplate(request.Template)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(mtErrors.ErrTemplateNotExist(), ctx)
+		gonic.Gonic(mterrors.ErrTemplateNotExist(), ctx)
 		return
 	}
 
@@ -60,7 +60,7 @@ func SimpleSendHandler(ctx *gin.Context) {
 		if ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
-			gonic.Gonic(mtErrors.ErrMailSendFailed().AddDetailsErr(err), ctx)
+			gonic.Gonic(mterrors.ErrMailSendFailed().AddDetailsErr(err), ctx)
 		}
 		return
 	}
@@ -75,7 +75,7 @@ func SimpleSendHandler(ctx *gin.Context) {
 	status, err := svc.UpstreamSimple.SimpleSend(ctx, request.Template, tv, recipient)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(mtErrors.ErrMailSendFailed(), ctx)
+		gonic.Gonic(mterrors.ErrMailSendFailed(), ctx)
 		return
 	}
 	ctx.JSON(http.StatusAccepted, models.SimpleSendResponse{
@@ -115,13 +115,13 @@ func SendHandler(ctx *gin.Context) {
 	version, hasVersion := ctx.GetQuery("version")
 	var request models.SendRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(mtErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(mterrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateSendRequest(request)
 	if errs != nil {
-		gonic.Gonic(mtErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(mterrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -139,14 +139,14 @@ func SendHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(mtErrors.ErrMailSendFailed(), ctx)
+			gonic.Gonic(mterrors.ErrMailSendFailed(), ctx)
 		}
 		return
 	}
 	status, err := svc.Upstream.Send(ctx, name, tv, &request)
 	if err != nil {
 		ctx.Error(err)
-		gonic.Gonic(mtErrors.ErrMailSendFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(mterrors.ErrMailSendFailed().AddDetailsErr(err), ctx)
 		return
 	}
 	ctx.JSON(http.StatusAccepted, status)

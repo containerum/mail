@@ -86,7 +86,7 @@ func (s *boltTemplateStorage) GetTemplates(templateName string) (map[string]*mod
 		b := tx.Bucket([]byte(templateName))
 		if b == nil {
 			loge.Infoln("Cannot find bucket")
-			return mtErrors.ErrTemplateNotExist()
+			return mterrors.ErrTemplateNotExist()
 		}
 
 		loge.Debugf("Iterating over bucket")
@@ -99,7 +99,7 @@ func (s *boltTemplateStorage) GetTemplates(templateName string) (map[string]*mod
 		})
 		if err != nil {
 			loge.WithError(err).Errorln("Iterating error")
-			return mtErrors.ErrUnableGetTemplatesList()
+			return mterrors.ErrUnableGetTemplatesList()
 		}
 		return nil
 	})
@@ -124,14 +124,14 @@ func (s *boltTemplateStorage) GetTemplate(templateName, templateVersion string) 
 		b := tx.Bucket([]byte(templateName))
 		if b == nil {
 			loge.Infoln("Cannot find bucket")
-			return mtErrors.ErrTemplateNotExist() //models.ErrTemplateNotExists
+			return mterrors.ErrTemplateNotExist() //models.ErrTemplateNotExists
 		}
 
 		loge.Debugln("Getting value")
 		templateB := b.Get([]byte(templateVersion))
 		if templateB == nil {
 			loge.Infoln("Cannot find version")
-			return mtErrors.ErrTemplateVersionNotExist() //models.ErrTemplateVersionNotExists
+			return mterrors.ErrTemplateVersionNotExist() //models.ErrTemplateVersionNotExists
 		}
 		return json.Unmarshal(templateB, &templateValue)
 	})
@@ -156,7 +156,7 @@ func (s *boltTemplateStorage) GetLatestVersionTemplate(templateName string) (*st
 		b := tx.Bucket([]byte(templateName))
 		if b == nil {
 			loge.Infoln("Cannot find bucket")
-			return mtErrors.ErrTemplateNotExist() //models.ErrTemplateNotExists
+			return mterrors.ErrTemplateNotExist() //models.ErrTemplateNotExists
 		}
 
 		loge.Debugf("Iterating over bucket")
@@ -184,7 +184,7 @@ func (s *boltTemplateStorage) GetLatestVersionTemplate(templateName string) (*st
 		templateB := b.Get([]byte(latestVerStr))
 		if templateB == nil {
 			loge.Infof("Cannot find version %v", latestVerStr)
-			return mtErrors.ErrTemplateVersionNotExist() //models.ErrTemplateVersionNotExists
+			return mterrors.ErrTemplateVersionNotExist() //models.ErrTemplateVersionNotExists
 		}
 		return json.Unmarshal(templateB, &templateValue)
 	})
@@ -208,7 +208,7 @@ func (s *boltTemplateStorage) PutTemplate(templateName, templateVersion, templat
 		b, err := tx.CreateBucketIfNotExists([]byte(templateName))
 		if err != nil {
 			loge.WithError(err)
-			return mtErrors.ErrUnableSaveTemplate()
+			return mterrors.ErrUnableSaveTemplate()
 		}
 
 		createdAt := time.Now().UTC()
@@ -223,13 +223,13 @@ func (s *boltTemplateStorage) PutTemplate(templateName, templateVersion, templat
 		if new {
 			if b.Get([]byte(templateVersion)) != nil {
 				loge.Errorln("This version of template already exists:", templateName, templateVersion)
-				return mtErrors.ErrTemplateAlreadyExists()
+				return mterrors.ErrTemplateAlreadyExists()
 			}
 		}
 
 		if err := b.Put([]byte(templateVersion), value); err != nil {
 			loge.WithError(err).Errorln("Put kv data failed")
-			return mtErrors.ErrUnableSaveTemplate()
+			return mterrors.ErrUnableSaveTemplate()
 		}
 
 		return nil
@@ -254,18 +254,18 @@ func (s *boltTemplateStorage) DeleteTemplate(templateName, templateVersion strin
 		b := tx.Bucket([]byte(templateName))
 		if b == nil {
 			loge.Infoln("Cannot find bucket")
-			return mtErrors.ErrTemplateNotExist() //models.ErrTemplateNotExists
+			return mterrors.ErrTemplateNotExist() //models.ErrTemplateNotExists
 		}
 
 		loge.Debugln("Deleting entry")
 		// check if entry exists
 		if v := b.Get([]byte(templateVersion)); v == nil {
 			loge.Infoln("Cannot find version")
-			return mtErrors.ErrTemplateVersionNotExist()
+			return mterrors.ErrTemplateVersionNotExist()
 		}
 		if err := b.Delete([]byte(templateVersion)); err != nil {
 			loge.WithError(err).Errorln("Version delete failed")
-			return mtErrors.ErrUnableDeleteTemplate()
+			return mterrors.ErrUnableDeleteTemplate()
 		}
 
 		return nil
@@ -286,10 +286,10 @@ func (s *boltTemplateStorage) DeleteTemplates(templateName string) error {
 		loge.Debugln("Deleting bucket")
 		if err := tx.DeleteBucket([]byte(templateName)); err == bolt.ErrBucketNotFound {
 			loge.WithError(err).Errorf("Bucket not found")
-			return mtErrors.ErrTemplateNotExist()
+			return mterrors.ErrTemplateNotExist()
 		} else if err != nil {
 			loge.WithError(err).Errorln("Bucket delete failed")
-			return mtErrors.ErrUnableDeleteTemplate()
+			return mterrors.ErrUnableDeleteTemplate()
 		}
 
 		return nil

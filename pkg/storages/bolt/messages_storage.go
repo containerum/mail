@@ -85,7 +85,7 @@ func (s *boltMessagesStorage) GetMessageList(page int, perPage int) (*models.Mes
 
 			if err := json.Unmarshal(v, &value); err != nil {
 				loge.WithError(err).Errorln("Value unmarshal failed")
-				return mtErrors.ErrUnableGetMessagesList()
+				return mterrors.ErrUnableGetMessagesList()
 			}
 
 			if messageNumber >= startMessage {
@@ -131,12 +131,12 @@ func (s *boltMessagesStorage) GetMessage(id string) (*models.MessagesStorageValu
 		valueB := b.Get([]byte(id))
 		if valueB == nil {
 			loge.Infoln("Cannot find value")
-			return mtErrors.ErrMessageNotExist() //models.ErrMessageNotExists
+			return mterrors.ErrMessageNotExist() //models.ErrMessageNotExists
 		}
 
 		if err := json.Unmarshal(valueB, &value); err != nil {
 			loge.WithError(err).Errorln("Value unmarshal failed")
-			return mtErrors.ErrUnableGetMessage()
+			return mterrors.ErrUnableGetMessage()
 		}
 
 		return nil
@@ -162,7 +162,7 @@ func (s *boltMessagesStorage) PutMessage(id string, value *models.MessagesStorag
 		valueB, err := json.Marshal(value)
 		if err != nil {
 			loge.WithError(err).Errorln("Error marshalling value")
-			return mtErrors.ErrUnableSaveMessage()
+			return mterrors.ErrUnableSaveMessage()
 		}
 		return b.Put([]byte(id), valueB)
 	})

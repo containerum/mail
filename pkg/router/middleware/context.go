@@ -35,7 +35,7 @@ func CheckActive() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		svc := c.MustGet(MTServices).(*Services)
 		if !svc.Active {
-			gonic.Gonic(mtErrors.ErrServiceNotAvailable(), c)
+			gonic.Gonic(mterrors.ErrServiceNotAvailable(), c)
 		}
 	}
 }

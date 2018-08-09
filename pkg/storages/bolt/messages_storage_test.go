@@ -35,7 +35,7 @@ func TestMessagesStorage(t *testing.T) {
 		So(v, ShouldResemble, testValue)
 
 		_, err = storage.GetMessage("blah")
-		So(err.Error(), ShouldEqual, mtErrors.ErrMessageNotExist().Error())
+		So(err.Error(), ShouldEqual, mterrors.ErrMessageNotExist().Error())
 
 		// cleanup
 		So(storage.Close(), ShouldBeNil)
