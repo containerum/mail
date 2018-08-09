@@ -176,37 +176,40 @@ func getMessagesStorage(c *cli.Context) (storages.MessagesStorage, error) {
 	}
 }
 
-func getUpstream(c *cli.Context, msgStorage storages.MessagesStorage) (upstreams.Upstream, error) {
+func getUpstream(c *cli.Context, msgStorage storages.MessagesStorage) (upstreams.Upstream, bool, error) {
 	switch c.String(upstreamFlag) {
 	case "mailgun":
 		mg, err := mailgun.NewMailgunFromEnv()
 		if err != nil {
-			return nil, err
+			return nil, true, err
 		}
-		return upstreams.NewMailgun(mg, msgStorage, c.String(senderNameFlag), c.String(senderMailFlag)), nil
+		return upstreams.NewMailgun(mg, msgStorage, c.String(senderNameFlag), c.String(senderMailFlag)), err == nil, nil
 	case "smtp":
-		return upstreams.NewSMTPUpstream(msgStorage, c.String(senderNameFlag), c.String(senderMailFlag), c.String(smtpAddrFlag), c.String(smtpLoginFlag), c.String(smtpPasswordFlag)), nil
+		upstream := upstreams.NewSMTPUpstream(msgStorage, c.String(senderNameFlag), c.String(senderMailFlag), c.String(smtpAddrFlag), c.String(smtpLoginFlag), c.String(smtpPasswordFlag))
+		return upstream, true, nil
 	case "dummy":
-		return upstreams.NewDummyUpstream(), nil
+		return upstreams.NewDummyUpstream(), true, nil
 	default:
-		return nil, errors.New("invalid upstream")
+		return nil, true, errors.New("invalid upstream")
 	}
 }
 
-func getUpstreamSimple(c *cli.Context, msgStorage storages.MessagesStorage) (upstreams.Upstream, error) {
+func getUpstreamSimple(c *cli.Context, msgStorage storages.MessagesStorage) (upstreams.Upstream, bool, error) {
 	switch c.String(upstreamSimpleFlag) {
 	case "mailgun":
 		mg, err := mailgun.NewMailgunFromEnv()
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
-		return upstreams.NewMailgun(mg, msgStorage, c.String(senderNameSimpleFlag), c.String(senderMailSimpleFlag)), nil
+		return upstreams.NewMailgun(mg, msgStorage, c.String(senderNameSimpleFlag), c.String(senderMailSimpleFlag)), err == nil, nil
 	case "smtp":
-		return upstreams.NewSMTPUpstream(msgStorage, c.String(senderNameSimpleFlag), c.String(senderMailSimpleFlag), c.String(smtpAddrFlag), c.String(smtpLoginFlag), c.String(smtpPasswordFlag)), nil
+		upstream := upstreams.NewSMTPUpstream(msgStorage, c.String(senderNameSimpleFlag), c.String(senderMailSimpleFlag), c.String(smtpAddrFlag), c.String(smtpLoginFlag), c.String(smtpPasswordFlag))
+		err := upstream.CheckStatus()
+		return upstream, err == nil, nil
 	case "dummy":
-		return upstreams.NewDummyUpstream(), nil
+		return upstreams.NewDummyUpstream(), true, nil
 	default:
-		return nil, errors.New("invalid upstream")
+		return nil, true, errors.New("invalid upstream")
 	}
 }
 

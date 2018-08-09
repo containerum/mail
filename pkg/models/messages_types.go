@@ -6,7 +6,7 @@ import "time"
 //
 // swagger:model
 type MessageGetResponse struct {
-	Id string `json:"id"`
+	ID string `json:"id"`
 	// swagger: allOf
 	*MessagesStorageValue
 }
@@ -15,7 +15,7 @@ type MessageGetResponse struct {
 //
 // swagger:model
 type MessagesStorageValue struct {
-	UserId       string                 `json:"user_id"`
+	UserID       string                 `json:"user_id"`
 	TemplateName string                 `json:"template_name"`
 	Variables    map[string]interface{} `json:"variables,omitempty"`
 	CreatedAt    time.Time              `json:"created_at"`

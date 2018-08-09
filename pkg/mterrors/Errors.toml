@@ -1,6 +1,6 @@
 # File for noice errors generation
 
-Name = "mtErrors"
+Name = "mterrors"
 SID = "Mail-Templater"
 
 # errors
@@ -118,3 +118,9 @@ SID = "Mail-Templater"
     StatusHTTP = 500
     Message = "Internal error"
     Kind = 18
+
+[[error]]
+    Name = "ErrServiceNotAvailable"
+    StatusHTTP = 503
+    Message = "Service not available"
+    Kind = 19

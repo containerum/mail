@@ -643,7 +643,7 @@
         },
         "user_id": {
           "type": "string",
-          "x-go-name": "UserId"
+          "x-go-name": "UserID"
         },
         "variables": {
           "type": "object",
@@ -735,7 +735,7 @@
         },
         "user_id": {
           "type": "string",
-          "x-go-name": "UserId"
+          "x-go-name": "UserID"
         },
         "variables": {
           "type": "object",
@@ -915,7 +915,7 @@
       "x-go-package": "git.containerum.net/ch/mail-templater/vendor/git.containerum.net/ch/user-manager/pkg/models"
     },
     "SendRequest": {
-      "description": "SimpleSendResponse -- responce to send mail using send method",
+      "description": "SimpleSendResponse -- response to send mail using send method",
       "type": "object",
       "properties": {
         "delay": {
@@ -930,7 +930,7 @@
       "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
     },
     "SendResponse": {
-      "description": "SendResponse -- responce to send mail using send method",
+      "description": "SendResponse -- response to send mail using send method",
       "type": "object",
       "properties": {
         "email_list": {
@@ -990,7 +990,7 @@
       "x-go-package": "git.containerum.net/ch/mail-templater/pkg/models"
     },
     "SimpleSendResponse": {
-      "description": "SimpleSendResponse -- responce to send mail using simple send method",
+      "description": "SimpleSendResponse -- response to send mail using simple send method",
       "type": "object",
       "properties": {
         "user_id": {

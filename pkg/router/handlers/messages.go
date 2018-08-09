@@ -9,7 +9,7 @@ import (
 	"strconv"
 
 	"git.containerum.net/ch/mail-templater/pkg/models"
-	"git.containerum.net/ch/mail-templater/pkg/mtErrors"
+	"git.containerum.net/ch/mail-templater/pkg/mterrors"
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
 	"github.com/containerum/cherry/adaptors/gonic"
 )
@@ -66,7 +66,7 @@ func MessageListGetHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(mtErrors.ErrUnableGetMessagesList(), ctx)
+			gonic.Gonic(mterrors.ErrUnableGetMessagesList(), ctx)
 		}
 		return
 	}
@@ -103,12 +103,12 @@ func MessageGetHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(mtErrors.ErrUnableGetMessage(), ctx)
+			gonic.Gonic(mterrors.ErrUnableGetMessage(), ctx)
 		}
 		return
 	}
 	ctx.JSON(http.StatusOK, &models.MessageGetResponse{
-		Id:                   id,
+		ID:                   id,
 		MessagesStorageValue: v,
 	})
 }

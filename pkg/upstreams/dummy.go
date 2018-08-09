@@ -45,3 +45,7 @@ func (du *dummyUpstream) SimpleSend(ctx context.Context, templateName string, ts
 	}
 	return
 }
+
+func (du *dummyUpstream) CheckStatus() (err error) {
+	return nil
+}
