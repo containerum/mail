@@ -1,6 +1,6 @@
 # File for noice errors generation
 
-Name = "mtErrors"
+Name = "mterrors"
 SID = "Mail-Templater"
 
 # errors

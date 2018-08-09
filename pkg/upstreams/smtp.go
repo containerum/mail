@@ -208,7 +208,7 @@ func (smtpu *smtpUpstream) Send(ctx context.Context, templateName string, tsv *m
 			smtpu.log.WithField("id", messageID).Infoln("Message sent")
 
 			if err := smtpu.msgStorage.PutMessage(messageID, &models.MessagesStorageValue{
-				UserId:       recipient.ID,
+				UserID:       recipient.ID,
 				TemplateName: templateName,
 				Variables:    recipient.Variables,
 				CreatedAt:    time.Now().UTC(),
@@ -259,7 +259,7 @@ func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, 
 	}
 
 	if err := smtpu.msgStorage.PutMessage(messageID, &models.MessagesStorageValue{
-		UserId:       recipient.ID,
+		UserID:       recipient.ID,
 		TemplateName: templateName,
 		Variables:    recipient.Variables,
 		CreatedAt:    time.Now().UTC(),
@@ -290,18 +290,18 @@ func (smtpu *smtpUpstream) CheckStatus() error {
 					return err
 				}
 			}
-			return &utils.StopRetry{err}
+			return &utils.StopRetry{Err: err}
 		}
 		defer conn.Close()
 
 		client, err := smtp.NewClient(conn, host)
 		if err != nil {
-			return &utils.StopRetry{err}
+			return &utils.StopRetry{Err: err}
 		}
 		defer client.Quit()
 
 		if err = client.Auth(smtp.PlainAuth("", smtpu.smtpLogin, smtpu.smtpPassword, host)); err != nil {
-			return &utils.StopRetry{err}
+			return &utils.StopRetry{Err: err}
 		}
 		return nil
 	})

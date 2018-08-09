@@ -153,7 +153,7 @@ func (mg *mgUpstream) Send(ctx context.Context, templateName string, tsv *models
 					Status:       status,
 				}
 				errChan <- mg.msgStorage.PutMessage(id, &models.MessagesStorageValue{
-					UserId:       recipient.ID,
+					UserID:       recipient.ID,
 					TemplateName: templateName,
 					Variables:    recipient.Variables,
 					CreatedAt:    time.Now().UTC(),
@@ -216,7 +216,7 @@ func (mg *mgUpstream) SimpleSend(ctx context.Context, templateName string, tsv *
 		}
 
 		err = mg.msgStorage.PutMessage(id, &models.MessagesStorageValue{
-			UserId:       recipient.ID,
+			UserID:       recipient.ID,
 			TemplateName: templateName,
 			Variables:    recipient.Variables,
 			CreatedAt:    time.Now().UTC(),

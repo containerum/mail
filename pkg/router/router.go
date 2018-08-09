@@ -5,7 +5,7 @@ import (
 
 	"net/http"
 
-	"git.containerum.net/ch/mail-templater/pkg/mtErrors"
+	"git.containerum.net/ch/mail-templater/pkg/mterrors"
 	h "git.containerum.net/ch/mail-templater/pkg/router/handlers"
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
 	"git.containerum.net/ch/mail-templater/static"
@@ -40,7 +40,7 @@ func initMiddlewares(e *gin.Engine, svc *m.Services, enableCORS bool) {
 		StaticFS("/", static.HTTP)
 	/* System */
 	e.Use(ginrus.Ginrus(logrus.WithField("component", "gin"), time.RFC3339, true))
-	e.Use(gonic.Recovery(mtErrors.ErrInternalError, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
+	e.Use(gonic.Recovery(mterrors.ErrInternalError, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
 	/* Custom */
 	e.Use(m.RegisterServices(svc))
 }

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"git.containerum.net/ch/mail-templater/pkg/models"
-	"git.containerum.net/ch/mail-templater/pkg/mtErrors"
+	"git.containerum.net/ch/mail-templater/pkg/mterrors"
 	"github.com/sirupsen/logrus"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -22,7 +22,7 @@ func TestMessagesStorage(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		testValue := &models.MessagesStorageValue{
-			UserId:       "user",
+			UserID:       "user",
 			TemplateName: "template",
 			Variables:    map[string]interface{}{"a": "1", "b": "2"},
 			CreatedAt:    time.Now().UTC(),
@@ -35,7 +35,7 @@ func TestMessagesStorage(t *testing.T) {
 		So(v, ShouldResemble, testValue)
 
 		_, err = storage.GetMessage("blah")
-		So(err.Error(), ShouldEqual, mtErrors.ErrMessageNotExist().Error())
+		So(err.Error(), ShouldEqual, mterrors.ErrMessageNotExist().Error())
 
 		// cleanup
 		So(storage.Close(), ShouldBeNil)

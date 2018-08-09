@@ -3,4 +3,4 @@ ch-mail-templater
 .idea
 
 # used for testing
-*.db
+messages.db
