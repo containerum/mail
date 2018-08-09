@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"git.containerum.net/ch/mail-templater/pkg/models"
-	"git.containerum.net/ch/mail-templater/pkg/mtErrors"
+	"git.containerum.net/ch/mail-templater/pkg/mterrors"
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
 	"git.containerum.net/ch/mail-templater/pkg/validation"
 	"github.com/containerum/cherry"

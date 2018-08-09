@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"git.containerum.net/ch/mail-templater/pkg/models"
-	"git.containerum.net/ch/mail-templater/pkg/mtErrors"
+	"git.containerum.net/ch/mail-templater/pkg/mterrors"
 	"git.containerum.net/ch/mail-templater/pkg/storages"
 	"github.com/boltdb/bolt"
 	"github.com/json-iterator/go"

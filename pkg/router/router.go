@@ -5,7 +5,7 @@ import (
 
 	"net/http"
 
-	"git.containerum.net/ch/mail-templater/pkg/mtErrors"
+	"git.containerum.net/ch/mail-templater/pkg/mterrors"
 	h "git.containerum.net/ch/mail-templater/pkg/router/handlers"
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
 	"git.containerum.net/ch/mail-templater/static"

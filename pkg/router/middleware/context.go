@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"git.containerum.net/ch/mail-templater/pkg/clients"
-	"git.containerum.net/ch/mail-templater/pkg/mtErrors"
+	"git.containerum.net/ch/mail-templater/pkg/mterrors"
 	"git.containerum.net/ch/mail-templater/pkg/storages"
 	"git.containerum.net/ch/mail-templater/pkg/upstreams"
 	"github.com/containerum/cherry/adaptors/gonic"

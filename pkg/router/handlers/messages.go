@@ -9,7 +9,7 @@ import (
 	"strconv"
 
 	"git.containerum.net/ch/mail-templater/pkg/models"
-	"git.containerum.net/ch/mail-templater/pkg/mtErrors"
+	"git.containerum.net/ch/mail-templater/pkg/mterrors"
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
 	"github.com/containerum/cherry/adaptors/gonic"
 )
