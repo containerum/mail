@@ -9,6 +9,8 @@ RUN apk --no-cache add ca-certificates
 
 # app
 COPY --from=builder /bin/mail-templater /
+COPY --from=builder /templates.db /
+
 
 # timezone data
 ENV GIN_MODE=debug \
