@@ -7,10 +7,11 @@ RUN CGO_ENABLED=0 go build -v -tags "jsoniter" -ldflags="-w -s -extldflags '-sta
 FROM alpine:3.7
 RUN apk --no-cache add ca-certificates
 
+VOLUME ["/storage"]
+
 # app
 COPY --from=builder /bin/mail-templater /
-COPY --from=builder /templates.db /
-
+COPY --from=builder /templates.db /storage/
 
 # timezone data
 ENV GIN_MODE=debug \
@@ -28,8 +29,6 @@ ENV GIN_MODE=debug \
     CH_MAIL_SMTP_ADDR=mail:465 \
     CH_MAIL_SMTP_LOGIN=noreply-test@containerum.io \
     CH_MAIL_SMTP_PASSWORD=verystrongpassword
-
-VOLUME ["/storage"]
 
 EXPOSE 7070
 
