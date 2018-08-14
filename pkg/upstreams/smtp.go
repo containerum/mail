@@ -276,6 +276,7 @@ func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, 
 }
 
 func (smtpu *smtpUpstream) CheckStatus() error {
+	smtpu.log.Debugln("Checking SMTP server connection")
 	return utils.Retry(3, 15*time.Second, func() error {
 		host, _, _ := net.SplitHostPort(smtpu.smtpAddress)
 
