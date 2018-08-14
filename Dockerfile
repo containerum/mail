@@ -11,13 +11,13 @@ VOLUME ["/storage"]
 
 # app
 COPY --from=builder /bin/mail-templater /
-COPY --from=builder /templates.db /storage/
+COPY --from=builder /go/src/git.containerum.net/ch/mail-templater/templates.db /storage/
 
 # timezone data
 ENV GIN_MODE=debug \
     CH_MAIL_LOG_LEVEL=4 \
-    CH_MAIL_TEMPLATE_DB="../../storage/template.db" \
-    CH_MAIL_MESSAGES_DB="../../storage/messages.db" \
+    CH_MAIL_TEMPLATE_DB="/storage/template.db" \
+    CH_MAIL_MESSAGES_DB="/storage/messages.db" \
     CH_MAIL_UPSTREAM=smtp \
     CH_MAIL_UPSTREAM_SIMPLE=smtp \
     CH_MAIL_SENDER_NAME_SIMPLE=containerum \
