@@ -205,6 +205,9 @@ func getUpstreamSimple(c *cli.Context, msgStorage storages.MessagesStorage) (ups
 	case "smtp":
 		upstream := upstreams.NewSMTPUpstream(msgStorage, c.String(senderNameSimpleFlag), c.String(senderMailSimpleFlag), c.String(smtpAddrFlag), c.String(smtpLoginFlag), c.String(smtpPasswordFlag))
 		err := upstream.CheckStatus()
+		if err!=nil {
+			logrus.Errorf("SMTP Check failed: %v", err)
+		}
 		return upstream, err == nil, nil
 	case "dummy":
 		return upstreams.NewDummyUpstream(), true, nil
