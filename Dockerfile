@@ -3,6 +3,7 @@ WORKDIR src/git.containerum.net/ch/mail-templater
 COPY . .
 WORKDIR cmd/mail-templater
 RUN CGO_ENABLED=0 go build -v -tags "jsoniter" -ldflags="-w -s -extldflags '-static'" -o /bin/mail-templater
+COPY templates.db /tmp/templates.db
 
 FROM alpine:3.7
 RUN apk --no-cache add ca-certificates
@@ -11,7 +12,7 @@ VOLUME ["/storage"]
 
 # app
 COPY --from=builder /bin/mail-templater /
-COPY --from=builder /go/src/git.containerum.net/ch/mail-templater/templates.db /storage/
+COPY --from=builder /tmp/templates.db /storage/
 
 # timezone data
 ENV GIN_MODE=debug \
