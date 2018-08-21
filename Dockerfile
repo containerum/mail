@@ -17,7 +17,7 @@ COPY --from=builder /tmp/templates.db /storage/
 # timezone data
 ENV GIN_MODE=debug \
     CH_MAIL_LOG_LEVEL=4 \
-    CH_MAIL_TEMPLATE_DB="/storage/template.db" \
+    CH_MAIL_TEMPLATE_DB="/storage/templates.db" \
     CH_MAIL_MESSAGES_DB="/storage/messages.db" \
     CH_MAIL_UPSTREAM=smtp \
     CH_MAIL_UPSTREAM_SIMPLE=smtp \
