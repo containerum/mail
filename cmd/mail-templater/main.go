@@ -11,10 +11,12 @@ import (
 //go:generate swagger flatten ../../swagger.json -o ../../swagger.json
 //go:generate swagger validate ../../swagger.json
 
+var version string
+
 func main() {
 	app := cli.NewApp()
-	app.Version = "0.1.0"
-	app.Name = "Mail-Templater"
+	app.Name = "mail-templater"
+	app.Version = version
 	app.Usage = "service for making and sending emails"
 	app.Flags = flags
 

@@ -1,16 +1,15 @@
 package model
 
-type UserGroupAccess uint
+type UserGroupAccess string
 
 const (
-	AccessNone UserGroupAccess = iota
-	AccessGuest
-	AccessMember
-	AccessMaster
-	AccessAdmin
+	OwnerAccess  UserGroupAccess = "owner"
+	AdminAccess  UserGroupAccess = "admin"
+	MasterAccess UserGroupAccess = "master"
+	MemberAccess UserGroupAccess = "member"
+	GuestAccess  UserGroupAccess = "guest"
+	NoAccess     UserGroupAccess = "none"
 )
-
-//go:generate enumer -type UserGroupAccess -trimprefix Access -transform=snake -json -sql -text -yaml
 
 // UserGroups -- list of user groups
 //
@@ -28,8 +27,8 @@ type UserGroup struct {
 	OwnerID    string `json:"owner_user_id,omitempty"`
 	OwnerLogin string `json:"owner_login,omitempty"`
 	*UserGroupMembers
-	MembersCount uint            `json:"members_count,omitempty"`
-	UserAccess   UserGroupAccess `json:"access,omitempty"`
+	MembersCount uint        `json:"members_count,omitempty"`
+	UserAccess   AccessLevel `json:"access,omitempty"`
 	//creation date in RFC3339 format
 	CreatedAt string `json:"created_at,omitempty"`
 }
@@ -45,7 +44,7 @@ type UserGroupMembers struct {
 //
 // swagger:model
 type UserGroupMember struct {
-	ID       string          `json:"id,omitempty"`
-	Username string          `json:"username"`
-	Access   UserGroupAccess `json:"access"`
+	ID       string      `json:"id,omitempty"`
+	Username string      `json:"username"`
+	Access   AccessLevel `json:"access"`
 }

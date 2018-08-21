@@ -40,8 +40,9 @@ type Service struct {
 	//Solution ID (only if service is part of solution)
 	SolutionID string `json:"solution_id,omitempty" yaml:"solution_id,omitempty"`
 	// required: true
-	Ports []ServicePort `json:"ports" yaml:"ports"`
-	Owner string        `json:"owner,omitempty" yaml:"owner,omitempty"`
+	Ports     []ServicePort `json:"ports" yaml:"ports"`
+	Namespace string        `json:"namespace,omitempty" yaml:"namespace,omitempty"`
+	Owner     string        `json:"owner,omitempty" yaml:"owner,omitempty"`
 }
 
 // represent service port
