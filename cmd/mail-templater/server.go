@@ -12,6 +12,7 @@ import (
 
 	"git.containerum.net/ch/mail-templater/pkg/router"
 	"git.containerum.net/ch/mail-templater/pkg/router/middleware"
+	"github.com/containerum/kube-client/pkg/model"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
@@ -38,6 +39,12 @@ func initServer(c *cli.Context) error {
 	um, err := getUserManagerClient(c)
 	exitOnErr(err)
 
+	status := model.ServiceStatus{
+		Name:     c.App.Name,
+		Version:  c.App.Version,
+		StatusOK: true,
+	}
+
 	app := router.CreateRouter(&middleware.Services{
 		TemplateStorage:   ts,
 		MessagesStorage:   ms,
@@ -45,7 +52,7 @@ func initServer(c *cli.Context) error {
 		UpstreamSimple:    uss,
 		UserManagerClient: um,
 		Active:            usActive,
-	}, c.Bool(corsFlag))
+	}, &status, c.Bool(corsFlag))
 
 	// graceful shutdown support
 

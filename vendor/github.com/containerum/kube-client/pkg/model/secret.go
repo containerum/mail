@@ -18,8 +18,9 @@ type Secret struct {
 	//delete date in RFC3339 format
 	DeletedAt string `json:"deleted_at,omitempty"`
 	// required: true
-	Data  map[string]string `json:"data"`
-	Owner string            `json:"owner,omitempty"`
+	Data      map[string]string `json:"data"`
+	Namespace string            `json:"namespace,omitempty" yaml:"namespace,omitempty"`
+	Owner     string            `json:"owner,omitempty"`
 }
 
 // Mask removes information not interesting for users

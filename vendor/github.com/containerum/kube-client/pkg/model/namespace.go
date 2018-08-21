@@ -50,12 +50,12 @@ type Namespace struct {
 	Owner      string  `json:"owner,omitempty"`
 	OwnerLogin string  `json:"owner_login,omitempty"`
 	// user-visible label for the namespace
-	Label         string          `json:"label,omitempty"`
-	Access        UserGroupAccess `json:"access,omitempty"`
-	TariffID      string          `json:"tariff_id,omitempty"`
-	MaxExtService uint            `json:"max_ext_service,omitempty"`
-	MaxIntService uint            `json:"max_int_service,omitempty"`
-	MaxTraffic    uint            `json:"max_traffic,omitempty"`
+	Label         string      `json:"label,omitempty"`
+	Access        AccessLevel `json:"access,omitempty"`
+	TariffID      string      `json:"tariff_id,omitempty"`
+	MaxExtService uint        `json:"max_ext_service,omitempty"`
+	MaxIntService uint        `json:"max_int_service,omitempty"`
+	MaxTraffic    uint        `json:"max_traffic,omitempty"`
 	// required: true
 	Resources Resources    `json:"resources,omitempty"`
 	Users     []UserAccess `json:"users,omitempty"`
