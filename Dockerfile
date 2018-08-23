@@ -1,9 +1,10 @@
 FROM golang:1.9-alpine as builder
 RUN apk add --update make git
 WORKDIR src/git.containerum.net/ch/mail-templater
-RUN cd /
 COPY . .
 RUN VERSION=$(git describe --abbrev=0 --tags) make build
+COPY cmd/mail-templater/templates.db /tmp/templates.db
+COPY mail-templater /tmp/mail-templater
 
 FROM alpine:3.7
 RUN apk --no-cache add ca-certificates
@@ -11,13 +12,13 @@ RUN apk --no-cache add ca-certificates
 VOLUME ["/storage"]
 
 # app
-COPY --from=builder /go/src/git.containerum.net/ch/mail-templater/mail-templater /
-COPY --from=builder /go/src/git.containerum.net/ch/mail-templater/templates.db /storage/
+COPY --from=builder /tmp/mail-templater /
+COPY --from=builder /tmp/templates.db /storage/
 
 # timezone data
 ENV GIN_MODE=debug \
     CH_MAIL_LOG_LEVEL=4 \
-    CH_MAIL_TEMPLATE_DB="/storage/template.db" \
+    CH_MAIL_TEMPLATE_DB="/storage/templates.db" \
     CH_MAIL_MESSAGES_DB="/storage/messages.db" \
     CH_MAIL_UPSTREAM=smtp \
     CH_MAIL_UPSTREAM_SIMPLE=smtp \
