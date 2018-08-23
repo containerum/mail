@@ -3,6 +3,8 @@ RUN apk add --update make git
 WORKDIR src/git.containerum.net/ch/mail-templater
 COPY . .
 RUN VERSION=$(git describe --abbrev=0 --tags) make build
+RUN ls -all
+RUN ls build
 COPY build/mail-templater /tmp/mail-templater
 COPY templates.db /tmp/templates.db
 
