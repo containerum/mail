@@ -1,8 +1,9 @@
 FROM golang:1.9-alpine as builder
+RUN apk add --update make git
 WORKDIR src/git.containerum.net/ch/mail-templater
+RUN cd /
 COPY . .
-WORKDIR cmd/mail-templater
-RUN CGO_ENABLED=0 go build -v -tags "jsoniter" -ldflags="-w -s -extldflags '-static'" -o /bin/mail-templater
+RUN VERSION=$(git describe --abbrev=0 --tags) make build
 
 FROM alpine:3.7
 RUN apk --no-cache add ca-certificates
@@ -10,7 +11,7 @@ RUN apk --no-cache add ca-certificates
 VOLUME ["/storage"]
 
 # app
-COPY --from=builder /bin/mail-templater /
+COPY --from=builder /go/src/git.containerum.net/ch/mail-templater/mail-templater /
 COPY --from=builder /go/src/git.containerum.net/ch/mail-templater/templates.db /storage/
 
 # timezone data
