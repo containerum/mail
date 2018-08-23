@@ -4,7 +4,7 @@ WORKDIR src/git.containerum.net/ch/mail-templater
 COPY . .
 RUN VERSION=$(git describe --abbrev=0 --tags) make build
 COPY templates.db /tmp/templates.db
-COPY mail-templater /tmp/mail-templater
+COPY /bin/mail-templater /tmp/mail-templater
 
 FROM alpine:3.7
 RUN apk --no-cache add ca-certificates
