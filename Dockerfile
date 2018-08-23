@@ -3,7 +3,7 @@ RUN apk add --update make git
 WORKDIR src/git.containerum.net/ch/mail-templater
 COPY . .
 RUN VERSION=$(git describe --abbrev=0 --tags) make build
-COPY cmd/mail-templater/templates.db /tmp/templates.db
+COPY templates.db /tmp/templates.db
 COPY mail-templater /tmp/mail-templater
 
 FROM alpine:3.7
