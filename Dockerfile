@@ -1,11 +1,8 @@
-FROM golang:1.9-alpine as builder
+FROM golang:1.10-alpine as builder
 RUN apk add --update make git
 WORKDIR src/git.containerum.net/ch/mail-templater
 COPY . .
-RUN VERSION=$(git describe --abbrev=0 --tags) make build
-RUN ls -all
-RUN ls build
-COPY build/mail-templater /tmp/mail-templater
+RUN VERSION=$(git describe --abbrev=0 --tags) make build-for-docker
 COPY templates.db /tmp/templates.db
 
 FROM alpine:3.7
