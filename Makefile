@@ -15,7 +15,7 @@ build:
 
 build-for-docker:
 	@echo $(LDFLAGS)
-	@CGO_ENABLED=0 go build -v -ldflags="$(LDFLAGS)" -o  /tmp/mail-templater ./$(CMD_DIR)
+	@CGO_ENABLED=0 go build -v -ldflags="$(LDFLAGS)" -o  /tmp/$(EXECUTABLE) ./$(CMD_DIR)
 
 test:
 	@echo "Running tests"
