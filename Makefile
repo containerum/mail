@@ -1,4 +1,4 @@
-.PHONY: build test clean release single_release
+.PHONY: build build-for-docker test clean release single_release
 
 CMD_DIR:=cmd/mail-templater
 
