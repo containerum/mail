@@ -18,6 +18,7 @@ type RegisterRequest struct {
 // swagger:model
 type UserList struct {
 	Users []User `json:"users,omitempty"`
+	Pages uint   `json:"pages,omitempty"`
 }
 
 // User -- user model

@@ -3,7 +3,7 @@ package model
 // SelectedIngressesList -- model for ingresses list from all namespaces
 //
 // swagger:model
-type SelectedIngressesList map[string]map[string]IngressesList
+type SelectedIngressesList map[string]IngressesList
 
 // IngressesList -- model for ingresses list
 //
@@ -23,8 +23,9 @@ type Ingress struct {
 	//delete date in RFC3339 format
 	DeletedAt string `json:"deleted_at,omitempty" yaml:"deleted_at,omitempty"`
 	// required: true
-	Rules []Rule `json:"rules" yaml:"rules"`
-	Owner string `json:"owner,omitempty" yaml:"owner,omitempty"`
+	Rules     []Rule `json:"rules" yaml:"rules"`
+	Namespace string `json:"namespace,omitempty" yaml:"namespace,omitempty"`
+	Owner     string `json:"owner,omitempty" yaml:"owner,omitempty"`
 }
 
 // Rule -- ingress rule

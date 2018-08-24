@@ -12,13 +12,13 @@ type PodsList struct {
 // swagger:model
 type Pod struct {
 	//creation date in RFC3339 format
-	CreatedAt       *string            `json:"created_at,omitempty"`
-	Name            string             `json:"name"`
-	Owner           string             `json:"owner"`
-	Containers      []Container        `json:"containers"`
-	ImagePullSecret *map[string]string `json:"image_pull_secret,omitempty"`
-	Status          *PodStatus         `json:"status,omitempty"`
-	Deploy          *string            `json:"deploy,omitempty"`
+	CreatedAt        *string     `json:"created_at,omitempty"`
+	Name             string      `json:"name"`
+	Owner            string      `json:"owner"`
+	Containers       []Container `json:"containers"`
+	ImagePullSecrets []string    `json:"image_pull_secret,omitempty"`
+	Status           *PodStatus  `json:"status,omitempty"`
+	Deploy           *string     `json:"deploy,omitempty"`
 	//total CPU usage by all containers in this pod
 	TotalCPU uint `json:"total_cpu,omitempty"`
 	//total RAM usage by all containers in this pod

@@ -10,9 +10,9 @@ type UserHeaderData struct {
 	// user-visible label for the object
 	// required: true
 	Label string `json:"label"`
-	// one of: "admin", "master", "member", "guest", "none"
+	// one of: "owner", "read", "write", "read-delete", "none"
 	// required: true
-	Access UserGroupAccess `json:"access"`
+	Access AccessLevel `json:"access"`
 }
 
 // User --

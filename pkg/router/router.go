@@ -5,39 +5,30 @@ import (
 
 	"net/http"
 
+	"git.containerum.net/ch/auth/static"
 	"git.containerum.net/ch/mail-templater/pkg/mterrors"
 	h "git.containerum.net/ch/mail-templater/pkg/router/handlers"
 	m "git.containerum.net/ch/mail-templater/pkg/router/middleware"
-	"git.containerum.net/ch/mail-templater/static"
+	"github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	cors "gopkg.in/gin-contrib/cors.v1"
 
 	"github.com/containerum/cherry/adaptors/cherrylog"
 	"github.com/containerum/cherry/adaptors/gonic"
-	headers "github.com/containerum/utils/httputil"
-	"gopkg.in/gin-contrib/cors.v1"
+	"github.com/containerum/kube-client/pkg/model"
 )
 
 //CreateRouter initialises router and middlewares
-func CreateRouter(svc *m.Services, enableCORS bool) http.Handler {
+func CreateRouter(svc *m.Services, status *model.ServiceStatus, enableCORS bool) http.Handler {
 	e := gin.New()
-	initMiddlewares(e, svc, enableCORS)
-	initRoutes(e)
+	initMiddlewares(e, svc)
+	initRoutes(e, status, enableCORS)
 	return e
 }
 
-func initMiddlewares(e *gin.Engine, svc *m.Services, enableCORS bool) {
-	/* CORS */
-	if enableCORS {
-		cfg := cors.DefaultConfig()
-		cfg.AllowAllOrigins = true
-		cfg.AddAllowMethods(http.MethodDelete)
-		cfg.AddAllowHeaders(headers.UserRoleXHeader)
-		e.Use(cors.New(cfg))
-	}
-	e.Group("/static").
-		StaticFS("/", static.HTTP)
+func initMiddlewares(e *gin.Engine, svc *m.Services) {
 	/* System */
 	e.Use(ginrus.Ginrus(logrus.WithField("component", "gin"), time.RFC3339, true))
 	e.Use(gonic.Recovery(mterrors.ErrInternalError, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
@@ -46,7 +37,18 @@ func initMiddlewares(e *gin.Engine, svc *m.Services, enableCORS bool) {
 }
 
 // Setup sets up routes
-func initRoutes(e *gin.Engine) {
+func initRoutes(e *gin.Engine, status *model.ServiceStatus, enableCORS bool) {
+	if enableCORS {
+		cfg := cors.DefaultConfig()
+		cfg.AllowAllOrigins = true
+		cfg.AddAllowMethods(http.MethodDelete)
+		cfg.AddAllowHeaders(httputil.UserRoleXHeader)
+		e.Use(cors.New(cfg))
+	}
+	e.Group("/static").
+		StaticFS("/", static.HTTP)
+
+	e.GET("/status", httputil.ServiceStatus(status))
 
 	e.POST("/send", m.CheckActive(), h.SimpleSendHandler)
 

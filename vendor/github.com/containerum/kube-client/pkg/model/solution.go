@@ -1,46 +1,46 @@
 package model
 
-// AvailableSolutionsList -- list of available solutions
+// SolutionsTemplatesList -- list of available solutions
 //
 // swagger:model
-type AvailableSolutionsList struct {
-	Solutions []AvailableSolution `json:"solutions"`
+type SolutionsTemplatesList struct {
+	Solutions []SolutionTemplate `json:"solutions"`
 }
 
-func (list AvailableSolutionsList) Len() int {
+func (list SolutionsTemplatesList) Len() int {
 	return len(list.Solutions)
 }
 
-func (list AvailableSolutionsList) Copy() AvailableSolutionsList {
-	var solutions = make([]AvailableSolution, 0, list.Len())
+func (list SolutionsTemplatesList) Copy() SolutionsTemplatesList {
+	var solutions = make([]SolutionTemplate, 0, list.Len())
 	for _, sol := range solutions {
 		solutions = append(solutions, sol.Copy())
 	}
-	return AvailableSolutionsList{
+	return SolutionsTemplatesList{
 		Solutions: solutions,
 	}
 }
 
-func (list AvailableSolutionsList) Get(i int) AvailableSolution {
+func (list SolutionsTemplatesList) Get(i int) SolutionTemplate {
 	return list.Solutions[i]
 }
 
-func (list AvailableSolutionsList) Filter(pred func(AvailableSolution) bool) AvailableSolutionsList {
-	solutions := make([]AvailableSolution, 0, list.Len())
+func (list SolutionsTemplatesList) Filter(pred func(SolutionTemplate) bool) SolutionsTemplatesList {
+	solutions := make([]SolutionTemplate, 0, list.Len())
 	for _, sol := range list.Solutions {
 		if pred(sol.Copy()) {
 			solutions = append(solutions, sol.Copy())
 		}
 	}
-	return AvailableSolutionsList{
+	return SolutionsTemplatesList{
 		Solutions: solutions,
 	}
 }
 
-// AvailableSolution -- solution which user can run
+// SolutionTemplate -- solution which user can run
 //
 // swagger:model
-type AvailableSolution struct {
+type SolutionTemplate struct {
 	ID     string          `json:"id,omitempty" yaml:"id,omitempty"`
 	Name   string          `json:"name" yaml:"name"`
 	Limits *SolutionLimits `json:"limits" yaml:"limits"`
@@ -49,8 +49,8 @@ type AvailableSolution struct {
 	Active bool            `json:"active" yaml:"active"`
 }
 
-func (solution AvailableSolution) Copy() AvailableSolution {
-	return AvailableSolution{
+func (solution SolutionTemplate) Copy() SolutionTemplate {
+	return SolutionTemplate{
 		Name: solution.Name,
 		Limits: func() *SolutionLimits {
 			if solution.Limits == nil {
@@ -69,8 +69,8 @@ func (solution AvailableSolution) Copy() AvailableSolution {
 //
 // swagger:model
 type SolutionLimits struct {
-	CPU string `json:"cpu" yaml:"cpu"`
-	RAM string `json:"ram" yaml:"cpu"`
+	CPU uint `json:"cpu" yaml:"cpu"`
+	RAM uint `json:"ram" yaml:"ram"`
 }
 
 // SolutionEnv -- solution environment variables
@@ -102,47 +102,47 @@ type ConfigFile struct {
 	Type string `json:"type"`
 }
 
-// UserSolutionsList -- list of running solution
+// SolutionsList -- list of running solution
 //
 // swagger:model
-type UserSolutionsList struct {
-	Solutions []UserSolution `json:"solutions"`
+type SolutionsList struct {
+	Solutions []Solution `json:"solutions"`
 }
 
-func (list UserSolutionsList) Copy() UserSolutionsList {
-	var solutions = make([]UserSolution, 0, list.Len())
+func (list SolutionsList) Copy() SolutionsList {
+	var solutions = make([]Solution, 0, list.Len())
 	for _, s := range solutions {
 		solutions = append(solutions, s.Copy())
 	}
-	return UserSolutionsList{
+	return SolutionsList{
 		Solutions: solutions,
 	}
 }
 
-func (list UserSolutionsList) Len() int {
+func (list SolutionsList) Len() int {
 	return len(list.Solutions)
 }
 
-func (list UserSolutionsList) Get(i int) UserSolution {
+func (list SolutionsList) Get(i int) Solution {
 	return list.Solutions[i]
 }
 
-func (list UserSolutionsList) Filter(pred func(UserSolution) bool) UserSolutionsList {
-	solutions := make([]UserSolution, 0, list.Len())
+func (list SolutionsList) Filter(pred func(Solution) bool) SolutionsList {
+	solutions := make([]Solution, 0, list.Len())
 	for _, sol := range list.Solutions {
 		if pred(sol.Copy()) {
 			solutions = append(solutions, sol.Copy())
 		}
 	}
-	return UserSolutionsList{
+	return SolutionsList{
 		Solutions: solutions,
 	}
 }
 
-// UserSolution -- running solution
+// Solution -- running solution
 //
 // swagger:model
-type UserSolution struct {
+type Solution struct {
 	ID     string            `json:"id,omitempty"`
 	Branch string            `json:"branch"`
 	Env    map[string]string `json:"env"`
@@ -155,12 +155,12 @@ type UserSolution struct {
 	Namespace string `json:"namespace"`
 }
 
-func (solution UserSolution) Copy() UserSolution {
+func (solution Solution) Copy() Solution {
 	env := make(map[string]string, len(solution.Env))
 	for k, v := range solution.Env {
 		env[k] = v
 	}
-	return UserSolution{
+	return Solution{
 		Branch:    solution.Branch,
 		Env:       env,
 		Template:  solution.Template,
