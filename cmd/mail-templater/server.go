@@ -34,7 +34,7 @@ func initServer(c *cli.Context) error {
 	defer ms.Close()
 	us, _, err := getUpstream(c, ms)
 	exitOnErr(err)
-	uss, usActive, err := getUpstreamSimple(c, ms)
+	uss, ussActive, err := getUpstreamSimple(c, ms)
 	exitOnErr(err)
 	um, err := getUserManagerClient(c)
 	exitOnErr(err)
@@ -42,7 +42,7 @@ func initServer(c *cli.Context) error {
 	status := model.ServiceStatus{
 		Name:     c.App.Name,
 		Version:  c.App.Version,
-		StatusOK: true,
+		StatusOK: ussActive,
 	}
 
 	app := router.CreateRouter(&middleware.Services{
@@ -51,11 +51,10 @@ func initServer(c *cli.Context) error {
 		Upstream:          us,
 		UpstreamSimple:    uss,
 		UserManagerClient: um,
-		Active:            usActive,
+		Active:            ussActive,
 	}, &status, c.Bool(corsFlag))
 
 	// graceful shutdown support
-
 	srv := http.Server{
 		Addr:    ":" + c.String(portFlag),
 		Handler: app,
