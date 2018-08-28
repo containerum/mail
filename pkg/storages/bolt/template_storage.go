@@ -223,7 +223,7 @@ func (s *boltTemplateStorage) PutTemplate(templateName, templateVersion, templat
 		if new {
 			if b.Get([]byte(templateVersion)) != nil {
 				loge.Errorln("This version of template already exists:", templateName, templateVersion)
-				return mterrors.ErrTemplateAlreadyExists()
+				return mterrors.ErrTemplateAlreadyExists().AddDetailF("%s %s", templateName, templateVersion)
 			}
 		}
 

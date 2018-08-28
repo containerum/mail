@@ -26,23 +26,35 @@ func initServer(c *cli.Context) error {
 
 	setupLogs(c)
 
+	status := &model.ServiceStatus{
+		Name:     c.App.Name,
+		Version:  c.App.Version,
+		StatusOK: true,
+		Details:  map[string]string{},
+	}
+
 	ts, err := getTemplatesStorage(c)
 	exitOnErr(err)
 	defer ts.Close()
 	ms, err := getMessagesStorage(c)
 	exitOnErr(err)
 	defer ms.Close()
-	us, _, err := getUpstream(c, ms)
+	us, err := getUpstream(c, ms)
 	exitOnErr(err)
-	uss, usActive, err := getUpstreamSimple(c, ms)
-	exitOnErr(err)
+
+	uss, userr := getUpstreamSimple(c, ms)
+	if userr != nil {
+		logrus.WithError(userr).Warn("simple upstream not ready")
+		status.AddDetails("SimpleUpstreamNotReady", userr.Error())
+		status.StatusOK = false
+	}
+
 	um, err := getUserManagerClient(c)
 	exitOnErr(err)
 
-	status := model.ServiceStatus{
-		Name:     c.App.Name,
-		Version:  c.App.Version,
-		StatusOK: true,
+	if err := importDefaultTemplates(c, ts); err != nil {
+		logrus.WithError(err).Warn("unable to import default templates")
+		status.AddDetails("UnableImportTemplates", err.Error())
 	}
 
 	app := router.CreateRouter(&middleware.Services{
@@ -51,11 +63,10 @@ func initServer(c *cli.Context) error {
 		Upstream:          us,
 		UpstreamSimple:    uss,
 		UserManagerClient: um,
-		Active:            usActive,
-	}, &status, c.Bool(corsFlag))
+		Active:            userr == nil,
+	}, status, c.Bool(corsFlag))
 
 	// graceful shutdown support
-
 	srv := http.Server{
 		Addr:    ":" + c.String(portFlag),
 		Handler: app,

@@ -3,11 +3,19 @@ package main
 import (
 	"errors"
 
+	"io/ioutil"
+
+	"strings"
+
 	"git.containerum.net/ch/mail-templater/pkg/clients"
+	"git.containerum.net/ch/mail-templater/pkg/models"
+	"git.containerum.net/ch/mail-templater/pkg/mterrors"
 	"git.containerum.net/ch/mail-templater/pkg/storages"
 	"git.containerum.net/ch/mail-templater/pkg/storages/bolt"
 	"git.containerum.net/ch/mail-templater/pkg/upstreams"
+	"github.com/containerum/cherry"
 	"github.com/gin-gonic/gin"
+	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 	"gopkg.in/mailgun/mailgun-go.v1"
@@ -33,6 +41,7 @@ const (
 	smtpLoginFlag        = "smtp_login"
 	smtpPasswordFlag     = "smtp_password"
 	corsFlag             = "cors"
+	defaultTemplatesFlag = "default_templates"
 )
 
 var flags = []cli.Flag{
@@ -140,6 +149,12 @@ var flags = []cli.Flag{
 		Name:   corsFlag,
 		Usage:  "enable CORS",
 	},
+	cli.StringFlag{
+		EnvVar: "CH_MAIL_DEFAULT_TEMPLATES",
+		Name:   defaultTemplatesFlag,
+		Value:  "templates.json",
+		Usage:  "json file with default templates",
+	},
 }
 
 func setupLogs(c *cli.Context) {
@@ -176,43 +191,40 @@ func getMessagesStorage(c *cli.Context) (storages.MessagesStorage, error) {
 	}
 }
 
-func getUpstream(c *cli.Context, msgStorage storages.MessagesStorage) (upstreams.Upstream, bool, error) {
+func getUpstream(c *cli.Context, msgStorage storages.MessagesStorage) (upstreams.Upstream, error) {
 	switch c.String(upstreamFlag) {
 	case "mailgun":
 		mg, err := mailgun.NewMailgunFromEnv()
 		if err != nil {
-			return nil, true, err
+			return nil, err
 		}
-		return upstreams.NewMailgun(mg, msgStorage, c.String(senderNameFlag), c.String(senderMailFlag)), err == nil, nil
+		return upstreams.NewMailgun(mg, msgStorage, c.String(senderNameFlag), c.String(senderMailFlag)), nil
 	case "smtp":
 		upstream := upstreams.NewSMTPUpstream(msgStorage, c.String(senderNameFlag), c.String(senderMailFlag), c.String(smtpAddrFlag), c.String(smtpLoginFlag), c.String(smtpPasswordFlag))
-		return upstream, true, nil
+		return upstream, nil
 	case "dummy":
-		return upstreams.NewDummyUpstream(), true, nil
+		return upstreams.NewDummyUpstream(), nil
 	default:
-		return nil, true, errors.New("invalid upstream")
+		return nil, errors.New("invalid upstream")
 	}
 }
 
-func getUpstreamSimple(c *cli.Context, msgStorage storages.MessagesStorage) (upstreams.Upstream, bool, error) {
+func getUpstreamSimple(c *cli.Context, msgStorage storages.MessagesStorage) (upstreams.Upstream, error) {
 	switch c.String(upstreamSimpleFlag) {
 	case "mailgun":
 		mg, err := mailgun.NewMailgunFromEnv()
 		if err != nil {
-			return nil, false, err
+			return nil, err
 		}
-		return upstreams.NewMailgun(mg, msgStorage, c.String(senderNameSimpleFlag), c.String(senderMailSimpleFlag)), err == nil, nil
+		return upstreams.NewMailgun(mg, msgStorage, c.String(senderNameSimpleFlag), c.String(senderMailSimpleFlag)), nil
 	case "smtp":
 		upstream := upstreams.NewSMTPUpstream(msgStorage, c.String(senderNameSimpleFlag), c.String(senderMailSimpleFlag), c.String(smtpAddrFlag), c.String(smtpLoginFlag), c.String(smtpPasswordFlag))
 		err := upstream.CheckStatus()
-		if err!=nil {
-			logrus.Errorf("SMTP Check failed: %v", err)
-		}
-		return upstream, err == nil, nil
+		return upstream, err
 	case "dummy":
-		return upstreams.NewDummyUpstream(), true, nil
+		return upstreams.NewDummyUpstream(), nil
 	default:
-		return nil, true, errors.New("invalid upstream")
+		return nil, errors.New("invalid upstream")
 	}
 }
 
@@ -223,4 +235,35 @@ func getUserManagerClient(c *cli.Context) (clients.UserManagerClient, error) {
 	default:
 		return nil, errors.New("invalid user manager client")
 	}
+}
+
+func importDefaultTemplates(c *cli.Context, tstorage storages.TemplateStorage) error {
+	file, err := ioutil.ReadFile(c.String(defaultTemplatesFlag))
+	if err != nil {
+		return err
+	}
+	var defTemplates []models.Template
+	if err := jsoniter.Unmarshal(file, &defTemplates); err != nil {
+		return err
+	}
+	var tmplErrs []string
+	for _, tmpl := range defTemplates {
+		if err := tstorage.PutTemplate(tmpl.Name, tmpl.Version, tmpl.Data, tmpl.Subject, true); err != nil {
+			//If template with this name already exists it's not a problem
+			if !cherry.Equals(err, mterrors.ErrTemplateAlreadyExists()) {
+				logrus.
+					WithField("name", tmpl.Name).
+					WithField("version", tmpl.Version).
+					WithError(err).
+					Warn("Unable to import template")
+
+				tmplErrs = append(tmplErrs, err.Error())
+			}
+		}
+	}
+	logrus.Println("Templates import finished")
+	if len(tmplErrs) != 0 {
+		return errors.New(strings.Join(tmplErrs, "; "))
+	}
+	return nil
 }

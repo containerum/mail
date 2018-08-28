@@ -13,7 +13,7 @@ import (
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	cors "gopkg.in/gin-contrib/cors.v1"
+	"gopkg.in/gin-contrib/cors.v1"
 
 	"github.com/containerum/cherry/adaptors/cherrylog"
 	"github.com/containerum/cherry/adaptors/gonic"
