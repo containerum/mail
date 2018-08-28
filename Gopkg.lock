@@ -7,7 +7,7 @@
   name = "git.containerum.net/ch/auth"
   packages = ["static"]
   pruneopts = "NUT"
-  revision = "5ec6f11de6e7d388b0d877593cccbdeebfce8558"
+  revision = "9ffd475123eacd8dab9e615c5332d13c5bd9c723"
 
 [[projects]]
   branch = "develop"
@@ -15,7 +15,7 @@
   name = "git.containerum.net/ch/user-manager"
   packages = ["pkg/models"]
   pruneopts = "NUT"
-  revision = "4dd0906c13bd4f3e5ba1d77a93e16092e2639d3f"
+  revision = "60ba97c807d9e6ecc2d0cf69752044cc2432498d"
 
 [[projects]]
   digest = "1:aba270497eb2d49f5cba6f4162d524b9a1195a24cbce8be20bf56a0051f47deb"
@@ -128,12 +128,12 @@
   version = "v1.2.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:a528e09bffd7a23a0d2d25a1da6a1fb067ac7b6cfea7fc8cbd58af2750c68e0e"
+  digest = "1:a1578f7323eca2b88021fdc9a79a99833d40b12c32a5ea4f284e2fad19ea2657"
   name = "github.com/google/uuid"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "dec09d789f3dba190787f8b4454c7d3c936fed9e"
+  revision = "d460ce9f8df2e77fb1ba55ca87fafed96c607494"
+  version = "1.0.0"
 
 [[projects]]
   branch = "master"
@@ -141,7 +141,7 @@
   name = "github.com/gopherjs/gopherjs"
   packages = ["js"]
   pruneopts = "NUT"
-  revision = "89baedc74dd74098df0c4ba8792e3cf6d722d4d0"
+  revision = "0210a2f0f73c96103378b0b935f39868e5731809"
 
 [[projects]]
   branch = "master"
@@ -275,7 +275,7 @@
     "webdav/internal/xml",
   ]
   pruneopts = "NUT"
-  revision = "922f4815f713f213882e8ef45e0d315b164d705c"
+  revision = "8a410e7b638dca158bf9e766925842f6651ff828"
 
 [[projects]]
   branch = "master"
@@ -287,14 +287,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f8130e9e646175a1dcce75cfe1b57fa4cb07015c79690b03aa87bf9c912209fe"
+  digest = "1:e1498a6884b2564efe2a4c4aefce64eb4bc6a4666acfd42db044cf581db4d9cb"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "NUT"
-  revision = "4ea2f632f6e912459fe60b26b1749377f0d889d5"
+  revision = "d99a578cf41bfccdeaf48b0845c823a4b8b0ad5e"
 
 [[projects]]
   digest = "1:e7071ed636b5422cc51c0e3a6cebc229d6c9fffc528814b519a980641422d619"
@@ -352,12 +352,12 @@
   version = "v1.1.0"
 
 [[projects]]
-  digest = "1:ed6fe3cdb5ccb17387b5cb11c0cbd125699f5f5d23626ccf78a7c5859183e063"
+  digest = "1:adc7613c31ac99713f06224d81d80fb6886231ace2bbde5bd0748f8c7bf3c730"
   name = "gopkg.in/resty.v1"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "97a15579492cd5f35632499f315d7a8df94160a1"
-  version = "v1.8.0"
+  revision = "383acc8a8b687098ee02168c0335a43dfee701f0"
+  version = "v1.9.0"
 
 [[projects]]
   digest = "1:7c95b35057a0ff2e19f707173cc1a947fa43a6eb5c4d300d196ece0334046082"
