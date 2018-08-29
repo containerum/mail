@@ -4,7 +4,7 @@ CMD_DIR:=cmd/mail-templater
 
 # make directory and store path to variable
 BUILDS_DIR:=$(PWD)/build
-EXECUTABLE:=mail-templater
+EXECUTABLE:=mail
 LDFLAGS=-X 'main.version=$(VERSION)' -w -s -extldflags '-static'
 
 # go has build artifacts caching so soruce tracking not needed

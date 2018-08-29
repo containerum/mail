@@ -10,7 +10,7 @@ RUN apk --no-cache add ca-certificates
 VOLUME ["/storage"]
 
 # app
-COPY --from=builder /tmp/mail-templater /
+COPY --from=builder /tmp/mail /
 COPY templates.json /
 
 # timezone data
@@ -33,4 +33,4 @@ ENV GIN_MODE=debug \
 
 EXPOSE 7070
 
-ENTRYPOINT ["/mail-templater"]
+ENTRYPOINT ["/mail"]
