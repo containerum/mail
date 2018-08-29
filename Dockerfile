@@ -3,7 +3,6 @@ RUN apk add --update make git
 WORKDIR src/git.containerum.net/ch/mail-templater
 COPY . .
 RUN VERSION=$(git describe --abbrev=0 --tags) make build-for-docker
-COPY templates.json /tmp/templates.json
 
 FROM alpine:3.8
 RUN apk --no-cache add ca-certificates
@@ -12,7 +11,7 @@ VOLUME ["/storage"]
 
 # app
 COPY --from=builder /tmp/mail-templater /
-COPY --from=builder /tmp/templates.json /storage/
+COPY templates.json /storage/
 
 # timezone data
 ENV GIN_MODE=debug \
