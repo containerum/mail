@@ -11,14 +11,14 @@ VOLUME ["/storage"]
 
 # app
 COPY --from=builder /tmp/mail-templater /
-COPY templates.json /storage/
+COPY templates.json /
 
 # timezone data
 ENV GIN_MODE=debug \
     CH_MAIL_LOG_LEVEL=4 \
     CH_MAIL_TEMPLATE_DB="/storage/templates.db" \
     CH_MAIL_MESSAGES_DB="/storage/messages.db" \
-    CH_MAIL_DEFAULT_TEMPLATES="/storage/templates.json" \
+    CH_MAIL_DEFAULT_TEMPLATES="templates.json" \
     CH_MAIL_UPSTREAM=smtp \
     CH_MAIL_UPSTREAM_SIMPLE=smtp \
     CH_MAIL_SENDER_NAME_SIMPLE=containerum \
