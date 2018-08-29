@@ -118,11 +118,14 @@ func (smtpu *smtpUpstream) parseTemplate(templateName string, tsv *models.Templa
 
 func (smtpu *smtpUpstream) newSMTPClient(recipientEmail string, text string) error {
 	host, _, _ := net.SplitHostPort(smtpu.smtpAddress)
-
-	conn, err := tls.Dial("tcp", smtpu.smtpAddress, &tls.Config{
+	dialer := &net.Dialer{
+		Timeout: 5 * time.Second,
+	}
+	config := &tls.Config{
 		InsecureSkipVerify: false,
 		ServerName:         host,
-	})
+	}
+	conn, err := tls.DialWithDialer(dialer, "tcp", smtpu.smtpAddress, config)
 	if err != nil {
 		return err
 	}
@@ -277,13 +280,17 @@ func (smtpu *smtpUpstream) SimpleSend(ctx context.Context, templateName string, 
 
 func (smtpu *smtpUpstream) CheckStatus() error {
 	smtpu.log.Debugln("Checking SMTP server connection")
-	return utils.Retry(3, 15*time.Second, func() error {
+	return utils.Retry(3, 10*time.Second, func() error {
 		host, _, _ := net.SplitHostPort(smtpu.smtpAddress)
-
-		conn, err := tls.Dial("tcp", smtpu.smtpAddress, &tls.Config{
+		dialer := &net.Dialer{
+			Timeout: 5 * time.Second,
+		}
+		config := &tls.Config{
 			InsecureSkipVerify: false,
 			ServerName:         host,
-		})
+		}
+		conn, err := tls.DialWithDialer(dialer, "tcp", smtpu.smtpAddress, config)
+
 		if err != nil {
 			operr, ok := err.(*net.OpError)
 			if ok {
