@@ -1,24 +1,24 @@
-FROM golang:1.10-alpine as builder
+FROM golang:1.11-alpine as builder
 RUN apk add --update make git
 WORKDIR src/git.containerum.net/ch/mail-templater
 COPY . .
 RUN VERSION=$(git describe --abbrev=0 --tags) make build-for-docker
-COPY templates.db /tmp/templates.db
 
-FROM alpine:3.7
+FROM alpine:3.8
 RUN apk --no-cache add ca-certificates
 
 VOLUME ["/storage"]
 
 # app
-COPY --from=builder /tmp/mail-templater /
-COPY --from=builder /tmp/templates.db /storage/
+COPY --from=builder /tmp/mail /
+COPY templates.json /
 
 # timezone data
 ENV GIN_MODE=debug \
     CH_MAIL_LOG_LEVEL=4 \
     CH_MAIL_TEMPLATE_DB="/storage/templates.db" \
     CH_MAIL_MESSAGES_DB="/storage/messages.db" \
+    CH_MAIL_DEFAULT_TEMPLATES="templates.json" \
     CH_MAIL_UPSTREAM=smtp \
     CH_MAIL_UPSTREAM_SIMPLE=smtp \
     CH_MAIL_SENDER_NAME_SIMPLE=containerum \
@@ -33,4 +33,4 @@ ENV GIN_MODE=debug \
 
 EXPOSE 7070
 
-ENTRYPOINT ["/mail-templater"]
+ENTRYPOINT ["/mail"]
