@@ -15,7 +15,7 @@ var version string
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "mail-templater"
+	app.Name = "mail"
 	app.Version = version
 	app.Usage = "service for making and sending emails"
 	app.Flags = flags
