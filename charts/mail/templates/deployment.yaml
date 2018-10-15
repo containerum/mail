@@ -28,15 +28,15 @@ spec:
             - name: {{ $key  }}
               value: {{ $val | quote }}
             {{- end }}
-            {{- if .Values.env.local.CH_MAIL_USER_MANAGER_URL }}
-            - name: CH_MAIL_USER_MANAGER_URL
-              value: "{{ .Values.env.local.CH_MAIL_USER_MANAGER_URL }}"
+            {{- if .Values.env.local.USER_MANAGER_URL }}
+            - name: USER_MANAGER_URL
+              value: "{{ .Values.env.local.USER_MANAGER_URL }}"
             {{- else }}
-            - name: CH_MAIL_USER_MANAGER_URL
+            - name: USER_MANAGER_URL
               value: "http://{{ .Release.Name }}-user-manager:8111"
             {{- end }}
-            {{- if .Values.env.local.CH_MAIL_SMTP_PASSWORD }}
-            - name: CH_MAIL_SMTP_PASSWORD
+            {{- if .Values.env.local.SMTP_PASSWORD }}
+            - name: SMTP_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ template "fullname" . }}
